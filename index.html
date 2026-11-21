@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NexusChat — Comunicação Moderna em Tempo Real</title>
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <script>
@@ -24,9 +21,7 @@
             sans: ['Inter', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
-          colors: {
-            ice: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0' }
-          }
+          colors: { ice: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0' } }
         }
       }
     }
@@ -45,12 +40,7 @@
       --theme-glow: rgba(14, 165, 233, 0.25);
     }
     * { box-sizing: border-box; }
-    body {
-      background-color: #f1f5f9;
-      color: #0f172a;
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-    }
+    body { background-color: #f1f5f9; color: #0f172a; font-family: 'Inter', sans-serif; overflow-x: hidden; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(226, 232, 240, 0.5); }
     ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.55); border-radius: 9999px; }
@@ -117,7 +107,6 @@
 </head>
 <body class="min-h-screen flex flex-col bg-ice-100 text-slate-900 selection:bg-sky-200 selection:text-slate-900">
 
-  <!-- TOASTS -->
   <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
   <!-- ============================ TELA 1: AUTH ============================ -->
@@ -132,8 +121,7 @@
         <div id="auth-palette-popover" class="hidden absolute right-0 mt-2 w-56 p-2.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50">
           <div class="px-1 pb-2 mb-2 border-b border-slate-100">
             <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
-              <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i>
-              Paleta de Cores
+              <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Paleta de Cores
             </span>
           </div>
           <div id="auth-palette-options" class="grid grid-cols-4 gap-1.5"></div>
@@ -205,8 +193,7 @@
         <div class="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
-              Verificação Humana (Captcha)
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i> Verificação Humana (Captcha)
             </span>
             <button type="button" id="refresh-captcha" title="Gerar novo cálculo"
               class="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 transition-all cursor-pointer">
@@ -281,10 +268,10 @@
 
         <div>
           <div class="flex items-center justify-between px-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Membros Online</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Visitantes agora</span>
             <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span id="online-count-sidebar">5</span>
+              <span id="online-count-sidebar">…</span>
             </span>
           </div>
           <ul id="online-users-list" class="space-y-1.5"></ul>
@@ -316,7 +303,7 @@
               <h2 id="current-channel-name" class="text-base sm:text-lg font-bold text-slate-900 truncate">Geral</h2>
               <span class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span id="header-online-count">5 online</span>
+                <span id="header-online-count">…</span>
               </span>
             </div>
             <p id="current-channel-desc" class="text-xs text-slate-500 truncate">Conversa aberta para toda a comunidade NexusChat</p>
@@ -391,9 +378,9 @@
       signOut, onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
-      getFirestore, doc, setDoc, getDoc, collection, addDoc,
-      query, orderBy, onSnapshot, serverTimestamp,
-      getDocs, writeBatch
+      getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc,
+      query, orderBy, limit, startAfter, onSnapshot, serverTimestamp,
+      getDocs, writeBatch, where
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // ===== FIREBASE INIT =====
@@ -428,22 +415,32 @@
     let activeThemeId = localStorage.getItem(STORAGE_KEYS.THEME) || 'indigo-cyan';
     let currentAuthMode = 'login';
     let currentCaptchaResult = 0;
-    let currentUser = null; // { uid, username, age, gender }
+    let currentUser = null;
     let activeChannelId = 'geral';
+
+    // Listener de mensagens
     let unsubscribeMessages = null;
+    // Listener de presença
+    let unsubscribePresence = null;
+    // Listener de "digitando"
+    let unsubscribeTyping = null;
+
+    // Paginação
+    const PAGE_SIZE = 50;
+    let oldestLoadedMessage = null;    // snapshot doc da mensagem mais antiga já carregada
+    let hasMoreMessages = true;
+    let allCurrentMessages = [];        // mensagens da página atual (para renderizar)
+
+    // Heartbeat de presença
+    let presenceHeartbeat = null;
+    let typingTimeout = null;
+    let isTypingFlag = false;
 
     const CHANNELS = [
       { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade NexusChat' },
       { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA, hardware e novidades digitais' },
       { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Recomendações de playlists, games e e-sports' },
       { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração, filmes, séries e ideias do dia' }
-    ];
-
-    const SIMULATED_USERS = [
-      { name:'Mariana Costa', age:26, gender:'Feminino', color:'from-sky-500 to-blue-600' },
-      { name:'Rafael Mendes', age:29, gender:'Masculino', color:'from-indigo-500 to-slate-700' },
-      { name:'Alex Rivera', age:23, gender:'Não-binário', color:'from-emerald-500 to-teal-600' },
-      { name:'Camila Duarte', age:31, gender:'Feminino', color:'from-amber-500 to-orange-600' }
     ];
 
     const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
@@ -655,7 +652,11 @@
 
     async function logout() {
       try {
+        stopPresence();
+        stopTyping();
         if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+        if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
+        if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
         await signOut(auth);
         showToast('Você saiu da sua conta com segurança.', 'info');
       } catch (err) {
@@ -675,9 +676,13 @@
         } catch (e) { console.warn('Perfil não carregado:', e); }
         currentUser = { uid: firebaseUser.uid, ...profile };
         enterChatInterface();
+        startPresence();
       } else {
         currentUser = null;
+        stopPresence();
         if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+        if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
+        if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
         document.getElementById('chat-screen').classList.add('hidden');
         document.getElementById('auth-screen').classList.remove('hidden');
         document.getElementById('password').value = '';
@@ -685,6 +690,163 @@
         toggleSidebar(false);
       }
     });
+
+    // ===== PRESENÇA (contador em tempo real) =====
+    // Cada usuário logado grava { uid, username, lastSeen } em /presence/{uid}.
+    // Um listener em tempo real conta os documentos com lastSeen < 60s atrás.
+    function startPresence() {
+      if (!currentUser) return;
+      stopPresence();
+
+      const ref = doc(db, 'presence', currentUser.uid);
+      const writePresence = () => setDoc(ref, {
+        uid: currentUser.uid,
+        username: currentUser.username,
+        lastSeen: serverTimestamp()
+      }, { merge: true }).catch(err => console.warn('Presence write failed:', err));
+
+      writePresence();
+      presenceHeartbeat = setInterval(writePresence, 25000);
+
+      // Remove este usuário da presença ao fechar a página
+      window.addEventListener('beforeunload', () => {
+        try { deleteDoc(ref); } catch(e){}
+      });
+
+      // Listener: escuta todos os presence docs e conta os que estão "vivos"
+      const q = collection(db, 'presence');
+      unsubscribePresence = onSnapshot(q, (snapshot) => {
+        const now = Date.now();
+        const alive = [];
+        snapshot.forEach(d => {
+          const data = d.data();
+          let lastMs = 0;
+          if (data.lastSeen && typeof data.lastSeen.toMillis === 'function') lastMs = data.lastSeen.toMillis();
+          // Considera online se escreveu nos últimos 90 segundos
+          if (now - lastMs < 90000) {
+            alive.push({ uid: d.id, username: data.username || 'Usuário' });
+          }
+        });
+        updatePresenceUI(alive);
+      }, (err) => {
+        console.warn('Presence listener error:', err);
+      });
+    }
+
+    function stopPresence() {
+      if (presenceHeartbeat) { clearInterval(presenceHeartbeat); presenceHeartbeat = null; }
+      if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
+      if (currentUser) {
+        const ref = doc(db, 'presence', currentUser.uid);
+        deleteDoc(ref).catch(()=>{});
+      }
+    }
+
+    function updatePresenceUI(aliveUsers) {
+      const total = aliveUsers.length;
+      document.getElementById('online-count-sidebar').textContent = total;
+      document.getElementById('header-online-count').textContent = `${total} online`;
+
+      const list = document.getElementById('online-users-list');
+      list.innerHTML = '';
+      // Coloca o próprio usuário primeiro
+      aliveUsers.sort((a, b) => {
+        if (a.uid === currentUser.uid) return -1;
+        if (b.uid === currentUser.uid) return 1;
+        return a.username.localeCompare(b.username);
+      });
+      aliveUsers.forEach(u => {
+        const isMe = u.uid === currentUser.uid;
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-2.5 px-2.5 py-2 rounded-2xl hover:bg-white/70 transition-colors';
+        li.innerHTML = `
+          <div class="relative shrink-0">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(u.username)}</div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold text-slate-800 truncate">${escapeHTML(u.username)}${isMe ? ' (Você)' : ''}</p>
+            <p class="text-[10px] text-emerald-600 truncate">● Online</p>
+          </div>`;
+        list.appendChild(li);
+      });
+    }
+
+    // ===== "DIGITANDO..." EM TEMPO REAL =====
+    // Cada usuário grava em /typing/{channelId_uid} enquanto digita. Um listener
+    // mostra o nome de quem estiver digitando há menos de 4 segundos.
+    function typingDocId(channelId) {
+      return `${channelId}_${currentUser.uid}`;
+    }
+
+    async function setTyping(isTyping) {
+      if (!currentUser) return;
+      const ref = doc(db, 'typing', typingDocId(activeChannelId));
+      try {
+        if (isTyping) {
+          await setDoc(ref, {
+            uid: currentUser.uid,
+            username: currentUser.username,
+            channelId: activeChannelId,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+        } else {
+          await deleteDoc(ref);
+        }
+      } catch (e) { /* silencioso */ }
+    }
+
+    function stopTyping() {
+      if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+      if (isTypingFlag) {
+        isTypingFlag = false;
+        setTyping(false);
+      }
+    }
+
+    function handleTypingInput() {
+      if (!currentUser) return;
+      if (!isTypingFlag) {
+        isTypingFlag = true;
+        setTyping(true);
+      }
+      if (typingTimeout) clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        isTypingFlag = false;
+        setTyping(false);
+      }, 3000);
+    }
+
+    function attachTypingListener(channelId) {
+      if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
+      const q = query(
+        collection(db, 'typing'),
+        where('channelId', '==', channelId)
+      );
+      unsubscribeTyping = onSnapshot(q, (snapshot) => {
+        const now = Date.now();
+        const names = [];
+        snapshot.forEach(d => {
+          const data = d.data();
+          if (!data.uid || data.uid === currentUser.uid) return;
+          let updatedMs = 0;
+          if (data.updatedAt && typeof data.updatedAt.toMillis === 'function') updatedMs = data.updatedAt.toMillis();
+          if (now - updatedMs < 5000) names.push(data.username || 'Alguém');
+        });
+        const typingEl = document.getElementById('typing-indicator');
+        const typingText = document.getElementById('typing-user-text');
+        if (names.length === 0) {
+          typingEl.classList.add('hidden');
+        } else {
+          typingText.textContent = names.length === 1
+            ? `${names[0]} está digitando...`
+            : `${names.slice(0,2).join(', ')}${names.length > 2 ? ` e mais ${names.length - 2}` : ''} estão digitando...`;
+          typingEl.classList.remove('hidden');
+        }
+      }, (err) => {
+        console.warn('Typing listener error:', err);
+      });
+    }
 
     // ===== CHAT UI =====
     function enterChatInterface() {
@@ -695,7 +857,6 @@
       document.getElementById('profile-age-badge').textContent = `${currentUser.age} anos`;
       document.getElementById('profile-gender-badge').textContent = currentUser.gender;
       renderChannels();
-      renderOnlineUsers();
       renderEmojiPicker();
       selectChannel(activeChannelId);
       lucide.createIcons();
@@ -725,32 +886,8 @@
       lucide.createIcons({ root: list });
     }
 
-    function renderOnlineUsers() {
-      const list = document.getElementById('online-users-list');
-      list.innerHTML = '';
-      const allOnline = [
-        { name:`${currentUser.username} (Você)`, age:currentUser.age, gender:currentUser.gender, color:'from-sky-500 to-indigo-600' },
-        ...SIMULATED_USERS
-      ];
-      document.getElementById('online-count-sidebar').textContent = allOnline.length;
-      document.getElementById('header-online-count').textContent = `${allOnline.length} online`;
-      allOnline.forEach(u => {
-        const li = document.createElement('li');
-        li.className = 'flex items-center gap-2.5 px-2.5 py-2 rounded-2xl hover:bg-white/70 transition-colors';
-        li.innerHTML = `
-          <div class="relative shrink-0">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br ${u.color} flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(u.name)}</div>
-            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-semibold text-slate-800 truncate">${escapeHTML(u.name)}</p>
-            <p class="text-[10px] text-slate-500 truncate">${u.age} anos • ${escapeHTML(u.gender)}</p>
-          </div>`;
-        list.appendChild(li);
-      });
-    }
-
     function selectChannel(channelId) {
+      if (activeChannelId !== channelId) stopTyping();
       activeChannelId = channelId;
       const channel = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
       document.getElementById('current-channel-name').textContent = channel.name;
@@ -760,20 +897,66 @@
       lucide.createIcons();
       renderChannels();
       attachMessageListener(channelId);
+      attachTypingListener(channelId);
     }
 
+    // ===== MENSAGENS COM PAGINAÇÃO =====
+    // Carrega as últimas PAGE_SIZE mensagens por ordem decrescente, depois
+    // inverte para exibir em ordem cronológica e escuta em tempo real apenas
+    // as mensagens novas (createdAt >= mais recente carregado).
     function attachMessageListener(channelId) {
       if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
       const container = document.getElementById('messages-container');
       container.innerHTML = `<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando mensagens...</div>`;
 
-      const q = query(collection(db, 'channels', channelId, 'messages'), orderBy('createdAt', 'asc'));
-      unsubscribeMessages = onSnapshot(q, (snapshot) => {
-        const msgs = [];
-        snapshot.forEach(d => msgs.push({ id: d.id, ...d.data() }));
-        renderMessagesList(msgs);
-      }, (err) => {
-        console.error('Snapshot error:', err);
+      oldestLoadedMessage = null;
+      hasMoreMessages = true;
+      allCurrentMessages = [];
+
+      // 1) Carrega as últimas PAGE_SIZE mensagens
+      const initialQ = query(
+        collection(db, 'channels', channelId, 'messages'),
+        orderBy('createdAt', 'desc'),
+        limit(PAGE_SIZE)
+      );
+
+      getDocs(initialQ).then((snap) => {
+        const arr = [];
+        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+        // arr está em ordem desc; inverte para cronológica
+        arr.reverse();
+        allCurrentMessages = arr;
+        if (snap.docs.length === PAGE_SIZE) {
+          // O mais antigo da página = último doc do snapshot original (desc)
+          oldestLoadedMessage = snap.docs[snap.docs.length - 1];
+          hasMoreMessages = true;
+        } else {
+          oldestLoadedMessage = null;
+          hasMoreMessages = false;
+        }
+        renderMessagesPage(true);
+
+        // 2) Escuta em tempo real apenas as mensagens novas (>= a mais recente carregada)
+        const newest = allCurrentMessages[allCurrentMessages.length - 1];
+        if (newest && newest.createdAt) {
+          const liveQ = query(
+            collection(db, 'channels', channelId, 'messages'),
+            orderBy('createdAt', 'asc'),
+            startAfter(newest.createdAt)
+          );
+          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
+            if (snapshot.empty) return;
+            const additions = [];
+            snapshot.docChanges().forEach(ch => {
+              if (ch.type === 'added') additions.push({ id: ch.doc.id, ...ch.doc.data() });
+            });
+            if (additions.length === 0) return;
+            allCurrentMessages = allCurrentMessages.concat(additions);
+            renderMessagesPage(false);
+          }, (err) => console.warn('Live messages listener:', err));
+        }
+      }).catch((err) => {
+        console.error('Erro ao carregar mensagens:', err);
         container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
           <p class="text-sm font-semibold">Erro ao carregar mensagens</p>
           <p class="text-xs mt-1">${escapeHTML(err.message)}</p>
@@ -781,10 +964,61 @@
       });
     }
 
-    function renderMessagesList(msgs) {
+    async function loadOlderMessages() {
+      if (!oldestLoadedMessage || !hasMoreMessages) return;
+      const btn = document.getElementById('load-more-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
+      try {
+        const olderQ = query(
+          collection(db, 'channels', activeChannelId, 'messages'),
+          orderBy('createdAt', 'desc'),
+          startAfter(oldestLoadedMessage),
+          limit(PAGE_SIZE)
+        );
+        const snap = await getDocs(olderQ);
+        const arr = [];
+        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+        arr.reverse();
+        if (arr.length === 0) {
+          hasMoreMessages = false;
+        } else {
+          allCurrentMessages = arr.concat(allCurrentMessages);
+          if (snap.docs.length === PAGE_SIZE) {
+            oldestLoadedMessage = snap.docs[snap.docs.length - 1];
+          } else {
+            oldestLoadedMessage = null;
+            hasMoreMessages = false;
+          }
+        }
+        renderMessagesPage(false, /*preserveScroll=*/true);
+      } catch (err) {
+        console.error(err);
+        showToast('Falha ao carregar mensagens antigas: ' + err.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Carregar mensagens antigas'; }
+      }
+    }
+    window.loadOlderMessages = loadOlderMessages;
+
+    function renderMessagesPage(isInitial, preserveScroll=false) {
       const container = document.getElementById('messages-container');
+      const prevScrollHeight = container.scrollHeight;
+      const prevScrollTop = container.scrollTop;
       container.innerHTML = '';
-      if (msgs.length === 0) {
+
+      // Botão "Carregar mais" (se houver mais)
+      if (hasMoreMessages && allCurrentMessages.length > 0) {
+        const moreWrap = document.createElement('div');
+        moreWrap.className = 'flex justify-center pb-3';
+        moreWrap.innerHTML = `
+          <button type="button" id="load-more-btn" onclick="loadOlderMessages()"
+            class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs transition-all cursor-pointer">
+            Carregar mensagens antigas
+          </button>`;
+        container.appendChild(moreWrap);
+      }
+
+      if (allCurrentMessages.length === 0) {
         container.innerHTML = `
           <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
             <div class="w-14 h-14 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 flex items-center justify-center mb-3 shadow-xs" style="color: var(--theme-accent);">
@@ -796,7 +1030,8 @@
         lucide.createIcons({ root: container });
         return;
       }
-      msgs.forEach(msg => {
+
+      allCurrentMessages.forEach(msg => {
         const isOwn = currentUser && (msg.uid === currentUser.uid || (msg.sender || '').toLowerCase() === currentUser.username.toLowerCase());
         const wrapper = document.createElement('div');
         wrapper.className = `flex items-end gap-2.5 message-animate ${isOwn ? 'justify-end' : 'justify-start'}`;
@@ -825,7 +1060,17 @@
         }
         container.appendChild(wrapper);
       });
-      container.scrollTop = container.scrollHeight;
+
+      if (isInitial) {
+        container.scrollTop = container.scrollHeight;
+      } else if (preserveScroll) {
+        // Mantém a posição do usuário ao carregar antigas
+        const added = container.scrollHeight - prevScrollHeight;
+        container.scrollTop = prevScrollTop + added;
+      } else {
+        // Novas mensagens: rola para o fim
+        container.scrollTop = container.scrollHeight;
+      }
     }
 
     // ===== ENVIAR MENSAGEM =====
@@ -835,6 +1080,7 @@
       const text = input.value.trim();
       if (!text || !currentUser) return;
       input.value = '';
+      stopTyping();
       try {
         await addDoc(collection(db, 'channels', activeChannelId, 'messages'), {
           uid: currentUser.uid,
@@ -846,55 +1092,11 @@
           createdAt: serverTimestamp()
         });
         document.getElementById('emoji-picker').classList.add('hidden');
-        triggerSimulatedReply(text, activeChannelId);
       } catch (err) {
         console.error(err);
         showToast('Falha ao enviar mensagem: ' + err.message, 'error');
       }
     });
-
-    function triggerSimulatedReply(userText, channelId) {
-      const bot = SIMULATED_USERS[Math.floor(Math.random()*SIMULATED_USERS.length)];
-      const typingEl = document.getElementById('typing-indicator');
-      const typingText = document.getElementById('typing-user-text');
-      setTimeout(() => {
-        if (activeChannelId !== channelId) return;
-        typingText.textContent = `${bot.name} está digitando...`;
-        typingEl.classList.remove('hidden');
-      }, 600);
-      setTimeout(async () => {
-        typingEl.classList.add('hidden');
-        const lower = userText.toLowerCase();
-        let reply;
-        if (['oi','olá','ola','bom dia','boa noite','boa tarde'].some(w => lower.includes(w))) {
-          reply = `Olá, ${currentUser.username}! Tudo ótimo por aqui, e com você? 👋`;
-        } else if (lower.includes('?')) {
-          reply = `Ótima pergunta, ${currentUser.username}! Eu concordo totalmente com essa ideia. 💡`;
-        } else if (['tecnologia','código','site','app'].some(w => lower.includes(w))) {
-          reply = `Esse assunto é excelente! A evolução das interfaces modernas está incrível. 🚀`;
-        } else {
-          const generic = [
-            `Muito bem colocado, ${currentUser.username}! 👏`,
-            `Curti bastante o que você disse! Faz todo sentido.`,
-            `Com certeza! Sempre bom trocar ideias por aqui. ✨`,
-            `Totalmente de acordo! Vamos continuar nessa linha. 🔥`
-          ];
-          reply = generic[Math.floor(Math.random()*generic.length)];
-        }
-        try {
-          await addDoc(collection(db, 'channels', channelId, 'messages'), {
-            uid: 'bot_' + bot.name.replace(/\s+/g,'_'),
-            sender: bot.name,
-            age: bot.age,
-            gender: bot.gender,
-            text: reply,
-            time: getCurrentTime(),
-            createdAt: serverTimestamp(),
-            isSystemBot: true
-          });
-        } catch (err) { console.warn('Bot reply failed:', err); }
-      }, 2100);
-    }
 
     // ===== LIMPAR (apenas minhas mensagens) =====
     async function clearCurrentChannelHistory() {
@@ -941,6 +1143,9 @@
       generateMathCaptcha();
       lucide.createIcons();
     });
+
+    // Detecta digitação no campo de mensagem
+    document.getElementById('message-input').addEventListener('input', handleTypingInput);
   </script>
 </body>
 </html>
