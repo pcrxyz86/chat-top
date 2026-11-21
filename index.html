@@ -191,11 +191,43 @@
       .msg-delete-btn { opacity: 0.7; }
     }
 
+    /* Botão de responder mensagem */
+    .msg-reply-btn {
+      opacity: 0;
+      transition: opacity 0.15s ease, background-color 0.15s ease;
+      cursor: pointer;
+    }
+    .msg-wrapper:hover .msg-reply-btn { opacity: 1; }
+    @media (hover: none) {
+      .msg-reply-btn { opacity: 0.7; }
+    }
+
     /* Indicador de mensagem deletada */
     .msg-deleted {
       font-style: italic;
       opacity: 0.65;
       font-size: 0.8em;
+    }
+
+    /* Bloco de citação da resposta */
+    .reply-quote {
+      border-left: 3px solid var(--theme-accent);
+      background: rgba(0,0,0,0.04);
+      border-radius: 6px;
+      padding: 4px 8px;
+      margin-bottom: 4px;
+      font-size: 0.75em;
+      opacity: 0.85;
+      word-break: break-word;
+    }
+    body.dark .reply-quote {
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Barra de "respondendo a" no input */
+    #reply-bar {
+      background: var(--bg-card-90);
+      border-color: var(--border-color-80);
     }
   </style>
 </head>
@@ -394,12 +426,7 @@
         </div>
       </div>
 
-      <div class="p-4 border-t border-slate-200/70 shrink-0" style="border-color: var(--border-color-80);">
-        <button type="button" onclick="logout()"
-          class="w-full py-2.5 px-4 rounded-2xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/80 hover:border-red-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer" style="background: var(--bg-slate-100); border-color: var(--border-color-80);">
-          <i data-lucide="log-out" class="w-4 h-4"></i> Sair da Conta
-        </button>
-      </div>
+      <!-- Botão de sair da sidebar REMOVIDO (mantido apenas o do header) -->
     </aside>
 
     <section class="flex-1 flex flex-col min-w-0 bg-grid-pattern relative overflow-hidden">
@@ -477,6 +504,18 @@
       <div id="emoji-picker" class="hidden px-4 sm:px-6 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200/80 flex flex-wrap gap-2 z-10" style="background: var(--bg-card-90); border-color: var(--border-color-80);"></div>
 
       <footer class="p-3 sm:p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 shrink-0 z-10" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
+        <!-- Barra de responder (oculta por padrão) -->
+        <div id="reply-bar" class="hidden max-w-5xl mx-auto mb-2 flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-md" style="background: var(--bg-card-90); border-color: var(--border-color-80);">
+          <i data-lucide="corner-up-left" class="w-4 h-4 shrink-0" style="color: var(--theme-accent);"></i>
+          <div class="min-w-0 flex-1">
+            <p class="text-[10px] font-semibold truncate" style="color: var(--text-secondary);">Respondendo a <span id="reply-to-name" class="font-bold" style="color: var(--theme-accent);"></span></p>
+            <p id="reply-to-text" class="text-xs truncate italic" style="color: var(--text-muted);"></p>
+          </div>
+          <button type="button" onclick="cancelReply()" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors cursor-pointer" aria-label="Cancelar resposta">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
         <form id="message-form" class="max-w-5xl mx-auto flex items-center gap-2 sm:gap-3">
           <button type="button" id="emoji-toggle-btn" aria-label="Emojis rápidos"
             class="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color-90);">
@@ -640,6 +679,9 @@
     let dmConversationsCache = [];
     let dmUnreadCounts = {};
 
+    // ===== ESTADO DE RESPOSTA =====
+    let replyTarget = null; // { id, sender, text }
+
     // ===== CONTROLE DE HISTÓRICO =====
     let historyDepth = 0;
 
@@ -698,7 +740,6 @@
       if (!ctx) return;
       if (ctx.state === 'suspended') { ctx.resume().catch(()=>{}); }
       try {
-        // Bip duplo curto e agradável
         const now = ctx.currentTime;
         const beep = (freq, start, duration, vol) => {
           const osc = ctx.createOscillator();
@@ -772,6 +813,18 @@
     }
     function dmConversationId(uid1, uid2) {
       return [uid1, uid2].sort().join('_');
+    }
+
+    // ===== ÍCONE DE GÊNERO =====
+    function getGenderIcon(gender) {
+      const g = (gender || '').toLowerCase();
+      if (g === 'masculino') return 'mars';
+      if (g === 'feminino') return 'venus';
+      if (g === 'não-binário' || g === 'nao-binario') return 'user'; // ou 'transgender'
+      return 'user';
+    }
+    function getGenderLabel(gender) {
+      return gender || 'Não informado';
     }
 
     // ===== DARK MODE =====
@@ -1114,6 +1167,8 @@
         activeChatType = 'channel';
         activeDMUserId = null;
         activeDMUsername = null;
+        replyTarget = null;
+        hideReplyBar();
         stopPresence();
         if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
         if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
@@ -1350,7 +1405,6 @@
           });
           const prev = dmUnreadCounts[conv.id] || 0;
           dmUnreadCounts[conv.id] = count;
-          // Toca bip se aumentou o número de não lidas
           if (count > prev) playNotificationSound();
           renderDMConversations();
         }, (err) => console.warn('Unread listener error:', err));
@@ -1363,6 +1417,8 @@
       activeChatType = 'dm';
       activeDMUserId = otherUid;
       activeDMUsername = otherUsername;
+      replyTarget = null;
+      hideReplyBar();
       document.getElementById('current-channel-name').textContent = otherUsername;
       document.getElementById('current-channel-desc').textContent = 'Conversa privada';
       document.getElementById('current-channel-icon').setAttribute('data-lucide', 'lock');
@@ -1400,6 +1456,7 @@
     }
     window.openDM = openDM;
 
+    // ===== LISTENER PRINCIPAL CORRIGIDO (detecta updates/deletes em tempo real) =====
     function attachDMMessageListener(convId, otherUid, otherName) {
       if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
       const container = document.getElementById('messages-container');
@@ -1421,32 +1478,14 @@
           hasMoreMessages = true;
         } else { oldestLoadedMessage = null; hasMoreMessages = false; }
         renderMessagesPage(true);
-        const newest = allCurrentMessages[allCurrentMessages.length - 1];
-        const liveQ = newest && newest.createdAt
-          ? query(collection(db, 'dmConversations', convId, 'messages'), orderBy('createdAt', 'asc'), startAfter(newest.createdAt))
-          : query(collection(db, 'dmConversations', convId, 'messages'), orderBy('createdAt', 'asc'));
-        unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
-          if (snapshot.empty && snapshot.docChanges().length === 0) return;
-          const additions = [];
-          snapshot.docChanges().forEach(ch => {
-            if (ch.type === 'added') {
-              const data = ch.doc.data();
-              additions.push({ id: ch.doc.id, ...data });
-              // Bip para mensagens de outros usuários
-              if (data.senderId !== currentUser.uid) playNotificationSound();
-            }
-          });
-          if (additions.length === 0) return;
-          allCurrentMessages = allCurrentMessages.concat(additions);
-          renderMessagesPage(false);
-          if (activeChatType === 'dm' && currentUser) {
-            dmUnreadCounts[convId] = 0;
-            renderDMConversations();
-            setDoc(doc(db, 'dmConversations', convId), {
-              lastRead: { [currentUser.uid]: serverTimestamp() }
-            }, { merge: true }).catch(()=>{});
-          }
-        }, (err) => console.warn('Live DM listener:', err));
+        // Listener em TEMPO REAL para TODA a coleção (pega adições, updates e deletes)
+        unsubscribeMessages = onSnapshot(
+          query(collection(db, 'dmConversations', convId, 'messages'), orderBy('createdAt', 'asc')),
+          (snapshot) => {
+            handleLiveSnapshot(snapshot);
+          },
+          (err) => console.warn('Live DM listener:', err)
+        );
       }).catch((err) => {
         console.error('Erro ao carregar DMs:', err);
         container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
@@ -1504,6 +1543,8 @@
       activeChatType = 'channel';
       activeDMUserId = null;
       activeDMUsername = null;
+      replyTarget = null;
+      hideReplyBar();
       activeChannelId = channelId;
       const channel = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
       document.getElementById('current-channel-name').textContent = channel.name;
@@ -1538,27 +1579,23 @@
           hasMoreMessages = true;
         } else { oldestLoadedMessage = null; hasMoreMessages = false; }
         renderMessagesPage(true);
-        const newest = allCurrentMessages[allCurrentMessages.length - 1];
-        if (newest && newest.createdAt) {
-          const liveQ = query(collection(db, 'channels', channelId, 'messages'), orderBy('createdAt', 'asc'), startAfter(newest.createdAt));
-          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
-            if (snapshot.empty) return;
-            const additions = [];
+        // Listener em TEMPO REAL para TODA a coleção (pega adições, updates e deletes)
+        unsubscribeMessages = onSnapshot(
+          query(collection(db, 'channels', channelId, 'messages'), orderBy('createdAt', 'asc')),
+          (snapshot) => {
+            handleLiveSnapshot(snapshot);
+            // Notificação sonora para novas mensagens de outros no canal ativo
             snapshot.docChanges().forEach(ch => {
               if (ch.type === 'added') {
                 const data = ch.doc.data();
-                additions.push({ id: ch.doc.id, ...data });
-                // Bip para mensagens de outros usuários no canal ativo
                 if (data.senderId !== currentUser.uid && activeChatType === 'channel' && activeChannelId === channelId) {
                   playNotificationSound();
                 }
               }
             });
-            if (additions.length === 0) return;
-            allCurrentMessages = allCurrentMessages.concat(additions);
-            renderMessagesPage(false);
-          }, (err) => console.warn('Live messages listener:', err));
-        }
+          },
+          (err) => console.warn('Live messages listener:', err)
+        );
       }).catch((err) => {
         console.error('Erro ao carregar mensagens:', err);
         container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
@@ -1566,6 +1603,43 @@
           <p class="text-xs mt-1">${escapeHTML(err.message)}</p>
         </div>`;
       });
+    }
+
+    // Processa snapshot do listener em tempo real (added, modified, removed)
+    function handleLiveSnapshot(snapshot) {
+      if (!snapshot) return;
+      let changed = false;
+      snapshot.docChanges().forEach(ch => {
+        const data = ch.doc.data();
+        const id = ch.doc.id;
+        if (ch.type === 'added') {
+          if (!allCurrentMessages.find(m => m.id === id)) {
+            allCurrentMessages.push({ id, ...data });
+            changed = true;
+          }
+        } else if (ch.type === 'modified') {
+          const idx = allCurrentMessages.findIndex(m => m.id === id);
+          if (idx !== -1) {
+            allCurrentMessages[idx] = { id, ...data };
+            changed = true;
+          }
+        } else if (ch.type === 'removed') {
+          const idx = allCurrentMessages.findIndex(m => m.id === id);
+          if (idx !== -1) {
+            allCurrentMessages.splice(idx, 1);
+            changed = true;
+          }
+        }
+      });
+      if (changed) {
+        // Mantém ordenado por createdAt
+        allCurrentMessages.sort((a, b) => {
+          const aT = a.createdAt?.toMillis?.() || 0;
+          const bT = b.createdAt?.toMillis?.() || 0;
+          return aT - bT;
+        });
+        renderMessagesPage(false);
+      }
     }
 
     async function loadOlderMessages() {
@@ -1600,7 +1674,27 @@
     }
     window.loadOlderMessages = loadOlderMessages;
 
-    // ===== RENDER MENSAGENS (com botão lixeira) =====
+    // ===== RESPONDER MENSAGEM =====
+    function startReply(msgId, sender, text) {
+      replyTarget = { id: msgId, sender, text: (text || '').substring(0, 120) };
+      document.getElementById('reply-to-name').textContent = sender;
+      document.getElementById('reply-to-text').textContent = (text || '').substring(0, 100);
+      document.getElementById('reply-bar').classList.remove('hidden');
+      document.getElementById('message-input').focus();
+      lucide.createIcons();
+    }
+    function cancelReply() {
+      replyTarget = null;
+      hideReplyBar();
+    }
+    function hideReplyBar() {
+      const bar = document.getElementById('reply-bar');
+      if (bar) bar.classList.add('hidden');
+    }
+    window.startReply = startReply;
+    window.cancelReply = cancelReply;
+
+    // ===== RENDER MENSAGENS =====
     function renderMessagesPage(isInitial, preserveScroll=false) {
       const container = document.getElementById('messages-container');
       const prevScrollHeight = container.scrollHeight;
@@ -1638,17 +1732,39 @@
         wrapper.className = `msg-wrapper flex items-end gap-2.5 message-animate ${isOwn ? 'justify-end' : 'justify-start'}`;
         const time = msg.time || (msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '');
         const isDeleted = msg.deleted === true;
-        const bubbleClasses = isDeleted ? 'bubble-received msg-deleted' : (isOwn ? 'bubble-sent' : 'bubble-received');
-        const bubbleContent = isDeleted
-          ? `<div class="${bubbleClasses} px-4 py-2.5 text-sm leading-relaxed break-words"><i data-lucide="trash-2" class="w-3 h-3 inline-block mr-1 opacity-60"></i>Mensagem removida</div>`
-          : `<div class="${bubbleClasses} px-4 py-2.5 text-sm leading-relaxed break-words">${escapeHTML(msg.text)}</div>`;
 
-        const deleteBtn = isOwn && !isDeleted
-          ? `<button type="button" class="msg-delete-btn mt-1 p-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 border border-red-200/70 flex items-center justify-center" title="Remover mensagem para todos" aria-label="Remover mensagem"
-               onclick="deleteMessage('${msg.id}', ${activeChatType === 'dm' ? "'dm'" : "'channel'"}, '${activeChatType === 'dm' ? dmConversationId(currentUser.uid, activeDMUserId) : activeChannelId}')">
-               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-             </button>`
+        // ===== CONTEÚDO DO BALÃO =====
+        const bubbleClasses = isDeleted ? 'bubble-received msg-deleted' : (isOwn ? 'bubble-sent' : 'bubble-received');
+        
+        // Citação de resposta, se houver
+        const replyQuote = (!isDeleted && msg.replyTo) 
+          ? `<div class="reply-quote"><span class="font-semibold">${escapeHTML(msg.replyTo.sender || 'Alguém')}</span>: ${escapeHTML((msg.replyTo.text || '').substring(0,80))}</div>` 
           : '';
+
+        let bubbleContent;
+        if (isDeleted) {
+          bubbleContent = `<div class="${bubbleClasses} px-4 py-2.5 text-sm leading-relaxed break-words"><i data-lucide="trash-2" class="w-3 h-3 inline-block mr-1 opacity-60"></i>Mensagem removida</div>`;
+        } else {
+          bubbleContent = `<div class="${bubbleClasses} px-4 py-2.5 text-sm leading-relaxed break-words">${replyQuote}${escapeHTML(msg.text)}</div>`;
+        }
+
+        // ===== BOTÕES DE AÇÃO (lixeira + responder) =====
+        const actionButtons = !isDeleted ? `
+          <div class="flex items-center gap-1 mt-1">
+            <button type="button" class="msg-reply-btn p-1.5 rounded-lg bg-slate-50 hover:bg-sky-50 text-slate-400 hover:text-sky-600 border border-slate-200/70 hover:border-sky-200 flex items-center justify-center transition-all"
+              title="Responder" aria-label="Responder mensagem"
+              onclick="startReply('${msg.id}', '${escapeHTML(msg.sender || '').replace(/'/g, "\\'")}', '${escapeHTML((msg.text || '').substring(0,100)).replace(/'/g, "\\'")}')">
+              <i data-lucide="corner-up-left" class="w-3.5 h-3.5"></i>
+            </button>
+            ${isOwn ? `<button type="button" class="msg-delete-btn p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 border border-red-200/70 flex items-center justify-center transition-all"
+              title="Remover mensagem" aria-label="Remover mensagem"
+              onclick="deleteMessage('${msg.id}', ${activeChatType === 'dm' ? "'dm'" : "'channel'"}, '${activeChatType === 'dm' ? dmConversationId(currentUser.uid, activeDMUserId) : activeChannelId}')">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>` : ''}
+          </div>` : '';
+
+        // ===== ÍCONE DE GÊNERO =====
+        const genderIcon = getGenderIcon(msg.gender);
 
         if (isOwn) {
           wrapper.innerHTML = `
@@ -1658,7 +1774,7 @@
                 <span class="text-xs font-semibold" style="color: var(--theme-accent);">Você</span>
               </div>
               ${bubbleContent}
-              ${deleteBtn}
+              ${actionButtons}
             </div>
             <div class="w-8 h-8 rounded-2xl theme-gradient-bg flex items-center justify-center text-xs font-bold shrink-0">${getInitials(msg.sender)}</div>`;
         } else {
@@ -1667,14 +1783,20 @@
             <div class="flex flex-col items-start max-w-[82%] sm:max-w-[70%]">
               <div class="flex flex-wrap items-center gap-1.5 mb-1 px-1">
                 <span class="text-xs font-semibold text-slate-800" style="color: var(--text-primary);">${escapeHTML(msg.sender)}</span>
-                <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white/80 text-slate-500 border border-slate-200/80" style="background: var(--bg-card-80); color: var(--text-muted); border-color: var(--border-color-80);">${msg.age}a • ${escapeHTML(msg.gender)}</span>
+                <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded-full bg-white/80 text-slate-500 border border-slate-200/80" style="background: var(--bg-card-80); color: var(--text-muted); border-color: var(--border-color-80);" title="${escapeHTML(getGenderLabel(msg.gender))}">
+                  <i data-lucide="${genderIcon}" class="w-2.5 h-2.5"></i>
+                  ${msg.age ? `<span>${msg.age}</span>` : ''}
+                </span>
                 <span class="text-[10px] text-slate-400">${escapeHTML(time)}</span>
               </div>
               ${bubbleContent}
+              ${actionButtons}
             </div>`;
         }
         container.appendChild(wrapper);
       });
+
+      lucide.createIcons({ root: container });
 
       if (isInitial) container.scrollTop = container.scrollHeight;
       else if (preserveScroll) {
@@ -1694,15 +1816,14 @@
         } else {
           msgRef = doc(db, 'channels', contextId, 'messages', msgId);
         }
-        // Marca como deletada (soft delete) em vez de apagar o documento,
-        // para que todos os clientes vejam "Mensagem removida" em tempo real.
+        // Marca como deletada (soft delete) — o listener em tempo real atualiza todos
         await updateDoc(msgRef, {
           deleted: true,
           text: '',
           deletedAt: serverTimestamp(),
           deletedBy: currentUser.uid
         });
-        // Atualiza local imediatamente
+        // Atualiza local imediatamente (otimista) para resposta instantânea
         const idx = allCurrentMessages.findIndex(m => m.id === msgId);
         if (idx !== -1) {
           allCurrentMessages[idx].deleted = true;
@@ -1732,6 +1853,14 @@
           text, time: getCurrentTime(), createdAt: serverTimestamp(),
           deleted: false
         };
+        // Adiciona resposta, se aplicável
+        if (replyTarget) {
+          msgData.replyTo = {
+            id: replyTarget.id,
+            sender: replyTarget.sender,
+            text: replyTarget.text
+          };
+        }
         if (activeChatType === 'dm' && activeDMUserId) {
           const convId = dmConversationId(currentUser.uid, activeDMUserId);
           const convRef = doc(db, 'dmConversations', convId);
@@ -1753,6 +1882,7 @@
         } else {
           await addDoc(collection(db, 'channels', activeChannelId, 'messages'), msgData);
         }
+        cancelReply();
         document.getElementById('emoji-picker').classList.add('hidden');
       } catch (err) {
         console.error(err);
