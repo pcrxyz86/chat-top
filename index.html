@@ -38,11 +38,61 @@
       --theme-sent-text: #FFFFFF;
       --theme-btn-text: #FFFFFF;
       --theme-glow: rgba(14, 165, 233, 0.25);
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-80: rgba(255,255,255,0.8);
+      --bg-card-90: rgba(255,255,255,0.9);
+      --bg-card-95: rgba(255,255,255,0.95);
+      --bg-input: #ffffff;
+      --bg-input-90: rgba(255,255,255,0.9);
+      --bg-input-95: rgba(255,255,255,0.95);
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border-color: #e2e8f0;
+      --border-color-80: rgba(226,232,240,0.8);
+      --border-color-90: rgba(226,232,240,0.9);
+      --bg-slate-50: #f8fafc;
+      --bg-slate-100: #f1f5f9;
+      --bg-slate-200: #e2e8f0;
+      --bg-grid-dot: rgba(100, 116, 139, 0.16);
+      --bubble-received-start: rgba(255, 255, 255, 0.84);
+      --bubble-received-end: rgba(248, 250, 252, 0.72);
+      --bubble-received-border: rgba(255, 255, 255, 0.9);
+      --bubble-received-text: #0f172a;
+      --bubble-received-shadow: rgba(15, 23, 42, 0.08);
     }
+
+    body.dark {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-80: rgba(30,41,59,0.85);
+      --bg-card-90: rgba(30,41,59,0.92);
+      --bg-card-95: rgba(30,41,59,0.96);
+      --bg-input: #1e293b;
+      --bg-input-90: rgba(30,41,59,0.92);
+      --bg-input-95: rgba(30,41,59,0.96);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-color: #334155;
+      --border-color-80: rgba(51,65,85,0.8);
+      --border-color-90: rgba(51,65,85,0.9);
+      --bg-slate-50: #1e293b;
+      --bg-slate-100: #1e293b;
+      --bg-slate-200: #334155;
+      --bg-grid-dot: rgba(148, 163, 184, 0.08);
+      --bubble-received-start: rgba(51, 65, 85, 0.8);
+      --bubble-received-end: rgba(30, 41, 59, 0.7);
+      --bubble-received-border: rgba(71, 85, 105, 0.6);
+      --bubble-received-text: #f1f5f9;
+      --bubble-received-shadow: rgba(0, 0, 0, 0.3);
+    }
+
     * { box-sizing: border-box; }
-    body { background-color: #f1f5f9; color: #0f172a; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+    body { background-color: var(--bg-main); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(226, 232, 240, 0.5); }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.55); border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
 
@@ -63,18 +113,18 @@
     }
     .bubble-received {
       border-radius: 22px 22px 22px 4px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.84) 0%, rgba(248, 250, 252, 0.72) 100%);
+      background: linear-gradient(145deg, var(--bubble-received-start) 0%, var(--bubble-received-end) 100%);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      color: #0f172a;
-      box-shadow: 0 6px 18px -6px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--bubble-received-border);
+      color: var(--bubble-received-text);
+      box-shadow: 0 6px 18px -6px var(--bubble-received-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
       position: relative;
       transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
     .bubble-received:hover {
       transform: translateY(-1px);
-      box-shadow: 0 10px 22px -6px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+      box-shadow: 0 10px 22px -6px var(--bubble-received-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.5);
     }
     .theme-gradient-bg {
       background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
@@ -99,28 +149,59 @@
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
     .bg-grid-pattern {
-      background-color: #f1f5f9;
-      background-image: radial-gradient(rgba(100, 116, 139, 0.16) 1px, transparent 1px);
+      background-color: var(--bg-main);
+      background-image: radial-gradient(var(--bg-grid-dot) 1px, transparent 1px);
       background-size: 24px 24px;
     }
+
+    .dark .bg-white\/80, .dark .bg-white\/75, .dark .bg-white\/90, .dark .bg-white\/95 { background-color: var(--bg-card-80) !important; }
+    .dark .bg-slate-100, .dark .bg-slate-50\/90, .dark .bg-slate-50\/60, .dark .bg-slate-100\/90 { background-color: var(--bg-slate-100) !important; }
+    .dark .border-slate-200, .dark .border-slate-200\/70, .dark .border-slate-200\/80, .dark .border-slate-200\/90, .dark .border-slate-100 { border-color: var(--border-color) !important; }
+    .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color: var(--text-primary) !important; }
+    .dark .text-slate-500, .dark .text-slate-600 { color: var(--text-secondary) !important; }
+    .dark .text-slate-400 { color: var(--text-muted) !important; }
+    .dark input, .dark select { background-color: var(--bg-input) !important; color: var(--text-primary) !important; border-color: var(--border-color) !important; }
+    .dark .shadow-xl, .dark .shadow-lg, .dark .shadow-2xs, .dark .shadow-xs, .dark .shadow-sm { box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+    .dark .bg-white { background-color: var(--bg-card) !important; }
+    .dark .hover\:bg-slate-100:hover { background-color: var(--bg-slate-200) !important; }
+    .dark .hover\:bg-white:hover { background-color: var(--bg-card) !important; }
+    .dark .hover\:bg-white\/70:hover { background-color: var(--bg-card-80) !important; }
+    .dark .bg-slate-100\/90 { background-color: var(--bg-slate-100) !important; }
+    .dark .text-slate-800 { color: var(--text-primary) !important; }
+
+    .dm-unread-badge {
+      min-width: 18px; height: 18px; padding: 0 5px;
+      border-radius: 9999px; background: #ef4444; color: #fff;
+      font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+
+    .edit-profile-modal { animation: modalIn 0.25s ease-out; }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    .dm-item-active { background: var(--bg-slate-100) !important; border-color: var(--border-color) !important; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col bg-ice-100 text-slate-900 selection:bg-sky-200 selection:text-slate-900">
+<body class="min-h-screen flex flex-col text-slate-900 selection:bg-sky-200 selection:text-slate-900 transition-colors duration-300">
 
   <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
   <!-- ============================ TELA 1: AUTH ============================ -->
   <main id="auth-screen" class="flex-1 flex items-center justify-center p-4 sm:p-6 bg-grid-pattern relative overflow-y-auto">
-    <div class="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/90 rounded-3xl shadow-xl shadow-slate-300/50 overflow-hidden relative z-10 my-4">
+    <div class="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/90 rounded-3xl shadow-xl shadow-slate-300/50 overflow-hidden relative z-10 my-4" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
 
-      <div class="absolute top-4 right-4 z-20" id="auth-palette-wrapper">
+      <div class="absolute top-4 right-4 z-20 flex items-center gap-2" id="auth-palette-wrapper">
+        <!-- Dark mode toggle auth -->
+        <button type="button" id="auth-dark-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro"
+          class="w-8 h-8 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
+          <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
+        </button>
         <button type="button" id="auth-palette-btn" title="Escolher cor do tema" aria-label="Escolher cor do tema"
-          class="w-8 h-8 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs">
+          class="w-8 h-8 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
           <span class="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
         </button>
-        <div id="auth-palette-popover" class="hidden absolute right-0 mt-2 w-56 p-2.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50">
-          <div class="px-1 pb-2 mb-2 border-b border-slate-100">
-            <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+        <div id="auth-palette-popover" class="hidden absolute right-0 mt-2 w-56 p-2.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50" style="background: var(--bg-card-95); border-color: var(--border-color-90);">
+          <div class="px-1 pb-2 mb-2 border-b border-slate-100" style="border-color: var(--border-color);">
+            <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5" style="color: var(--text-secondary);">
               <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Paleta de Cores
             </span>
           </div>
@@ -128,16 +209,16 @@
         </div>
       </div>
 
-      <div class="px-6 pt-7 pb-5 text-center border-b border-slate-200/70 bg-gradient-to-b from-white/70 to-transparent">
+      <div class="px-6 pt-7 pb-5 text-center border-b border-slate-200/70 bg-gradient-to-b from-white/70 to-transparent" style="border-color: var(--border-color-80);">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl theme-gradient-bg mb-3">
           <i data-lucide="message-square-dashed" class="w-7 h-7"></i>
         </div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Chat <span style="color: var(--theme-accent);">Top</span></h1>
-        <p class="text-xs sm:text-sm text-slate-500 mt-1">Conecte-se em tempo real com segurança e leveza</p>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1" style="color: var(--text-secondary);">Conecte-se em tempo real com segurança e leveza</p>
       </div>
 
       <div class="px-6 pt-5">
-        <div class="grid grid-cols-2 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80">
+        <div class="grid grid-cols-2 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80" style="background: var(--bg-slate-100); border-color: var(--border-color-80);">
           <button type="button" id="tab-login" onclick="switchAuthTab('login')" class="py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 theme-gradient-bg shadow-sm">Entrar</button>
           <button type="button" id="tab-register" onclick="switchAuthTab('register')" class="py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-800">Criar Conta</button>
         </div>
@@ -145,7 +226,7 @@
 
       <form id="auth-form" class="p-6 space-y-4" novalidate>
         <div>
-          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Nome de Usuário</label>
+          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Nome de Usuário</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="user" class="w-4 h-4"></i></span>
             <input type="text" id="username" required autocomplete="username" placeholder="Ex: LucasSilva"
@@ -154,7 +235,7 @@
         </div>
 
         <div>
-          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Senha</label>
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Senha</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="lock" class="w-4 h-4"></i></span>
             <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••"
@@ -167,7 +248,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label for="age" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Idade <span class="text-sky-600 font-normal">(13+)</span></label>
+            <label for="age" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Idade <span class="text-sky-600 font-normal">(13+)</span></label>
             <div class="relative">
               <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="calendar" class="w-4 h-4"></i></span>
               <input type="number" id="age" min="13" max="120" required placeholder="Ex: 24"
@@ -175,7 +256,7 @@
             </div>
           </div>
           <div>
-            <label for="gender" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Gênero</label>
+            <label for="gender" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Gênero</label>
             <div class="relative">
               <select id="gender" required class="w-full px-3.5 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all appearance-none cursor-pointer">
                 <option value="" disabled selected class="text-slate-400">Selecione...</option>
@@ -190,18 +271,18 @@
           </div>
         </div>
 
-        <div class="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5">
+        <div class="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5" style="background: var(--bg-slate-50); border-color: var(--border-color-90);">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5" style="color: var(--text-primary);">
               <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i> Verificação Humana (Captcha)
             </span>
             <button type="button" id="refresh-captcha" title="Gerar novo cálculo"
-              class="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 transition-all cursor-pointer">
+              class="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 transition-all cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color);">
               <i data-lucide="refresh-cw" class="w-3 h-3"></i> Novo
             </button>
           </div>
           <div class="flex items-center gap-3">
-            <div id="captcha-question" class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-center font-mono text-sm sm:text-base font-bold text-slate-800 tracking-wide select-none shadow-2xs">Quanto é 8 + 5?</div>
+            <div id="captcha-question" class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-center font-mono text-sm sm:text-base font-bold text-slate-800 tracking-wide select-none shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">Quanto é 8 + 5?</div>
             <input type="number" id="captcha-answer" required placeholder="Resposta"
               class="w-28 px-3 py-2 bg-white border border-slate-200 rounded-xl text-center font-mono text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
           </div>
@@ -213,7 +294,7 @@
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
 
-        <p class="text-[11px] text-center text-slate-500 pt-1">
+        <p class="text-[11px] text-center text-slate-500 pt-1" style="color: var(--text-secondary);">
           Dica: o nome de usuário vira um e-mail interno (<span class="font-mono">usuario@chattop.local</span>) para o Firebase Auth.
         </p>
       </form>
@@ -221,18 +302,18 @@
   </main>
 
   <!-- ============================ TELA 2: CHAT ============================ -->
-  <div id="chat-screen" class="hidden h-screen w-full overflow-hidden flex relative bg-ice-100">
+  <div id="chat-screen" class="hidden h-screen w-full overflow-hidden flex relative" style="background: var(--bg-main);">
 
     <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity"></div>
 
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-76 sm:w-80 bg-white/80 backdrop-blur-xl border-r border-slate-200/80 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out shadow-lg lg:shadow-none">
-      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-200/70 shrink-0">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-76 sm:w-80 bg-white/80 backdrop-blur-xl border-r border-slate-200/80 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out shadow-lg lg:shadow-none" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
+      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-200/70 shrink-0" style="border-color: var(--border-color-80);">
         <div class="flex items-center gap-2.5">
           <div class="w-9 h-9 rounded-xl theme-gradient-bg flex items-center justify-center">
             <i data-lucide="message-square-dashed" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="font-bold text-base tracking-tight text-slate-900">Chat <span style="color: var(--theme-accent);">Top</span></span>
+            <span class="font-bold text-base tracking-tight text-slate-900" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></span>
             <span class="block text-[10px] text-emerald-600 font-semibold leading-none">● Conectado</span>
           </div>
         </div>
@@ -241,19 +322,24 @@
         </button>
       </div>
 
-      <div class="p-4 border-b border-slate-200/70 bg-slate-50/60 shrink-0">
-        <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-2xs">
+      <!-- Perfil do usuário -->
+      <div class="p-4 border-b border-slate-200/70 bg-slate-50/60 shrink-0" style="border-color: var(--border-color-80); background: var(--bg-slate-50);">
+        <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-80);">
           <div class="relative shrink-0">
             <div id="user-avatar" class="w-11 h-11 rounded-2xl theme-gradient-bg flex items-center justify-center font-bold text-sm">US</div>
-            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" title="Online"></span>
+            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" title="Online" style="border-color: var(--bg-card);"></span>
           </div>
           <div class="min-w-0 flex-1">
-            <p id="profile-username" class="text-sm font-semibold text-slate-900 truncate">Usuário</p>
+            <p id="profile-username" class="text-sm font-semibold text-slate-900 truncate" style="color: var(--text-primary);">Usuário</p>
             <div class="flex flex-wrap items-center gap-1.5 mt-1">
-              <span id="profile-age-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">20 anos</span>
+              <span id="profile-age-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200" style="background: var(--bg-slate-100); color: var(--text-secondary); border-color: var(--border-color);">20 anos</span>
               <span id="profile-gender-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200/80 truncate max-w-[115px]">Gênero</span>
             </div>
           </div>
+          <button type="button" onclick="openEditProfile()" title="Editar perfil"
+            class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
         </div>
       </div>
 
@@ -261,9 +347,24 @@
         <div>
           <div class="flex items-center justify-between px-2 mb-2">
             <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canais Disponíveis</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-mono">4</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-mono" style="background: var(--bg-slate-100); color: var(--text-secondary); border-color: var(--border-color);">4</span>
           </div>
           <nav id="channels-list" class="space-y-1"></nav>
+        </div>
+
+        <!-- Conversas Privadas (DM) -->
+        <div>
+          <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Mensagens Privadas</span>
+            <button type="button" onclick="openNewDMPicker()" title="Nova conversa privada"
+              class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <ul id="dm-conversations-list" class="space-y-1"></ul>
+          <p id="dm-empty-hint" class="text-[11px] text-slate-400 px-2 py-2 italic hidden" style="color: var(--text-muted);">
+            Nenhuma conversa privada ainda. Clique no "+" ou em um usuário online.
+          </p>
         </div>
 
         <div>
@@ -278,47 +379,56 @@
         </div>
       </div>
 
-      <div class="p-4 border-t border-slate-200/70 shrink-0">
+      <div class="p-4 border-t border-slate-200/70 shrink-0" style="border-color: var(--border-color-80);">
         <button type="button" onclick="logout()"
-          class="w-full py-2.5 px-4 rounded-2xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/80 hover:border-red-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer">
+          class="w-full py-2.5 px-4 rounded-2xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/80 hover:border-red-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer" style="background: var(--bg-slate-100); border-color: var(--border-color-80);">
           <i data-lucide="log-out" class="w-4 h-4"></i> Sair da Conta
         </button>
       </div>
     </aside>
 
     <section class="flex-1 flex flex-col min-w-0 bg-grid-pattern relative overflow-hidden">
-      <header class="h-16 px-4 sm:px-6 bg-white/75 backdrop-blur-xl border-b border-slate-200/80 flex items-center justify-between shrink-0 z-20">
+      <header class="h-16 px-4 sm:px-6 bg-white/75 backdrop-blur-xl border-b border-slate-200/80 flex items-center justify-between shrink-0 z-20" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
         <div class="flex items-center gap-3 min-w-0">
           <button type="button" onclick="toggleSidebar(true)" aria-label="Abrir menu"
-            class="lg:hidden p-2.5 rounded-xl bg-white/90 text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-200 transition-colors">
+            class="lg:hidden p-2.5 rounded-xl bg-white/90 text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-200 transition-colors" style="background: var(--bg-card-90); border-color: var(--border-color);">
             <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
 
-          <div class="w-10 h-10 rounded-2xl bg-white/90 border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0" style="color: var(--theme-accent);">
+          <div class="w-10 h-10 rounded-2xl bg-white/90 border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0" style="color: var(--theme-accent); background: var(--bg-card-90); border-color: var(--border-color-90);">
             <i id="current-channel-icon" data-lucide="hash" class="w-5 h-5"></i>
           </div>
 
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <h2 id="current-channel-name" class="text-base sm:text-lg font-bold text-slate-900 truncate">Geral</h2>
-              <span class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+              <h2 id="current-channel-name" class="text-base sm:text-lg font-bold text-slate-900 truncate" style="color: var(--text-primary);">Geral</h2>
+              <span id="header-online-badge" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 <span id="header-online-count">…</span>
               </span>
+              <span id="dm-private-badge" class="hidden items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
+                <i data-lucide="lock" class="w-3 h-3"></i> Privado
+              </span>
             </div>
-            <p id="current-channel-desc" class="text-xs text-slate-500 truncate">Conversa aberta para toda a comunidade Chat Top</p>
+            <p id="current-channel-desc" class="text-xs text-slate-500 truncate" style="color: var(--text-secondary);">Conversa aberta para toda a comunidade Chat Top</p>
           </div>
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
+          <!-- Dark mode toggle chat -->
+          <button type="button" id="chat-dark-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro"
+            class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
+            <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
+          </button>
+
           <div class="relative" id="palette-wrapper">
             <button type="button" id="palette-toggle-btn" title="Paleta de cores do chat" aria-label="Escolher paleta de cores"
-              class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs">
+              class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
               <span id="active-palette-dot" class="w-3.5 h-3.5 rounded-full border border-slate-300/80 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
             </button>
-            <div id="palette-popover" class="hidden absolute right-0 mt-2 w-60 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50">
-              <div class="flex items-center justify-between px-1 pb-2 mb-2.5 border-b border-slate-100">
-                <span class="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
+            <div id="palette-popover" class="hidden absolute right-0 mt-2 w-60 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50" style="background: var(--bg-card-95); border-color: var(--border-color-90);">
+              <div class="flex items-center justify-between px-1 pb-2 mb-2.5 border-b border-slate-100" style="border-color: var(--border-color);">
+                <span class="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5" style="color: var(--text-primary);">
                   <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Cor dos Balões
                 </span>
               </div>
@@ -327,13 +437,12 @@
           </div>
 
           <button type="button" onclick="clearCurrentChannelHistory()" title="Apagar minhas mensagens desta sala"
-            class="p-2 rounded-xl bg-white/90 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200/90 transition-colors cursor-pointer">
+            class="p-2 rounded-xl bg-white/90 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200/90 transition-colors cursor-pointer" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
 
-          <!-- BOTÃO SAIR no header (sempre visível) -->
           <button type="button" onclick="logout()" title="Sair da conta"
-            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold">
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
             <i data-lucide="log-out" class="w-4 h-4"></i>
             <span class="hidden sm:inline">Sair</span>
           </button>
@@ -342,21 +451,21 @@
 
       <div id="messages-container" class="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-4 scroll-smooth z-10"></div>
 
-      <div id="typing-indicator" class="hidden px-5 py-2 text-xs text-slate-600 flex items-center gap-2 bg-white/70 backdrop-blur-md border-t border-slate-200/70 z-10">
-        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-2xs">
+      <div id="typing-indicator" class="hidden px-5 py-2 text-xs text-slate-600 flex items-center gap-2 bg-white/70 backdrop-blur-md border-t border-slate-200/70 z-10" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
+        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
           <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
           <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
           <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
         </div>
-        <span id="typing-user-text" class="font-medium text-slate-600">Alguém está digitando...</span>
+        <span id="typing-user-text" class="font-medium text-slate-600" style="color: var(--text-secondary);">Alguém está digitando...</span>
       </div>
 
-      <div id="emoji-picker" class="hidden px-4 sm:px-6 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200/80 flex flex-wrap gap-2 z-10"></div>
+      <div id="emoji-picker" class="hidden px-4 sm:px-6 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200/80 flex flex-wrap gap-2 z-10" style="background: var(--bg-card-90); border-color: var(--border-color-80);"></div>
 
-      <footer class="p-3 sm:p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 shrink-0 z-10">
+      <footer class="p-3 sm:p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 shrink-0 z-10" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
         <form id="message-form" class="max-w-5xl mx-auto flex items-center gap-2 sm:gap-3">
           <button type="button" id="emoji-toggle-btn" aria-label="Emojis rápidos"
-            class="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer">
+            class="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color-90);">
             <i data-lucide="smile" class="w-5 h-5"></i>
           </button>
           <div class="flex-1 relative">
@@ -373,6 +482,78 @@
     </section>
   </div>
 
+  <!-- ===== MODAL: EDITAR PERFIL ===== -->
+  <div id="edit-profile-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="edit-profile-modal w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-6 pb-4 border-b border-slate-200/70" style="border-color: var(--border-color);">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2" style="color: var(--text-primary);">
+            <i data-lucide="user-cog" class="w-5 h-5" style="color: var(--theme-accent);"></i> Editar Perfil
+          </h3>
+          <button type="button" onclick="closeEditProfile()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+      <form id="edit-profile-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Nome de Usuário</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="user" class="w-4 h-4"></i></span>
+            <input type="text" id="edit-username" required minlength="3" maxlength="30"
+              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1" style="color: var(--text-muted);">O nome exibido no chat será atualizado nas próximas mensagens.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Idade</label>
+            <input type="number" id="edit-age" min="13" max="120" required
+              class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Gênero</label>
+            <select id="edit-gender" required class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 appearance-none cursor-pointer">
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Não-binário">Não-binário</option>
+              <option value="Outro">Outro</option>
+              <option value="Prefiro não informar">Prefiro não informar</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeEditProfile()"
+            class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors cursor-pointer" style="background: var(--bg-slate-100); color: var(--text-secondary);">
+            Cancelar
+          </button>
+          <button type="submit" id="edit-profile-submit"
+            class="flex-1 py-2.5 rounded-2xl theme-gradient-bg font-semibold text-sm transition-all active:scale-[0.98] cursor-pointer">
+            Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: NOVA DM (ESCOLHER USUÁRIO) ===== -->
+  <div id="new-dm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden edit-profile-modal" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-6 pb-4 border-b border-slate-200/70" style="border-color: var(--border-color);">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2" style="color: var(--text-primary);">
+            <i data-lucide="message-circle-plus" class="w-5 h-5" style="color: var(--theme-accent);"></i> Nova Conversa Privada
+          </h3>
+          <button type="button" onclick="closeNewDMPicker()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 mt-1" style="color: var(--text-secondary);">Selecione um usuário online para iniciar um chat privado.</p>
+      </div>
+      <div id="new-dm-user-list" class="p-4 max-h-80 overflow-y-auto space-y-1.5"></div>
+    </div>
+  </div>
+
   <!-- ============================ LÓGICA ============================ -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -383,7 +564,7 @@
     import {
       getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc,
       query, orderBy, limit, startAfter, onSnapshot, serverTimestamp,
-      getDocs, writeBatch, where
+      getDocs, writeBatch, where, or, and
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // ===== FIREBASE INIT =====
@@ -402,7 +583,7 @@
     lucide.createIcons();
 
     // ===== ESTADO =====
-    const STORAGE_KEYS = { THEME: 'chattop_theme_v1' };
+    const STORAGE_KEYS = { THEME: 'chattop_theme_v1', DARK: 'chattop_dark_v1' };
 
     const COLOR_THEMES = [
       { id:'indigo-cyan', name:'Índigo / Ciano', shortName:'Índigo', primary:'#4F46E5', secondary:'#0284C7', accent:'#0284C7', sentStart:'rgba(79,70,229,0.82)', sentEnd:'rgba(2,132,199,0.78)', sentBorder:'rgba(255,255,255,0.55)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(14,165,233,0.28)' },
@@ -416,14 +597,20 @@
     ];
 
     let activeThemeId = localStorage.getItem(STORAGE_KEYS.THEME) || 'indigo-cyan';
+    let isDarkMode = localStorage.getItem(STORAGE_KEYS.DARK) === 'true';
     let currentAuthMode = 'login';
     let currentCaptchaResult = 0;
     let currentUser = null;
     let activeChannelId = 'geral';
+    let activeChatType = 'channel'; // 'channel' or 'dm'
+    let activeDMUserId = null;
+    let activeDMUsername = null;
 
     let unsubscribeMessages = null;
     let unsubscribePresence = null;
     let unsubscribeTyping = null;
+    let unsubscribeDMs = null;
+    let unsubscribeDMUnread = null;
 
     const PAGE_SIZE = 50;
     let oldestLoadedMessage = null;
@@ -433,6 +620,10 @@
     let presenceHeartbeat = null;
     let typingTimeout = null;
     let isTypingFlag = false;
+
+    let onlineUsersCache = [];
+    let dmConversationsCache = [];
+    let dmUnreadCounts = {};
 
     const CHANNELS = [
       { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade Chat Top' },
@@ -454,6 +645,7 @@
       };
       const icons = { error:'alert-circle', success:'check-circle-2', info:'info' };
       toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-lg text-xs sm:text-sm font-medium transition-all duration-300 transform translate-y-0 ${styles[type]||styles.info}`;
+      if (isDarkMode) toast.style.background = 'var(--bg-card-95)';
       toast.innerHTML = `<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 shrink-0"></i><span class="flex-1">${escapeHTML(message)}</span>`;
       container.appendChild(toast);
       lucide.createIcons({ root: toast });
@@ -480,8 +672,35 @@
     function usernameToEmail(username) {
       return `${username.trim().toLowerCase()}@chattop.local`;
     }
+    function dmConversationId(uid1, uid2) {
+      return [uid1, uid2].sort().join('_');
+    }
 
-    // ===== TEMA =====
+    // ===== DARK MODE =====
+    function applyDarkMode(dark, notify=false) {
+      isDarkMode = dark;
+      if (dark) {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
+      localStorage.setItem(STORAGE_KEYS.DARK, dark ? 'true' : 'false');
+      // Atualiza ícones
+      document.querySelectorAll('.dark-icon').forEach(el => {
+        el.setAttribute('data-lucide', dark ? 'sun' : 'moon');
+      });
+      lucide.createIcons();
+      if (notify) showToast(dark ? 'Modo escuro ativado 🌙' : 'Modo claro ativado ☀️', 'info');
+    }
+    function toggleDarkMode() {
+      applyDarkMode(!isDarkMode, true);
+    }
+    window.toggleDarkMode = toggleDarkMode;
+
+    document.getElementById('auth-dark-toggle').addEventListener('click', toggleDarkMode);
+    document.getElementById('chat-dark-toggle').addEventListener('click', toggleDarkMode);
+
+    // ===== TEMA DE CORES =====
     function applyColorTheme(themeId, notify=false) {
       const theme = COLOR_THEMES.find(t => t.id === themeId) || COLOR_THEMES[0];
       activeThemeId = theme.id;
@@ -511,6 +730,10 @@
         btn.className = `group flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all cursor-pointer ${
           isSelected ? 'bg-slate-100 border-slate-400 scale-105 shadow-xs' : 'bg-white hover:bg-slate-50 border-slate-200/80 hover:border-slate-300'
         }`;
+        if (isDarkMode) {
+          btn.style.background = isSelected ? 'var(--bg-slate-200)' : 'var(--bg-card)';
+          btn.style.borderColor = isSelected ? 'var(--theme-accent)' : 'var(--border-color)';
+        }
         const checkColor = theme.btnText === '#FFFFFF' ? 'text-white' : 'text-slate-900';
         btn.innerHTML = `
           <span class="w-6 h-6 rounded-full border border-slate-300/80 shadow-inner flex items-center justify-center"
@@ -655,6 +878,8 @@
         if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
         if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
         if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
+        if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
+        if (unsubscribeDMUnread) { unsubscribeDMUnread(); unsubscribeDMUnread = null; }
         await signOut(auth);
         showToast('Você saiu da sua conta com segurança.', 'info');
       } catch (err) {
@@ -663,6 +888,125 @@
       }
     }
     window.logout = logout;
+
+    // ===== EDITAR PERFIL =====
+    function openEditProfile() {
+      if (!currentUser) return;
+      document.getElementById('edit-username').value = currentUser.username;
+      document.getElementById('edit-age').value = currentUser.age;
+      document.getElementById('edit-gender').value = currentUser.gender;
+      const modal = document.getElementById('edit-profile-modal');
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeEditProfile() {
+      document.getElementById('edit-profile-modal').classList.add('hidden');
+    }
+    window.openEditProfile = openEditProfile;
+    window.closeEditProfile = closeEditProfile;
+
+    document.getElementById('edit-profile-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+      const newUsername = document.getElementById('edit-username').value.trim();
+      const newAge = parseInt(document.getElementById('edit-age').value, 10);
+      const newGender = document.getElementById('edit-gender').value;
+      const btn = document.getElementById('edit-profile-submit');
+
+      if (newUsername.length < 3) { showToast('O nome deve ter pelo menos 3 caracteres.', 'error'); return; }
+      if (!/^[a-zA-Z0-9_.]+$/.test(newUsername)) { showToast('Use apenas letras, números, ponto e sublinhado.', 'error'); return; }
+      if (isNaN(newAge) || newAge < 13 || newAge > 120) { showToast('Idade inválida (mínimo 13 anos).', 'error'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          username: newUsername,
+          age: newAge,
+          gender: newGender
+        }, { merge: true });
+
+        currentUser.username = newUsername;
+        currentUser.age = newAge;
+        currentUser.gender = newGender;
+
+        document.getElementById('profile-username').textContent = newUsername;
+        document.getElementById('profile-age-badge').textContent = `${newAge} anos`;
+        document.getElementById('profile-gender-badge').textContent = newGender;
+        document.getElementById('user-avatar').textContent = getInitials(newUsername);
+
+        // Atualiza presença
+        if (currentUser) {
+          const ref = doc(db, 'presence', currentUser.uid);
+          await setDoc(ref, { username: newUsername }, { merge: true });
+        }
+
+        // Atualiza mensagens antigas (sender) do usuário
+        const batch = writeBatch(db);
+        let count = 0;
+        for (const ch of CHANNELS) {
+          try {
+            const snap = await getDocs(query(collection(db, 'channels', ch.id, 'messages'), where('uid', '==', currentUser.uid)));
+            snap.forEach(d => {
+              batch.update(d.ref, { sender: newUsername, age: newAge, gender: newGender });
+              count++;
+            });
+          } catch(e) {}
+        }
+        if (count > 0) await batch.commit().catch(()=>{});
+
+        closeEditProfile();
+        showToast('Perfil atualizado com sucesso!', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao salvar perfil: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Salvar';
+      }
+    });
+
+    // ===== NOVA DM PICKER =====
+    function openNewDMPicker() {
+      const modal = document.getElementById('new-dm-modal');
+      const list = document.getElementById('new-dm-user-list');
+      list.innerHTML = '';
+
+      const others = onlineUsersCache.filter(u => u.uid !== currentUser?.uid);
+      if (others.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6" style="color: var(--text-secondary);">Nenhum outro usuário online no momento.</p>`;
+      } else {
+        others.forEach(u => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-100 transition-colors text-left cursor-pointer';
+          btn.style.color = 'var(--text-primary)';
+          btn.innerHTML = `
+            <div class="relative shrink-0">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(u.username)}</div>
+              <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold truncate">${escapeHTML(u.username)}</p>
+              <p class="text-[10px] text-emerald-600">● Online</p>
+            </div>
+            <i data-lucide="message-circle" class="w-4 h-4 text-slate-400"></i>`;
+          btn.onclick = () => {
+            closeNewDMPicker();
+            openDM(u.uid, u.username);
+          };
+          list.appendChild(btn);
+        });
+      }
+      modal.classList.remove('hidden');
+      lucide.createIcons({ root: list });
+    }
+    function closeNewDMPicker() {
+      document.getElementById('new-dm-modal').classList.add('hidden');
+    }
+    window.openNewDMPicker = openNewDMPicker;
+    window.closeNewDMPicker = closeNewDMPicker;
 
     // ===== AUTH STATE =====
     onAuthStateChanged(auth, async (firebaseUser) => {
@@ -675,12 +1019,18 @@
         currentUser = { uid: firebaseUser.uid, ...profile };
         enterChatInterface();
         startPresence();
+        startDMListener();
       } else {
         currentUser = null;
+        activeChatType = 'channel';
+        activeDMUserId = null;
+        activeDMUsername = null;
         stopPresence();
         if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
         if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
         if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
+        if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
+        if (unsubscribeDMUnread) { unsubscribeDMUnread(); unsubscribeDMUnread = null; }
         document.getElementById('chat-screen').classList.add('hidden');
         document.getElementById('auth-screen').classList.remove('hidden');
         document.getElementById('password').value = '';
@@ -704,10 +1054,6 @@
       writePresence();
       presenceHeartbeat = setInterval(writePresence, 25000);
 
-      window.addEventListener('beforeunload', () => {
-        try { deleteDoc(ref); } catch(e){}
-      });
-
       const q = collection(db, 'presence');
       unsubscribePresence = onSnapshot(q, (snapshot) => {
         const now = Date.now();
@@ -718,6 +1064,7 @@
           if (data.lastSeen && typeof data.lastSeen.toMillis === 'function') lastMs = data.lastSeen.toMillis();
           if (now - lastMs < 90000) alive.push({ uid: d.id, username: data.username || 'Usuário' });
         });
+        onlineUsersCache = alive;
         updatePresenceUI(alive);
       }, (err) => console.warn('Presence listener error:', err));
     }
@@ -738,47 +1085,56 @@
 
       const list = document.getElementById('online-users-list');
       list.innerHTML = '';
-      aliveUsers.sort((a, b) => {
+      const sorted = [...aliveUsers].sort((a, b) => {
         if (a.uid === currentUser.uid) return -1;
         if (b.uid === currentUser.uid) return 1;
         return a.username.localeCompare(b.username);
       });
-      aliveUsers.forEach(u => {
+      sorted.forEach(u => {
         const isMe = u.uid === currentUser.uid;
         const li = document.createElement('li');
         li.className = 'flex items-center gap-2.5 px-2.5 py-2 rounded-2xl hover:bg-white/70 transition-colors';
+        li.style.cursor = isMe ? 'default' : 'pointer';
         li.innerHTML = `
           <div class="relative shrink-0">
             <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(u.username)}</div>
             <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-semibold text-slate-800 truncate">${escapeHTML(u.username)}${isMe ? ' (Você)' : ''}</p>
+            <p class="text-xs font-semibold text-slate-800 truncate" style="color: var(--text-primary);">${escapeHTML(u.username)}${isMe ? ' (Você)' : ''}</p>
             <p class="text-[10px] text-emerald-600 truncate">● Online</p>
-          </div>`;
+          </div>
+          ${!isMe ? `<i data-lucide="message-circle" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>` : ''}`;
+        if (!isMe) {
+          li.onclick = () => openDM(u.uid, u.username);
+        }
         list.appendChild(li);
       });
+      lucide.createIcons({ root: list });
     }
 
     // ===== DIGITANDO =====
-    function typingDocId(channelId) {
-      return `${channelId}_${currentUser.uid}`;
+    function typingDocId() {
+      if (activeChatType === 'dm') {
+        return `dm_${dmConversationId(currentUser.uid, activeDMUserId)}_${currentUser.uid}`;
+      }
+      return `${activeChannelId}_${currentUser.uid}`;
     }
     async function setTyping(isTyping) {
       if (!currentUser) return;
-      const ref = doc(db, 'typing', typingDocId(activeChannelId));
+      const ref = doc(db, 'typing', typingDocId());
       try {
         if (isTyping) {
           await setDoc(ref, {
             uid: currentUser.uid,
             username: currentUser.username,
-            channelId: activeChannelId,
+            channelId: activeChatType === 'dm' ? `dm_${dmConversationId(currentUser.uid, activeDMUserId)}` : activeChannelId,
             updatedAt: serverTimestamp()
           }, { merge: true });
         } else {
           await deleteDoc(ref);
         }
-      } catch (e) { /* silencioso */ }
+      } catch (e) {}
     }
     function stopTyping() {
       if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
@@ -799,9 +1155,9 @@
         setTyping(false);
       }, 3000);
     }
-    function attachTypingListener(channelId) {
+    function attachTypingListener(contextId) {
       if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
-      const q = query(collection(db, 'typing'), where('channelId', '==', channelId));
+      const q = query(collection(db, 'typing'), where('channelId', '==', contextId));
       unsubscribeTyping = onSnapshot(q, (snapshot) => {
         const now = Date.now();
         const names = [];
@@ -825,6 +1181,260 @@
       }, (err) => console.warn('Typing listener error:', err));
     }
 
+    // ===== DM LISTENER =====
+    function startDMListener() {
+      if (!currentUser) return;
+      if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
+
+      // Escuta conversas DM do usuário
+      const q = query(
+        collection(db, 'dmConversations'),
+        where('participants', 'array-contains', currentUser.uid)
+      );
+      unsubscribeDMs = onSnapshot(q, (snapshot) => {
+        dmConversationsCache = [];
+        snapshot.forEach(d => {
+          const data = d.data();
+          dmConversationsCache.push({ id: d.id, ...data });
+        });
+        // Ordena por lastMessageAt (mais recente primeiro)
+        dmConversationsCache.sort((a, b) => {
+          const aT = a.lastMessageAt?.toMillis?.() || 0;
+          const bT = b.lastMessageAt?.toMillis?.() || 0;
+          return bT - aT;
+        });
+        renderDMConversations();
+        // Se estiver em uma DM, atualiza o cabeçalho
+        if (activeChatType === 'dm' && activeDMUserId) {
+          const conv = dmConversationsCache.find(c =>
+            c.participants.includes(currentUser.uid) && c.participants.includes(activeDMUserId)
+          );
+          if (conv) {
+            const otherId = conv.participants.find(p => p !== currentUser.uid);
+            const otherName = conv.participantNames?.[otherId] || activeDMUsername || 'Usuário';
+            activeDMUsername = otherName;
+            document.getElementById('current-channel-name').textContent = otherName;
+            document.getElementById('current-channel-desc').textContent = 'Conversa privada';
+          }
+        }
+        startUnreadListener();
+      }, (err) => console.warn('DM listener error:', err));
+    }
+
+    function renderDMConversations() {
+      const list = document.getElementById('dm-conversations-list');
+      const emptyHint = document.getElementById('dm-empty-hint');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const convs = dmConversationsCache;
+      if (convs.length === 0) {
+        if (emptyHint) emptyHint.classList.remove('hidden');
+        return;
+      }
+      if (emptyHint) emptyHint.classList.add('hidden');
+
+      convs.forEach(conv => {
+        const otherId = conv.participants.find(p => p !== currentUser.uid);
+        if (!otherId) return;
+        const otherName = conv.participantNames?.[otherId] || 'Usuário';
+        const unread = dmUnreadCounts[conv.id] || 0;
+        const isActive = activeChatType === 'dm' && activeDMUserId === otherId;
+
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-2xl transition-all text-left cursor-pointer border ${
+          isActive ? 'bg-white border-slate-200/90 shadow-xs' : 'border-transparent hover:bg-white/60'
+        }`;
+        if (isActive) {
+          btn.style.background = 'var(--bg-card)';
+          btn.style.borderColor = 'var(--border-color)';
+        }
+        btn.innerHTML = `
+          <div class="relative shrink-0">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(otherName)}</div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold truncate ${isActive ? '' : ''}" style="color: var(--text-primary);">${escapeHTML(otherName)}</p>
+            <p class="text-[10px] truncate" style="color: var(--text-muted);">${conv.lastMessage ? escapeHTML(conv.lastMessage).substring(0,30) : 'Conversa privada'}</p>
+          </div>
+          ${unread > 0 ? `<span class="dm-unread-badge">${unread > 9 ? '9+' : unread}</span>` : `<i data-lucide="lock" class="w-3 h-3 text-slate-400 shrink-0"></i>`}`;
+        btn.onclick = () => {
+          openDM(otherId, otherName);
+          toggleSidebar(false);
+        };
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+      lucide.createIcons({ root: list });
+    }
+
+    function startUnreadListener() {
+      if (!currentUser) return;
+      // Para cada conversa, conta mensagens não lidas (enviadas por outro e após lastRead)
+      // Simplificação: usa lastReadAt do usuário na conversa
+      dmUnreadCounts = {};
+      dmConversationsCache.forEach(async (conv) => {
+        const otherId = conv.participants.find(p => p !== currentUser.uid);
+        if (!otherId) return;
+        const lastRead = conv.lastRead?.[currentUser.uid]?.toMillis?.() || 0;
+        try {
+          const q = query(
+            collection(db, 'dmConversations', conv.id, 'messages'),
+            where('senderId', '!=', currentUser.uid)
+          );
+          const snap = await getDocs(q);
+          let count = 0;
+          snap.forEach(d => {
+            const data = d.data();
+            const ts = data.createdAt?.toMillis?.() || 0;
+            if (ts > lastRead) count++;
+          });
+          if (count > 0) {
+            dmUnreadCounts[conv.id] = count;
+            renderDMConversations();
+          }
+        } catch(e) {}
+      });
+    }
+
+    // ===== DM CHAT =====
+    async function openDM(otherUid, otherUsername) {
+      if (!currentUser || otherUid === currentUser.uid) return;
+      activeChatType = 'dm';
+      activeDMUserId = otherUid;
+      activeDMUsername = otherUsername;
+
+      document.getElementById('current-channel-name').textContent = otherUsername;
+      document.getElementById('current-channel-desc').textContent = 'Conversa privada';
+      const iconEl = document.getElementById('current-channel-icon');
+      iconEl.setAttribute('data-lucide', 'lock');
+      document.getElementById('header-online-badge').classList.add('hidden');
+      document.getElementById('dm-private-badge').classList.remove('hidden');
+      document.getElementById('dm-private-badge').classList.add('inline-flex');
+      lucide.createIcons();
+
+      // Marca como lido
+      const convId = dmConversationId(currentUser.uid, otherUid);
+      try {
+        await setDoc(doc(db, 'dmConversations', convId), {
+          participants: [currentUser.uid, otherUid],
+          participantNames: {
+            [currentUser.uid]: currentUser.username,
+            [otherUid]: otherUsername
+          },
+          lastRead: { [currentUser.uid]: serverTimestamp() },
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch(e) {}
+
+      // Garante que a conversa existe
+      try {
+        const convRef = doc(db, 'dmConversations', convId);
+        const snap = await getDoc(convRef);
+        if (!snap.exists()) {
+          await setDoc(convRef, {
+            participants: [currentUser.uid, otherUid],
+            participantNames: {
+              [currentUser.uid]: currentUser.username,
+              [otherUid]: otherUsername
+            },
+            lastMessage: '',
+            lastMessageAt: serverTimestamp(),
+            lastRead: { [currentUser.uid]: serverTimestamp() },
+            updatedAt: serverTimestamp()
+          });
+        }
+      } catch(e) {}
+
+      attachDMMessageListener(convId, otherUid, otherUsername);
+      renderDMConversations();
+      toggleSidebar(false);
+    }
+    window.openDM = openDM;
+
+    function attachDMMessageListener(convId, otherUid, otherName) {
+      if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+      const container = document.getElementById('messages-container');
+      container.innerHTML = `<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando mensagens...</div>`;
+
+      oldestLoadedMessage = null;
+      hasMoreMessages = true;
+      allCurrentMessages = [];
+
+      const initialQ = query(
+        collection(db, 'dmConversations', convId, 'messages'),
+        orderBy('createdAt', 'desc'),
+        limit(PAGE_SIZE)
+      );
+
+      getDocs(initialQ).then((snap) => {
+        const arr = [];
+        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+        arr.reverse();
+        allCurrentMessages = arr;
+        if (snap.docs.length === PAGE_SIZE) {
+          oldestLoadedMessage = snap.docs[snap.docs.length - 1];
+          hasMoreMessages = true;
+        } else {
+          oldestLoadedMessage = null;
+          hasMoreMessages = false;
+        }
+        renderMessagesPage(true);
+
+        const newest = allCurrentMessages[allCurrentMessages.length - 1];
+        if (newest && newest.createdAt) {
+          const liveQ = query(
+            collection(db, 'dmConversations', convId, 'messages'),
+            orderBy('createdAt', 'asc'),
+            startAfter(newest.createdAt)
+          );
+          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
+            if (snapshot.empty) return;
+            const additions = [];
+            snapshot.docChanges().forEach(ch => {
+              if (ch.type === 'added') additions.push({ id: ch.doc.id, ...ch.doc.data() });
+            });
+            if (additions.length === 0) return;
+            allCurrentMessages = allCurrentMessages.concat(additions);
+            renderMessagesPage(false);
+            // Marca como lido
+            if (currentUser) {
+              setDoc(doc(db, 'dmConversations', convId), {
+                lastRead: { [currentUser.uid]: serverTimestamp() }
+              }, { merge: true }).catch(()=>{});
+            }
+          }, (err) => console.warn('Live DM listener:', err));
+        } else {
+          // Se não há mensagens, escuta novas
+          const liveQ = query(
+            collection(db, 'dmConversations', convId, 'messages'),
+            orderBy('createdAt', 'asc')
+          );
+          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
+            if (snapshot.empty) return;
+            const additions = [];
+            snapshot.docChanges().forEach(ch => {
+              if (ch.type === 'added') additions.push({ id: ch.doc.id, ...ch.doc.data() });
+            });
+            if (additions.length === 0) return;
+            allCurrentMessages = allCurrentMessages.concat(additions);
+            renderMessagesPage(false);
+          }, (err) => console.warn('Live DM listener:', err));
+        }
+      }).catch((err) => {
+        console.error('Erro ao carregar DMs:', err);
+        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
+          <p class="text-sm font-semibold">Erro ao carregar mensagens</p>
+          <p class="text-xs mt-1">${escapeHTML(err.message)}</p>
+        </div>`;
+      });
+
+      attachTypingListener(`dm_${convId}`);
+    }
+
     // ===== CHAT UI =====
     function enterChatInterface() {
       document.getElementById('auth-screen').classList.add('hidden');
@@ -835,7 +1445,9 @@
       document.getElementById('profile-gender-badge').textContent = currentUser.gender;
       renderChannels();
       renderEmojiPicker();
+      activeChatType = 'channel';
       selectChannel(activeChannelId);
+      renderDMConversations();
       lucide.createIcons();
     }
     function toggleSidebar(open) {
@@ -850,13 +1462,18 @@
       const list = document.getElementById('channels-list');
       list.innerHTML = '';
       CHANNELS.forEach(channel => {
-        const isActive = channel.id === activeChannelId;
+        const isActive = activeChatType === 'channel' && channel.id === activeChannelId;
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.onclick = () => { selectChannel(channel.id); toggleSidebar(false); };
         btn.className = isActive
           ? 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold bg-white text-slate-900 border border-slate-200/90 shadow-xs transition-all cursor-pointer'
           : 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent transition-all cursor-pointer';
+        if (isActive) {
+          btn.style.background = 'var(--bg-card)';
+          btn.style.borderColor = 'var(--border-color-90)';
+          btn.style.color = 'var(--text-primary)';
+        }
         btn.innerHTML = `<i data-lucide="${channel.icon}" class="w-4 h-4" style="${isActive ? 'color: var(--theme-accent);' : 'color: #94a3b8;'}"></i><span class="truncate">${channel.name}</span>`;
         list.appendChild(btn);
       });
@@ -864,20 +1481,27 @@
     }
 
     function selectChannel(channelId) {
-      if (activeChannelId !== channelId) stopTyping();
+      if (activeChatType !== 'channel' || activeChannelId !== channelId) stopTyping();
+      activeChatType = 'channel';
+      activeDMUserId = null;
+      activeDMUsername = null;
       activeChannelId = channelId;
       const channel = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
       document.getElementById('current-channel-name').textContent = channel.name;
       document.getElementById('current-channel-desc').textContent = channel.desc;
       const iconEl = document.getElementById('current-channel-icon');
       iconEl.setAttribute('data-lucide', channel.icon);
+      document.getElementById('dm-private-badge').classList.add('hidden');
+      document.getElementById('dm-private-badge').classList.remove('inline-flex');
+      document.getElementById('header-online-badge').classList.remove('hidden');
       lucide.createIcons();
       renderChannels();
       attachMessageListener(channelId);
       attachTypingListener(channelId);
+      renderDMConversations();
     }
 
-    // ===== MENSAGENS COM PAGINAÇÃO =====
+    // ===== MENSAGENS COM PAGINAÇÃO (CANAIS) =====
     function attachMessageListener(channelId) {
       if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
       const container = document.getElementById('messages-container');
@@ -939,12 +1563,23 @@
       const btn = document.getElementById('load-more-btn');
       if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
       try {
-        const olderQ = query(
-          collection(db, 'channels', activeChannelId, 'messages'),
-          orderBy('createdAt', 'desc'),
-          startAfter(oldestLoadedMessage),
-          limit(PAGE_SIZE)
-        );
+        let olderQ;
+        if (activeChatType === 'dm') {
+          const convId = dmConversationId(currentUser.uid, activeDMUserId);
+          olderQ = query(
+            collection(db, 'dmConversations', convId, 'messages'),
+            orderBy('createdAt', 'desc'),
+            startAfter(oldestLoadedMessage),
+            limit(PAGE_SIZE)
+          );
+        } else {
+          olderQ = query(
+            collection(db, 'channels', activeChannelId, 'messages'),
+            orderBy('createdAt', 'desc'),
+            startAfter(oldestLoadedMessage),
+            limit(PAGE_SIZE)
+          );
+        }
         const snap = await getDocs(olderQ);
         const arr = [];
         snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
@@ -981,7 +1616,8 @@
         moreWrap.className = 'flex justify-center pb-3';
         moreWrap.innerHTML = `
           <button type="button" id="load-more-btn" onclick="loadOlderMessages()"
-            class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs transition-all cursor-pointer">
+            class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs transition-all cursor-pointer"
+            style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-secondary);">
             Carregar mensagens antigas
           </button>`;
         container.appendChild(moreWrap);
@@ -990,18 +1626,18 @@
       if (allCurrentMessages.length === 0) {
         container.innerHTML = `
           <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
-            <div class="w-14 h-14 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 flex items-center justify-center mb-3 shadow-xs" style="color: var(--theme-accent);">
-              <i data-lucide="message-circle" class="w-7 h-7"></i>
+            <div class="w-14 h-14 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 flex items-center justify-center mb-3 shadow-xs" style="color: var(--theme-accent); background: var(--bg-card-80); border-color: var(--border-color);">
+              <i data-lucide="${activeChatType === 'dm' ? 'lock' : 'message-circle'}" class="w-7 h-7"></i>
             </div>
-            <p class="text-sm font-semibold text-slate-700">Nenhuma mensagem nesta sala ainda</p>
-            <p class="text-xs text-slate-500 mt-1">Envie a primeira mensagem para iniciar a conversa!</p>
+            <p class="text-sm font-semibold text-slate-700" style="color: var(--text-primary);">Nenhuma mensagem aqui ainda</p>
+            <p class="text-xs text-slate-500 mt-1" style="color: var(--text-secondary);">Envie a primeira mensagem para iniciar a conversa!</p>
           </div>`;
         lucide.createIcons({ root: container });
         return;
       }
 
       allCurrentMessages.forEach(msg => {
-        const isOwn = currentUser && (msg.uid === currentUser.uid || (msg.sender || '').toLowerCase() === currentUser.username.toLowerCase());
+        const isOwn = currentUser && (msg.senderId === currentUser.uid || msg.uid === currentUser.uid || (msg.sender || '').toLowerCase() === currentUser.username.toLowerCase());
         const wrapper = document.createElement('div');
         wrapper.className = `flex items-end gap-2.5 message-animate ${isOwn ? 'justify-end' : 'justify-start'}`;
         const time = msg.time || (msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '');
@@ -1017,11 +1653,11 @@
             <div class="w-8 h-8 rounded-2xl theme-gradient-bg flex items-center justify-center text-xs font-bold shrink-0">${getInitials(msg.sender)}</div>`;
         } else {
           wrapper.innerHTML = `
-            <div class="w-8 h-8 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-xs font-bold text-slate-700 shrink-0">${getInitials(msg.sender)}</div>
+            <div class="w-8 h-8 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-xs font-bold text-slate-700 shrink-0" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">${getInitials(msg.sender)}</div>
             <div class="flex flex-col items-start max-w-[82%] sm:max-w-[70%]">
               <div class="flex flex-wrap items-center gap-1.5 mb-1 px-1">
-                <span class="text-xs font-semibold text-slate-800">${escapeHTML(msg.sender)}</span>
-                <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white/80 text-slate-500 border border-slate-200/80">${msg.age}a • ${escapeHTML(msg.gender)}</span>
+                <span class="text-xs font-semibold text-slate-800" style="color: var(--text-primary);">${escapeHTML(msg.sender)}</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white/80 text-slate-500 border border-slate-200/80" style="background: var(--bg-card-80); color: var(--text-muted); border-color: var(--border-color-80);">${msg.age}a • ${escapeHTML(msg.gender)}</span>
                 <span class="text-[10px] text-slate-400">${escapeHTML(time)}</span>
               </div>
               <div class="bubble-received px-4 py-2.5 text-sm leading-relaxed break-words">${escapeHTML(msg.text)}</div>
@@ -1049,15 +1685,48 @@
       input.value = '';
       stopTyping();
       try {
-        await addDoc(collection(db, 'channels', activeChannelId, 'messages'), {
+        const msgData = {
           uid: currentUser.uid,
+          senderId: currentUser.uid,
           sender: currentUser.username,
           age: currentUser.age,
           gender: currentUser.gender,
           text,
           time: getCurrentTime(),
           createdAt: serverTimestamp()
-        });
+        };
+
+        if (activeChatType === 'dm' && activeDMUserId) {
+          const convId = dmConversationId(currentUser.uid, activeDMUserId);
+          const convRef = doc(db, 'dmConversations', convId);
+          const convSnap = await getDoc(convRef);
+          if (!convSnap.exists()) {
+            await setDoc(convRef, {
+              participants: [currentUser.uid, activeDMUserId],
+              participantNames: {
+                [currentUser.uid]: currentUser.username,
+                [activeDMUserId]: activeDMUsername || 'Usuário'
+              },
+              lastMessage: text,
+              lastMessageAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+          } else {
+            await setDoc(convRef, {
+              lastMessage: text,
+              lastMessageAt: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+              participantNames: {
+                [currentUser.uid]: currentUser.username,
+                [activeDMUserId]: activeDMUsername || 'Usuário'
+              },
+              lastRead: { [currentUser.uid]: serverTimestamp() }
+            }, { merge: true });
+          }
+          await addDoc(collection(db, 'dmConversations', convId, 'messages'), msgData);
+        } else {
+          await addDoc(collection(db, 'channels', activeChannelId, 'messages'), msgData);
+        }
         document.getElementById('emoji-picker').classList.add('hidden');
       } catch (err) {
         console.error(err);
@@ -1067,12 +1736,22 @@
 
     // ===== LIMPAR =====
     async function clearCurrentChannelHistory() {
-      if (!confirm('Tem certeza que deseja apagar TODAS as SUAS mensagens nesta sala?')) return;
+      if (!currentUser) return;
+      const target = activeChatType === 'dm' ? 'esta conversa privada' : 'esta sala';
+      if (!confirm(`Tem certeza que deseja apagar TODAS as SUAS mensagens ${target}?`)) return;
       try {
-        const snap = await getDocs(collection(db, 'channels', activeChannelId, 'messages'));
+        let colRef;
+        if (activeChatType === 'dm' && activeDMUserId) {
+          const convId = dmConversationId(currentUser.uid, activeDMUserId);
+          colRef = collection(db, 'dmConversations', convId, 'messages');
+        } else {
+          colRef = collection(db, 'channels', activeChannelId, 'messages');
+        }
+        const snap = await getDocs(colRef);
         const batch = writeBatch(db);
         snap.forEach(d => {
-          if (d.data().uid === currentUser.uid) batch.delete(d.ref);
+          const data = d.data();
+          if (data.uid === currentUser.uid || data.senderId === currentUser.uid) batch.delete(d.ref);
         });
         await batch.commit();
         showToast('Suas mensagens foram removidas.', 'info');
@@ -1092,6 +1771,8 @@
         btn.type = 'button';
         btn.textContent = emoji;
         btn.className = 'w-9 h-9 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 shadow-2xs flex items-center justify-center text-base transition-transform hover:scale-110 cursor-pointer';
+        btn.style.background = 'var(--bg-card)';
+        btn.style.borderColor = 'var(--border-color)';
         btn.onclick = () => {
           const input = document.getElementById('message-input');
           input.value += emoji;
@@ -1107,6 +1788,7 @@
     // ===== INICIALIZAÇÃO =====
     window.addEventListener('DOMContentLoaded', () => {
       applyColorTheme(activeThemeId, false);
+      applyDarkMode(isDarkMode, false);
       generateMathCaptcha();
       lucide.createIcons();
     });
