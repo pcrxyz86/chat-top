@@ -190,7 +190,6 @@
     <div class="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/90 rounded-3xl shadow-xl shadow-slate-300/50 overflow-hidden relative z-10 my-4" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
 
       <div class="absolute top-4 right-4 z-20 flex items-center gap-2" id="auth-palette-wrapper">
-        <!-- Dark mode toggle auth -->
         <button type="button" id="auth-dark-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro"
           class="w-8 h-8 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
           <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
@@ -322,7 +321,6 @@
         </button>
       </div>
 
-      <!-- Perfil do usuário -->
       <div class="p-4 border-b border-slate-200/70 bg-slate-50/60 shrink-0" style="border-color: var(--border-color-80); background: var(--bg-slate-50);">
         <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-80);">
           <div class="relative shrink-0">
@@ -352,7 +350,6 @@
           <nav id="channels-list" class="space-y-1"></nav>
         </div>
 
-        <!-- Conversas Privadas (DM) -->
         <div>
           <div class="flex items-center justify-between px-2 mb-2">
             <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Mensagens Privadas</span>
@@ -415,7 +412,6 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-          <!-- Dark mode toggle chat -->
           <button type="button" id="chat-dark-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro"
             class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
             <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
@@ -564,7 +560,7 @@
     import {
       getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc,
       query, orderBy, limit, startAfter, onSnapshot, serverTimestamp,
-      getDocs, writeBatch, where, or, and
+      getDocs, writeBatch, where
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // ===== FIREBASE INIT =====
@@ -602,7 +598,7 @@
     let currentCaptchaResult = 0;
     let currentUser = null;
     let activeChannelId = 'geral';
-    let activeChatType = 'channel'; // 'channel' or 'dm'
+    let activeChatType = 'channel';
     let activeDMUserId = null;
     let activeDMUsername = null;
 
@@ -610,7 +606,7 @@
     let unsubscribePresence = null;
     let unsubscribeTyping = null;
     let unsubscribeDMs = null;
-    let unsubscribeDMUnread = null;
+    let unreadListeners = {};
 
     const PAGE_SIZE = 50;
     let oldestLoadedMessage = null;
@@ -624,6 +620,42 @@
     let onlineUsersCache = [];
     let dmConversationsCache = [];
     let dmUnreadCounts = {};
+
+    // ===== CONTROLE DE HISTÓRICO (botão voltar do celular) =====
+    let historyDepth = 0;
+
+    function pushChatHistoryState() {
+      historyDepth++;
+      history.pushState({ chattop: true, depth: historyDepth }, '');
+    }
+
+    function handleBackButton() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
+        toggleSidebar(false);
+        pushChatHistoryState();
+        return;
+      }
+      if (activeChatType === 'dm') {
+        selectChannel(activeChannelId || 'geral');
+        pushChatHistoryState();
+        return;
+      }
+      if (activeChatType === 'channel' && activeChannelId !== 'geral') {
+        selectChannel('geral');
+        pushChatHistoryState();
+        return;
+      }
+      historyDepth = Math.max(0, historyDepth - 1);
+    }
+
+    window.addEventListener('popstate', (e) => {
+      const chatScreen = document.getElementById('chat-screen');
+      if (chatScreen && !chatScreen.classList.contains('hidden')) {
+        handleBackButton();
+      }
+    });
 
     const CHANNELS = [
       { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade Chat Top' },
@@ -679,22 +711,16 @@
     // ===== DARK MODE =====
     function applyDarkMode(dark, notify=false) {
       isDarkMode = dark;
-      if (dark) {
-        document.body.classList.add('dark');
-      } else {
-        document.body.classList.remove('dark');
-      }
+      if (dark) document.body.classList.add('dark');
+      else document.body.classList.remove('dark');
       localStorage.setItem(STORAGE_KEYS.DARK, dark ? 'true' : 'false');
-      // Atualiza ícones
       document.querySelectorAll('.dark-icon').forEach(el => {
         el.setAttribute('data-lucide', dark ? 'sun' : 'moon');
       });
       lucide.createIcons();
       if (notify) showToast(dark ? 'Modo escuro ativado 🌙' : 'Modo claro ativado ☀️', 'info');
     }
-    function toggleDarkMode() {
-      applyDarkMode(!isDarkMode, true);
-    }
+    function toggleDarkMode() { applyDarkMode(!isDarkMode, true); }
     window.toggleDarkMode = toggleDarkMode;
 
     document.getElementById('auth-dark-toggle').addEventListener('click', toggleDarkMode);
@@ -879,7 +905,15 @@
         if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
         if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
         if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
-        if (unsubscribeDMUnread) { unsubscribeDMUnread(); unsubscribeDMUnread = null; }
+        Object.values(unreadListeners).forEach(unsub => { try { unsub(); } catch(e){} });
+        unreadListeners = {};
+        dmUnreadCounts = {};
+        dmConversationsCache = [];
+        // Limpa histórico empilhado
+        while (historyDepth > 0) {
+          history.back();
+          historyDepth--;
+        }
         await signOut(auth);
         showToast('Você saiu da sua conta com segurança.', 'info');
       } catch (err) {
@@ -895,8 +929,7 @@
       document.getElementById('edit-username').value = currentUser.username;
       document.getElementById('edit-age').value = currentUser.age;
       document.getElementById('edit-gender').value = currentUser.gender;
-      const modal = document.getElementById('edit-profile-modal');
-      modal.classList.remove('hidden');
+      document.getElementById('edit-profile-modal').classList.remove('hidden');
       lucide.createIcons();
     }
     function closeEditProfile() {
@@ -922,9 +955,7 @@
 
       try {
         await setDoc(doc(db, 'users', currentUser.uid), {
-          username: newUsername,
-          age: newAge,
-          gender: newGender
+          username: newUsername, age: newAge, gender: newGender
         }, { merge: true });
 
         currentUser.username = newUsername;
@@ -936,13 +967,9 @@
         document.getElementById('profile-gender-badge').textContent = newGender;
         document.getElementById('user-avatar').textContent = getInitials(newUsername);
 
-        // Atualiza presença
-        if (currentUser) {
-          const ref = doc(db, 'presence', currentUser.uid);
-          await setDoc(ref, { username: newUsername }, { merge: true });
-        }
+        const ref = doc(db, 'presence', currentUser.uid);
+        await setDoc(ref, { username: newUsername }, { merge: true });
 
-        // Atualiza mensagens antigas (sender) do usuário
         const batch = writeBatch(db);
         let count = 0;
         for (const ch of CHANNELS) {
@@ -1030,7 +1057,10 @@
         if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
         if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
         if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
-        if (unsubscribeDMUnread) { unsubscribeDMUnread(); unsubscribeDMUnread = null; }
+        Object.values(unreadListeners).forEach(unsub => { try { unsub(); } catch(e){} });
+        unreadListeners = {};
+        dmUnreadCounts = {};
+        dmConversationsCache = [];
         document.getElementById('chat-screen').classList.add('hidden');
         document.getElementById('auth-screen').classList.remove('hidden');
         document.getElementById('password').value = '';
@@ -1105,9 +1135,7 @@
             <p class="text-[10px] text-emerald-600 truncate">● Online</p>
           </div>
           ${!isMe ? `<i data-lucide="message-circle" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>` : ''}`;
-        if (!isMe) {
-          li.onclick = () => openDM(u.uid, u.username);
-        }
+        if (!isMe) li.onclick = () => openDM(u.uid, u.username);
         list.appendChild(li);
       });
       lucide.createIcons({ root: list });
@@ -1145,15 +1173,9 @@
     }
     function handleTypingInput() {
       if (!currentUser) return;
-      if (!isTypingFlag) {
-        isTypingFlag = true;
-        setTyping(true);
-      }
+      if (!isTypingFlag) { isTypingFlag = true; setTyping(true); }
       if (typingTimeout) clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        isTypingFlag = false;
-        setTyping(false);
-      }, 3000);
+      typingTimeout = setTimeout(() => { isTypingFlag = false; setTyping(false); }, 3000);
     }
     function attachTypingListener(contextId) {
       if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
@@ -1186,7 +1208,6 @@
       if (!currentUser) return;
       if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
 
-      // Escuta conversas DM do usuário
       const q = query(
         collection(db, 'dmConversations'),
         where('participants', 'array-contains', currentUser.uid)
@@ -1194,17 +1215,14 @@
       unsubscribeDMs = onSnapshot(q, (snapshot) => {
         dmConversationsCache = [];
         snapshot.forEach(d => {
-          const data = d.data();
-          dmConversationsCache.push({ id: d.id, ...data });
+          dmConversationsCache.push({ id: d.id, ...d.data() });
         });
-        // Ordena por lastMessageAt (mais recente primeiro)
         dmConversationsCache.sort((a, b) => {
           const aT = a.lastMessageAt?.toMillis?.() || 0;
           const bT = b.lastMessageAt?.toMillis?.() || 0;
           return bT - aT;
         });
         renderDMConversations();
-        // Se estiver em uma DM, atualiza o cabeçalho
         if (activeChatType === 'dm' && activeDMUserId) {
           const conv = dmConversationsCache.find(c =>
             c.participants.includes(currentUser.uid) && c.participants.includes(activeDMUserId)
@@ -1257,7 +1275,7 @@
             <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-semibold truncate ${isActive ? '' : ''}" style="color: var(--text-primary);">${escapeHTML(otherName)}</p>
+            <p class="text-xs font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(otherName)}</p>
             <p class="text-[10px] truncate" style="color: var(--text-muted);">${conv.lastMessage ? escapeHTML(conv.lastMessage).substring(0,30) : 'Conversa privada'}</p>
           </div>
           ${unread > 0 ? `<span class="dm-unread-badge">${unread > 9 ? '9+' : unread}</span>` : `<i data-lucide="lock" class="w-3 h-3 text-slate-400 shrink-0"></i>`}`;
@@ -1271,32 +1289,58 @@
       lucide.createIcons({ root: list });
     }
 
+    // ===== UNREAD LISTENER (reativo e imediato) =====
     function startUnreadListener() {
       if (!currentUser) return;
-      // Para cada conversa, conta mensagens não lidas (enviadas por outro e após lastRead)
-      // Simplificação: usa lastReadAt do usuário na conversa
-      dmUnreadCounts = {};
-      dmConversationsCache.forEach(async (conv) => {
-        const otherId = conv.participants.find(p => p !== currentUser.uid);
-        if (!otherId) return;
-        const lastRead = conv.lastRead?.[currentUser.uid]?.toMillis?.() || 0;
-        try {
-          const q = query(
-            collection(db, 'dmConversations', conv.id, 'messages'),
-            where('senderId', '!=', currentUser.uid)
-          );
-          const snap = await getDocs(q);
-          let count = 0;
-          snap.forEach(d => {
-            const data = d.data();
-            const ts = data.createdAt?.toMillis?.() || 0;
-            if (ts > lastRead) count++;
-          });
-          if (count > 0) {
-            dmUnreadCounts[conv.id] = count;
+
+      // Remove listeners de conversas que não existem mais
+      Object.keys(unreadListeners).forEach(convId => {
+        if (!dmConversationsCache.find(c => c.id === convId)) {
+          try { unreadListeners[convId](); } catch(e){}
+          delete unreadListeners[convId];
+          delete dmUnreadCounts[convId];
+        }
+      });
+
+      dmConversationsCache.forEach(conv => {
+        if (unreadListeners[conv.id]) return;
+
+        const q = query(
+          collection(db, 'dmConversations', conv.id, 'messages'),
+          orderBy('createdAt', 'asc')
+        );
+
+        unreadListeners[conv.id] = onSnapshot(q, (snapshot) => {
+          if (!currentUser) return;
+
+          const isActiveDM = activeChatType === 'dm' &&
+            dmConversationId(currentUser.uid, activeDMUserId) === conv.id;
+
+          if (isActiveDM) {
+            // Conversa aberta: zera o badge e marca como lido
+            dmUnreadCounts[conv.id] = 0;
+            setDoc(doc(db, 'dmConversations', conv.id), {
+              lastRead: { [currentUser.uid]: serverTimestamp() }
+            }, { merge: true }).catch(()=>{});
             renderDMConversations();
+            return;
           }
-        } catch(e) {}
+
+          // Recupera o lastRead mais atualizado do cache
+          const convData = dmConversationsCache.find(c => c.id === conv.id);
+          const currentLastRead = convData?.lastRead?.[currentUser.uid]?.toMillis?.() || 0;
+
+          let count = 0;
+          snapshot.forEach(d => {
+            const data = d.data();
+            if (data.senderId === currentUser.uid) return;
+            const ts = data.createdAt?.toMillis?.() || 0;
+            if (ts > currentLastRead) count++;
+          });
+
+          dmUnreadCounts[conv.id] = count;
+          renderDMConversations();
+        }, (err) => console.warn('Unread listener error:', err));
       });
     }
 
@@ -1309,15 +1353,18 @@
 
       document.getElementById('current-channel-name').textContent = otherUsername;
       document.getElementById('current-channel-desc').textContent = 'Conversa privada';
-      const iconEl = document.getElementById('current-channel-icon');
-      iconEl.setAttribute('data-lucide', 'lock');
+      document.getElementById('current-channel-icon').setAttribute('data-lucide', 'lock');
       document.getElementById('header-online-badge').classList.add('hidden');
       document.getElementById('dm-private-badge').classList.remove('hidden');
       document.getElementById('dm-private-badge').classList.add('inline-flex');
       lucide.createIcons();
 
-      // Marca como lido
       const convId = dmConversationId(currentUser.uid, otherUid);
+
+      // Zera o badge imediatamente (antes de qualquer await)
+      dmUnreadCounts[convId] = 0;
+      renderDMConversations();
+
       try {
         await setDoc(doc(db, 'dmConversations', convId), {
           participants: [currentUser.uid, otherUid],
@@ -1328,9 +1375,8 @@
           lastRead: { [currentUser.uid]: serverTimestamp() },
           updatedAt: serverTimestamp()
         }, { merge: true });
-      } catch(e) {}
+      } catch(e) { console.warn('openDM setDoc:', e); }
 
-      // Garante que a conversa existe
       try {
         const convRef = doc(db, 'dmConversations', convId);
         const snap = await getDoc(convRef);
@@ -1347,7 +1393,7 @@
             updatedAt: serverTimestamp()
           });
         }
-      } catch(e) {}
+      } catch(e) { console.warn('openDM ensure:', e); }
 
       attachDMMessageListener(convId, otherUid, otherUsername);
       renderDMConversations();
@@ -1385,45 +1431,36 @@
         renderMessagesPage(true);
 
         const newest = allCurrentMessages[allCurrentMessages.length - 1];
-        if (newest && newest.createdAt) {
-          const liveQ = query(
-            collection(db, 'dmConversations', convId, 'messages'),
-            orderBy('createdAt', 'asc'),
-            startAfter(newest.createdAt)
-          );
-          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
-            if (snapshot.empty) return;
-            const additions = [];
-            snapshot.docChanges().forEach(ch => {
-              if (ch.type === 'added') additions.push({ id: ch.doc.id, ...ch.doc.data() });
-            });
-            if (additions.length === 0) return;
-            allCurrentMessages = allCurrentMessages.concat(additions);
-            renderMessagesPage(false);
-            // Marca como lido
-            if (currentUser) {
-              setDoc(doc(db, 'dmConversations', convId), {
-                lastRead: { [currentUser.uid]: serverTimestamp() }
-              }, { merge: true }).catch(()=>{});
-            }
-          }, (err) => console.warn('Live DM listener:', err));
-        } else {
-          // Se não há mensagens, escuta novas
-          const liveQ = query(
-            collection(db, 'dmConversations', convId, 'messages'),
-            orderBy('createdAt', 'asc')
-          );
-          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
-            if (snapshot.empty) return;
-            const additions = [];
-            snapshot.docChanges().forEach(ch => {
-              if (ch.type === 'added') additions.push({ id: ch.doc.id, ...ch.doc.data() });
-            });
-            if (additions.length === 0) return;
-            allCurrentMessages = allCurrentMessages.concat(additions);
-            renderMessagesPage(false);
-          }, (err) => console.warn('Live DM listener:', err));
-        }
+        const liveQ = newest && newest.createdAt
+          ? query(
+              collection(db, 'dmConversations', convId, 'messages'),
+              orderBy('createdAt', 'asc'),
+              startAfter(newest.createdAt)
+            )
+          : query(
+              collection(db, 'dmConversations', convId, 'messages'),
+              orderBy('createdAt', 'asc')
+            );
+
+        unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
+          if (snapshot.empty && snapshot.docChanges().length === 0) return;
+          const additions = [];
+          snapshot.docChanges().forEach(ch => {
+            if (ch.type === 'added') additions.push({ id: ch.doc.id, ...ch.doc.data() });
+          });
+          if (additions.length === 0) return;
+          allCurrentMessages = allCurrentMessages.concat(additions);
+          renderMessagesPage(false);
+
+          // Conversa aberta: zera badge e marca lido
+          if (activeChatType === 'dm' && currentUser) {
+            dmUnreadCounts[convId] = 0;
+            renderDMConversations();
+            setDoc(doc(db, 'dmConversations', convId), {
+              lastRead: { [currentUser.uid]: serverTimestamp() }
+            }, { merge: true }).catch(()=>{});
+          }
+        }, (err) => console.warn('Live DM listener:', err));
       }).catch((err) => {
         console.error('Erro ao carregar DMs:', err);
         container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
@@ -1449,6 +1486,8 @@
       selectChannel(activeChannelId);
       renderDMConversations();
       lucide.createIcons();
+      // Empilha estado para o botão voltar não fechar o chat
+      pushChatHistoryState();
     }
     function toggleSidebar(open) {
       const sidebar = document.getElementById('sidebar');
@@ -1489,8 +1528,7 @@
       const channel = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
       document.getElementById('current-channel-name').textContent = channel.name;
       document.getElementById('current-channel-desc').textContent = channel.desc;
-      const iconEl = document.getElementById('current-channel-icon');
-      iconEl.setAttribute('data-lucide', channel.icon);
+      document.getElementById('current-channel-icon').setAttribute('data-lucide', channel.icon);
       document.getElementById('dm-private-badge').classList.add('hidden');
       document.getElementById('dm-private-badge').classList.remove('inline-flex');
       document.getElementById('header-online-badge').classList.remove('hidden');
@@ -1501,7 +1539,7 @@
       renderDMConversations();
     }
 
-    // ===== MENSAGENS COM PAGINAÇÃO (CANAIS) =====
+    // ===== MENSAGENS (CANAIS) =====
     function attachMessageListener(channelId) {
       if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
       const container = document.getElementById('messages-container');
