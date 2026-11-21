@@ -180,36 +180,16 @@
 
     .dm-item-active { background: var(--bg-slate-100) !important; border-color: var(--border-color) !important; }
 
-    /* Botão de deletar mensagem (lixeira) */
-    .msg-delete-btn {
-      opacity: 0;
-      transition: opacity 0.15s ease, background-color 0.15s ease;
-      cursor: pointer;
-    }
+    .msg-delete-btn { opacity: 0; transition: opacity 0.15s ease, background-color 0.15s ease; cursor: pointer; }
     .msg-wrapper:hover .msg-delete-btn { opacity: 1; }
-    @media (hover: none) {
-      .msg-delete-btn { opacity: 0.7; }
-    }
+    @media (hover: none) { .msg-delete-btn { opacity: 0.7; } }
 
-    /* Botão de responder mensagem */
-    .msg-reply-btn {
-      opacity: 0;
-      transition: opacity 0.15s ease, background-color 0.15s ease;
-      cursor: pointer;
-    }
+    .msg-reply-btn { opacity: 0; transition: opacity 0.15s ease, background-color 0.15s ease; cursor: pointer; }
     .msg-wrapper:hover .msg-reply-btn { opacity: 1; }
-    @media (hover: none) {
-      .msg-reply-btn { opacity: 0.7; }
-    }
+    @media (hover: none) { .msg-reply-btn { opacity: 0.7; } }
 
-    /* Indicador de mensagem deletada */
-    .msg-deleted {
-      font-style: italic;
-      opacity: 0.65;
-      font-size: 0.8em;
-    }
+    .msg-deleted { font-style: italic; opacity: 0.65; font-size: 0.8em; }
 
-    /* Bloco de citação da resposta */
     .reply-quote {
       border-left: 3px solid var(--theme-accent);
       background: rgba(0,0,0,0.04);
@@ -220,14 +200,17 @@
       opacity: 0.85;
       word-break: break-word;
     }
-    body.dark .reply-quote {
-      background: rgba(255,255,255,0.06);
-    }
+    body.dark .reply-quote { background: rgba(255,255,255,0.06); }
 
-    /* Barra de "respondendo a" no input */
-    #reply-bar {
-      background: var(--bg-card-90);
-      border-color: var(--border-color-80);
+    #reply-bar { background: var(--bg-card-90); border-color: var(--border-color-80); }
+
+    .admin-badge {
+      display: inline-flex; align-items: center; gap: 2px;
+      padding: 1px 6px; border-radius: 9999px;
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
+      border: 1px solid rgba(255,255,255,0.4);
+      box-shadow: 0 2px 6px -1px rgba(245, 158, 11, 0.4);
     }
   </style>
 </head>
@@ -378,7 +361,10 @@
             <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" title="Online" style="border-color: var(--bg-card);"></span>
           </div>
           <div class="min-w-0 flex-1">
-            <p id="profile-username" class="text-sm font-semibold text-slate-900 truncate" style="color: var(--text-primary);">Usuário</p>
+            <div class="flex items-center gap-1.5">
+              <p id="profile-username" class="text-sm font-semibold text-slate-900 truncate" style="color: var(--text-primary);">Usuário</p>
+              <span id="profile-admin-badge" class="admin-badge hidden"><i data-lucide="crown" class="w-2.5 h-2.5"></i>Admin</span>
+            </div>
             <div class="flex flex-wrap items-center gap-1.5 mt-1">
               <span id="profile-age-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200" style="background: var(--bg-slate-100); color: var(--text-secondary); border-color: var(--border-color);">20 anos</span>
               <span id="profile-gender-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200/80 truncate max-w-[115px]">Gênero</span>
@@ -395,7 +381,13 @@
         <div>
           <div class="flex items-center justify-between px-2 mb-2">
             <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canais Disponíveis</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-mono" style="background: var(--bg-slate-100); color: var(--text-secondary); border-color: var(--border-color);">4</span>
+            <div class="flex items-center gap-1">
+              <span id="channel-count-badge" class="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-mono" style="background: var(--bg-slate-100); color: var(--text-secondary); border-color: var(--border-color);">4</span>
+              <button type="button" id="admin-create-channel-btn" onclick="openCreateChannelModal()" title="Criar nova sala (Admin)"
+                class="hidden p-1 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 border border-amber-200/60 transition-colors cursor-pointer">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
           </div>
           <nav id="channels-list" class="space-y-1"></nav>
         </div>
@@ -425,8 +417,6 @@
           <ul id="online-users-list" class="space-y-1.5"></ul>
         </div>
       </div>
-
-      <!-- Botão de sair da sidebar REMOVIDO (mantido apenas o do header) -->
     </aside>
 
     <section class="flex-1 flex flex-col min-w-0 bg-grid-pattern relative overflow-hidden">
@@ -451,12 +441,21 @@
               <span id="dm-private-badge" class="hidden items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
                 <i data-lucide="lock" class="w-3 h-3"></i> Privado
               </span>
+              <span id="header-blocked-badge" class="hidden items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200/80">
+                <i data-lucide="lock" class="w-3 h-3"></i> Sala Bloqueada
+              </span>
             </div>
             <p id="current-channel-desc" class="text-xs text-slate-500 truncate" style="color: var(--text-secondary);">Conversa aberta para toda a comunidade Chat Top</p>
           </div>
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
+          <button type="button" id="admin-panel-btn" onclick="openAdminPanel()" title="Painel de Administrador"
+            class="hidden items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-colors cursor-pointer text-xs font-semibold">
+            <i data-lucide="crown" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Admin</span>
+          </button>
+
           <button type="button" id="chat-dark-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro"
             class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
             <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
@@ -504,7 +503,6 @@
       <div id="emoji-picker" class="hidden px-4 sm:px-6 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200/80 flex flex-wrap gap-2 z-10" style="background: var(--bg-card-90); border-color: var(--border-color-80);"></div>
 
       <footer class="p-3 sm:p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 shrink-0 z-10" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
-        <!-- Barra de responder (oculta por padrão) -->
         <div id="reply-bar" class="hidden max-w-5xl mx-auto mb-2 flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-md" style="background: var(--bg-card-90); border-color: var(--border-color-80);">
           <i data-lucide="corner-up-left" class="w-4 h-4 shrink-0" style="color: var(--theme-accent);"></i>
           <div class="min-w-0 flex-1">
@@ -607,7 +605,151 @@
     </div>
   </div>
 
-  <!-- ============================ LÓGICA ============================ -->
+  <!-- ===== MODAL: LOGIN DE ADMIN ===== -->
+  <div id="admin-login-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-amber-200/80 overflow-hidden edit-profile-modal" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-6 pb-4 border-b border-amber-200/50 bg-gradient-to-br from-amber-50 to-orange-50" style="border-color: var(--border-color);">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-5 h-5"></i> Acesso Administrador
+          </h3>
+          <button type="button" onclick="closeAdminLogin()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <p class="text-xs text-amber-700 mt-1">Digite o código de acesso para liberar o painel.</p>
+      </div>
+      <form id="admin-login-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Código de Acesso</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-amber-500 pointer-events-none"><i data-lucide="key-round" class="w-4 h-4"></i></span>
+            <input type="password" id="admin-code-input" required placeholder="••••"
+              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 tracking-widest text-center font-mono focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all" />
+          </div>
+        </div>
+        <button type="submit"
+          class="w-full py-3 px-4 rounded-2xl font-semibold text-sm bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <i data-lucide="unlock" class="w-4 h-4"></i> Desbloquear Painel
+        </button>
+        <p class="text-[10px] text-center text-slate-400">Apenas administradores autorizados.</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: PAINEL ADMIN ===== -->
+  <div id="admin-panel-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-amber-200/80 overflow-hidden edit-profile-modal max-h-[90vh] flex flex-col" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-5 pb-4 border-b border-amber-200/50 bg-gradient-to-br from-amber-50 to-orange-50 shrink-0" style="border-color: var(--border-color);">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2">
+            <i data-lucide="crown" class="w-5 h-5"></i> Painel de Administrador
+          </h3>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="adminLogout()" title="Sair do modo admin"
+              class="px-3 py-1.5 rounded-xl bg-white/70 hover:bg-red-50 text-amber-700 hover:text-red-600 border border-amber-200 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair do Admin
+            </button>
+            <button type="button" onclick="closeAdminPanel()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 pt-3 shrink-0 border-b border-slate-200/70" style="border-color: var(--border-color);">
+        <div class="flex gap-1">
+          <button type="button" class="admin-tab-btn px-3 py-2 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800" data-tab="channels">
+            <i data-lucide="hash" class="w-3.5 h-3.5 inline-block mr-1"></i> Salas
+          </button>
+          <button type="button" class="admin-tab-btn px-3 py-2 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800" data-tab="users">
+            <i data-lucide="users" class="w-3.5 h-3.5 inline-block mr-1"></i> Usuários
+          </button>
+          <button type="button" class="admin-tab-btn px-3 py-2 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800" data-tab="messages">
+            <i data-lucide="message-square" class="w-3.5 h-3.5 inline-block mr-1"></i> Mensagens
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4">
+        <div id="admin-tab-channels" class="admin-tab-content">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs text-slate-500">Gerencie as salas do chat. Bloqueie ou remova salas.</p>
+            <button type="button" onclick="openCreateChannelModal()" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nova Sala
+            </button>
+          </div>
+          <ul id="admin-channels-list" class="space-y-2"></ul>
+        </div>
+
+        <div id="admin-tab-users" class="admin-tab-content hidden">
+          <p class="text-xs text-slate-500 mb-3">Usuários online agora. Você pode bani-los do chat.</p>
+          <ul id="admin-users-list" class="space-y-2"></ul>
+        </div>
+
+        <div id="admin-tab-messages" class="admin-tab-content hidden">
+          <p class="text-xs text-slate-500 mb-3">Todas as mensagens da sala atual. Remova qualquer uma.</p>
+          <ul id="admin-messages-list" class="space-y-2"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: CRIAR SALA ===== -->
+  <div id="create-channel-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-emerald-200/80 overflow-hidden edit-profile-modal" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-6 pb-4 border-b border-emerald-200/50 bg-gradient-to-br from-emerald-50 to-teal-50" style="border-color: var(--border-color);">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-emerald-800 flex items-center gap-2">
+            <i data-lucide="plus-square" class="w-5 h-5"></i> Criar Nova Sala
+          </h3>
+          <button type="button" onclick="closeCreateChannelModal()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+      <form id="create-channel-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Nome da Sala</label>
+          <input type="text" id="new-channel-name" required minlength="2" maxlength="30" placeholder="Ex: Filmes e Séries"
+            class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Descrição</label>
+          <input type="text" id="new-channel-desc" required maxlength="80" placeholder="Ex: Discussões sobre filmes e séries"
+            class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Ícone</label>
+          <select id="new-channel-icon" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 cursor-pointer">
+            <option value="hash"># Hash</option>
+            <option value="cpu">CPU / Tecnologia</option>
+            <option value="gamepad-2">Gamepad / Jogos</option>
+            <option value="coffee">Café / Bate-papo</option>
+            <option value="music">Música</option>
+            <option value="film">Filmes</option>
+            <option value="book-open">Livros</option>
+            <option value="heart">Coração</option>
+            <option value="star">Estrela</option>
+            <option value="zap">Raio</option>
+            <option value="globe">Globo</option>
+            <option value="flame">Fogo</option>
+          </select>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeCreateChannelModal()"
+            class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors cursor-pointer" style="background: var(--bg-slate-100); color: var(--text-secondary);">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="flex-1 py-2.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-semibold text-sm shadow-lg shadow-emerald-500/30 hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer">
+            Criar Sala
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -620,7 +762,6 @@
       getDocs, writeBatch, where, updateDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // ===== FIREBASE INIT =====
     const firebaseConfig = {
       apiKey: "AIzaSyDTtGsSaqRHULKfzhkQU3UafoDSUP9wQ68",
       authDomain: "chat-top-120a2.firebaseapp.com",
@@ -635,8 +776,9 @@
 
     lucide.createIcons();
 
-    // ===== ESTADO =====
-    const STORAGE_KEYS = { THEME: 'chattop_theme_v1', DARK: 'chattop_dark_v1', SOUND: 'chattop_sound_v1' };
+    const ADMIN_MASTER_CODE = '1986';
+
+    const STORAGE_KEYS = { THEME: 'chattop_theme_v1', DARK: 'chattop_dark_v1', SOUND: 'chattop_sound_v1', ADMIN: 'chattop_admin_v1' };
 
     const COLOR_THEMES = [
       { id:'indigo-cyan', name:'Índigo / Ciano', shortName:'Índigo', primary:'#4F46E5', secondary:'#0284C7', accent:'#0284C7', sentStart:'rgba(79,70,229,0.82)', sentEnd:'rgba(2,132,199,0.78)', sentBorder:'rgba(255,255,255,0.55)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(14,165,233,0.28)' },
@@ -664,6 +806,7 @@
     let unsubscribePresence = null;
     let unsubscribeTyping = null;
     let unsubscribeDMs = null;
+    let unsubscribeChannels = null;
     let unreadListeners = {};
 
     const PAGE_SIZE = 50;
@@ -678,11 +821,14 @@
     let onlineUsersCache = [];
     let dmConversationsCache = [];
     let dmUnreadCounts = {};
+    let dynamicChannels = [];
+    let channelsCache = [];
 
-    // ===== ESTADO DE RESPOSTA =====
-    let replyTarget = null; // { id, sender, text }
+    let replyTarget = null;
 
-    // ===== CONTROLE DE HISTÓRICO =====
+    let isAdminMode = false;
+    let blockedUserUids = new Set();
+
     let historyDepth = 0;
 
     function pushChatHistoryState() {
@@ -717,7 +863,7 @@
       }
     });
 
-    const CHANNELS = [
+    const FIXED_CHANNELS = [
       { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade Chat Top' },
       { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA, hardware e novidades digitais' },
       { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Recomendações de playlists, games e e-sports' },
@@ -726,7 +872,6 @@
 
     const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
 
-    // ===== SOM DE NOTIFICAÇÃO (BIP) =====
     let audioCtx = null;
     function getAudioContext() {
       if (!audioCtx) {
@@ -756,7 +901,7 @@
         };
         beep(880, now, 0.12, 0.18);
         beep(1174.66, now + 0.13, 0.15, 0.16);
-      } catch(e) { /* silencioso */ }
+      } catch(e) {}
     }
     function toggleSound() {
       soundEnabled = !soundEnabled;
@@ -773,7 +918,6 @@
     }
     window.toggleSound = toggleSound;
 
-    // ===== HELPERS =====
     function showToast(message, type='info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -814,20 +958,17 @@
     function dmConversationId(uid1, uid2) {
       return [uid1, uid2].sort().join('_');
     }
-
-    // ===== ÍCONE DE GÊNERO =====
     function getGenderIcon(gender) {
       const g = (gender || '').toLowerCase();
       if (g === 'masculino') return 'mars';
       if (g === 'feminino') return 'venus';
-      if (g === 'não-binário' || g === 'nao-binario') return 'user'; // ou 'transgender'
+      if (g === 'não-binário' || g === 'nao-binario') return 'user';
       return 'user';
     }
     function getGenderLabel(gender) {
       return gender || 'Não informado';
     }
 
-    // ===== DARK MODE =====
     function applyDarkMode(dark, notify=false) {
       isDarkMode = dark;
       if (dark) document.body.classList.add('dark');
@@ -845,7 +986,6 @@
     document.getElementById('auth-dark-toggle').addEventListener('click', toggleDarkMode);
     document.getElementById('chat-dark-toggle').addEventListener('click', toggleDarkMode);
 
-    // ===== TEMA =====
     function applyColorTheme(themeId, notify=false) {
       const theme = COLOR_THEMES.find(t => t.id === themeId) || COLOR_THEMES[0];
       activeThemeId = theme.id;
@@ -916,7 +1056,6 @@
       if (aw && ap && !aw.contains(e.target)) ap.classList.add('hidden');
     });
 
-    // ===== CAPTCHA =====
     function generateMathCaptcha() {
       const ops = ['+','-','×'];
       const op = ops[Math.floor(Math.random()*ops.length)];
@@ -935,7 +1074,6 @@
       showToast('Novo desafio matemático gerado.', 'info');
     });
 
-    // ===== AUTH UI =====
     function switchAuthTab(mode) {
       currentAuthMode = mode;
       const tabLogin = document.getElementById('tab-login');
@@ -1024,10 +1162,13 @@
         if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
         if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
         if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
+        if (unsubscribeChannels) { unsubscribeChannels(); unsubscribeChannels = null; }
         Object.values(unreadListeners).forEach(unsub => { try { unsub(); } catch(e){} });
         unreadListeners = {};
         dmUnreadCounts = {};
         dmConversationsCache = [];
+        isAdminMode = false;
+        localStorage.removeItem(STORAGE_KEYS.ADMIN);
         while (historyDepth > 0) { history.back(); historyDepth--; }
         await signOut(auth);
         showToast('Você saiu da sua conta com segurança.', 'info');
@@ -1038,7 +1179,6 @@
     }
     window.logout = logout;
 
-    // ===== EDITAR PERFIL =====
     function openEditProfile() {
       if (!currentUser) return;
       document.getElementById('edit-username').value = currentUser.username;
@@ -1086,7 +1226,7 @@
 
         const batch = writeBatch(db);
         let count = 0;
-        for (const ch of CHANNELS) {
+        for (const ch of channelsCache) {
           try {
             const snap = await getDocs(query(collection(db, 'channels', ch.id, 'messages'), where('uid', '==', currentUser.uid)));
             snap.forEach(d => {
@@ -1108,7 +1248,6 @@
       }
     });
 
-    // ===== NOVA DM PICKER =====
     function openNewDMPicker() {
       const modal = document.getElementById('new-dm-modal');
       const list = document.getElementById('new-dm-user-list');
@@ -1149,18 +1288,336 @@
     window.openNewDMPicker = openNewDMPicker;
     window.closeNewDMPicker = closeNewDMPicker;
 
-    // ===== AUTH STATE =====
+    function openAdminLogin() {
+      document.getElementById('admin-login-modal').classList.remove('hidden');
+      document.getElementById('admin-code-input').value = '';
+      setTimeout(() => document.getElementById('admin-code-input').focus(), 100);
+      lucide.createIcons();
+    }
+    function closeAdminLogin() {
+      document.getElementById('admin-login-modal').classList.add('hidden');
+    }
+    function adminLogin() {
+      const code = document.getElementById('admin-code-input').value.trim();
+      if (code === ADMIN_MASTER_CODE) {
+        isAdminMode = true;
+        localStorage.setItem(STORAGE_KEYS.ADMIN, 'true');
+        closeAdminLogin();
+        updateAdminUI();
+        showToast('Acesso administrador concedido! 👑', 'success');
+      } else {
+        showToast('Código de acesso incorreto.', 'error');
+        document.getElementById('admin-code-input').value = '';
+        document.getElementById('admin-code-input').focus();
+      }
+    }
+    function adminLogout() {
+      isAdminMode = false;
+      localStorage.removeItem(STORAGE_KEYS.ADMIN);
+      updateAdminUI();
+      closeAdminPanel();
+      showToast('Modo administrador desativado.', 'info');
+    }
+    window.openAdminLogin = openAdminLogin;
+    window.closeAdminLogin = closeAdminLogin;
+    window.adminLogout = adminLogout;
+
+    document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      adminLogin();
+    });
+
+    function updateAdminUI() {
+      const adminBtn = document.getElementById('admin-panel-btn');
+      const createChannelBtn = document.getElementById('admin-create-channel-btn');
+      const profileAdminBadge = document.getElementById('profile-admin-badge');
+      if (isAdminMode) {
+        adminBtn.classList.remove('hidden');
+        adminBtn.classList.add('flex');
+        createChannelBtn.classList.remove('hidden');
+        profileAdminBadge.classList.remove('hidden');
+      } else {
+        adminBtn.classList.add('hidden');
+        adminBtn.classList.remove('flex');
+        createChannelBtn.classList.add('hidden');
+        profileAdminBadge.classList.add('hidden');
+      }
+      if (allCurrentMessages.length > 0) renderMessagesPage(false);
+      lucide.createIcons();
+    }
+
+    function openAdminPanel() {
+      if (!isAdminMode) { openAdminLogin(); return; }
+      document.getElementById('admin-panel-modal').classList.remove('hidden');
+      renderAdminChannels();
+      renderAdminUsers();
+      renderAdminMessages();
+      setupAdminTabs();
+      lucide.createIcons();
+    }
+    function closeAdminPanel() {
+      document.getElementById('admin-panel-modal').classList.add('hidden');
+    }
+    window.openAdminPanel = openAdminPanel;
+    window.closeAdminPanel = closeAdminPanel;
+
+    function setupAdminTabs() {
+      const btns = document.querySelectorAll('.admin-tab-btn');
+      btns.forEach(btn => {
+        btn.onclick = () => {
+          const tab = btn.dataset.tab;
+          btns.forEach(b => {
+            b.classList.remove('border-amber-500', 'text-amber-700');
+            b.classList.add('border-transparent', 'text-slate-500');
+          });
+          btn.classList.remove('border-transparent', 'text-slate-500');
+          btn.classList.add('border-amber-500', 'text-amber-700');
+          document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.add('hidden'));
+          document.getElementById('admin-tab-' + tab).classList.remove('hidden');
+        };
+      });
+      if (btns.length > 0) btns[0].click();
+    }
+
+    function renderAdminChannels() {
+      const list = document.getElementById('admin-channels-list');
+      list.innerHTML = '';
+      channelsCache.forEach(ch => {
+        const isBlocked = !!ch.blocked;
+        const isFixed = FIXED_CHANNELS.some(f => f.id === ch.id);
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80';
+        li.style.background = 'var(--bg-slate-50)';
+        li.style.borderColor = 'var(--border-color)';
+        li.innerHTML = `
+          <div class="w-9 h-9 rounded-xl theme-gradient-bg flex items-center justify-center shrink-0">
+            <i data-lucide="${ch.icon || 'hash'}" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(ch.name)} ${isFixed ? '<span class="text-[9px] text-slate-400">(fixa)</span>' : ''}</p>
+            <p class="text-[10px] truncate" style="color: var(--text-muted);">${escapeHTML(ch.desc || '')}</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" class="admin-block-btn p-1.5 rounded-lg ${isBlocked ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200'}" title="${isBlocked ? 'Desbloquear sala' : 'Bloquear sala'}">
+              <i data-lucide="${isBlocked ? 'unlock' : 'lock'}" class="w-3.5 h-3.5"></i>
+            </button>
+            ${!isFixed ? `<button type="button" class="admin-delete-channel-btn p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200" title="Remover sala">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>` : ''}
+          </div>`;
+        const blockBtn = li.querySelector('.admin-block-btn');
+        blockBtn.onclick = () => toggleChannelBlocked(ch.id);
+        const delBtn = li.querySelector('.admin-delete-channel-btn');
+        if (delBtn) delBtn.onclick = () => deleteChannel(ch.id);
+        list.appendChild(li);
+      });
+      lucide.createIcons({ root: list });
+    }
+
+    function renderAdminUsers() {
+      const list = document.getElementById('admin-users-list');
+      list.innerHTML = '';
+      const others = onlineUsersCache.filter(u => u.uid !== currentUser?.uid);
+      if (others.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhum outro usuário online.</p>`;
+        return;
+      }
+      others.forEach(u => {
+        const isBlocked = blockedUserUids.has(u.uid);
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80';
+        li.style.background = 'var(--bg-slate-50)';
+        li.style.borderColor = 'var(--border-color)';
+        li.innerHTML = `
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">${getInitials(u.username)}</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(u.username)}</p>
+            <p class="text-[10px] ${isBlocked ? 'text-red-600' : 'text-emerald-600'}">${isBlocked ? '● Banido' : '● Online'}</p>
+          </div>
+          <button type="button" class="admin-ban-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold ${isBlocked ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200' : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'}" title="${isBlocked ? 'Desbanir' : 'Banir'}">
+            <i data-lucide="${isBlocked ? 'user-check' : 'user-x'}" class="w-3.5 h-3.5 inline-block mr-1"></i>${isBlocked ? 'Desbanir' : 'Banir'}
+          </button>`;
+        const banBtn = li.querySelector('.admin-ban-btn');
+        banBtn.onclick = () => toggleUserBan(u.uid, u.username);
+        list.appendChild(li);
+      });
+      lucide.createIcons({ root: list });
+    }
+
+    function renderAdminMessages() {
+      const list = document.getElementById('admin-messages-list');
+      list.innerHTML = '';
+      if (allCurrentMessages.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma mensagem na sala atual.</p>`;
+        return;
+      }
+      allCurrentMessages.forEach(msg => {
+        if (msg.deleted) return;
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80';
+        li.style.background = 'var(--bg-slate-50)';
+        li.style.borderColor = 'var(--border-color)';
+        li.innerHTML = `
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center text-[10px] font-bold text-white shrink-0">${getInitials(msg.sender)}</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-[11px] font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(msg.sender)} <span class="text-slate-400 font-normal">${escapeHTML(msg.time || '')}</span></p>
+            <p class="text-xs break-words" style="color: var(--text-secondary);">${escapeHTML((msg.text || '').substring(0, 150))}</p>
+          </div>
+          <button type="button" class="admin-del-msg-btn p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shrink-0" title="Remover mensagem">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>`;
+        const delBtn = li.querySelector('.admin-del-msg-btn');
+        delBtn.onclick = () => adminDeleteMessage(msg.id);
+        list.appendChild(li);
+      });
+      lucide.createIcons({ root: list });
+    }
+
+    async function toggleChannelBlocked(channelId) {
+      try {
+        const ch = channelsCache.find(c => c.id === channelId);
+        if (!ch) return;
+        const newBlocked = !ch.blocked;
+        await setDoc(doc(db, 'channels', channelId), { blocked: newBlocked }, { merge: true });
+        ch.blocked = newBlocked;
+        if (activeChannelId === channelId) updateChannelBlockedUI();
+        renderAdminChannels();
+        renderChannels();
+        showToast(newBlocked ? 'Sala bloqueada para novas mensagens.' : 'Sala desbloqueada.', 'info');
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao alterar bloqueio: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteChannel(channelId) {
+      if (!confirm('Tem certeza que deseja remover esta sala? Todas as mensagens serão apagadas.')) return;
+      try {
+        const msgsSnap = await getDocs(collection(db, 'channels', channelId, 'messages'));
+        const batch = writeBatch(db);
+        msgsSnap.forEach(d => batch.delete(d.ref));
+        batch.delete(doc(db, 'channels', channelId));
+        await batch.commit();
+        if (activeChannelId === channelId) selectChannel('geral');
+        renderAdminChannels();
+        showToast('Sala removida.', 'info');
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao remover sala: ' + err.message, 'error');
+      }
+    }
+
+    async function toggleUserBan(uid, username) {
+      try {
+        const userRef = doc(db, 'users', uid);
+        const snap = await getDoc(userRef);
+        const currentBanned = snap.exists() && snap.data().banned === true;
+        const newBanned = !currentBanned;
+        await setDoc(userRef, { banned: newBanned }, { merge: true });
+        if (newBanned) blockedUserUids.add(uid);
+        else blockedUserUids.delete(uid);
+        if (newBanned) await deleteDoc(doc(db, 'presence', uid)).catch(()=>{});
+        renderAdminUsers();
+        updatePresenceUI(onlineUsersCache);
+        showToast(newBanned ? `${username} foi banido do chat.` : `${username} foi desbanido.`, 'info');
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao banir/desbanir: ' + err.message, 'error');
+      }
+    }
+
+    async function adminDeleteMessage(msgId) {
+      if (!confirm('Remover esta mensagem para todos?')) return;
+      try {
+        let msgRef;
+        if (activeChatType === 'dm') {
+          msgRef = doc(db, 'dmConversations', dmConversationId(currentUser.uid, activeDMUserId), 'messages', msgId);
+        } else {
+          msgRef = doc(db, 'channels', activeChannelId, 'messages', msgId);
+        }
+        await updateDoc(msgRef, {
+          deleted: true, text: '',
+          deletedAt: serverTimestamp(),
+          deletedBy: currentUser.uid
+        });
+        const idx = allCurrentMessages.findIndex(m => m.id === msgId);
+        if (idx !== -1) { allCurrentMessages[idx].deleted = true; allCurrentMessages[idx].text = ''; }
+        renderMessagesPage(false);
+        renderAdminMessages();
+        showToast('Mensagem removida.', 'info');
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao remover: ' + err.message, 'error');
+      }
+    }
+
+    function openCreateChannelModal() {
+      if (!isAdminMode) { openAdminLogin(); return; }
+      document.getElementById('create-channel-modal').classList.remove('hidden');
+      document.getElementById('new-channel-name').value = '';
+      document.getElementById('new-channel-desc').value = '';
+      document.getElementById('new-channel-icon').value = 'hash';
+      setTimeout(() => document.getElementById('new-channel-name').focus(), 100);
+      lucide.createIcons();
+    }
+    function closeCreateChannelModal() {
+      document.getElementById('create-channel-modal').classList.add('hidden');
+    }
+    window.openCreateChannelModal = openCreateChannelModal;
+    window.closeCreateChannelModal = closeCreateChannelModal;
+
+    document.getElementById('create-channel-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!isAdminMode) { showToast('Apenas administradores podem criar salas.', 'error'); return; }
+      const name = document.getElementById('new-channel-name').value.trim();
+      const desc = document.getElementById('new-channel-desc').value.trim();
+      const icon = document.getElementById('new-channel-icon').value;
+      if (name.length < 2) { showToast('Nome muito curto.', 'error'); return; }
+      const id = name.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      if (!id) { showToast('Nome inválido.', 'error'); return; }
+      if (channelsCache.find(c => c.id === id)) { showToast('Já existe uma sala com esse nome.', 'error'); return; }
+      try {
+        await setDoc(doc(db, 'channels', id), {
+          name, desc, icon, blocked: false,
+          createdAt: serverTimestamp(),
+          createdBy: currentUser.uid
+        });
+        closeCreateChannelModal();
+        closeAdminPanel();
+        showToast(`Sala "${name}" criada com sucesso!`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao criar sala: ' + err.message, 'error');
+      }
+    });
+
     onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        let profile = { username: firebaseUser.email.split('@')[0], age: 18, gender: 'Prefiro não informar' };
+        let profile = { username: firebaseUser.email.split('@')[0], age: 18, gender: 'Prefiro não informar', banned: false, isAdmin: false };
         try {
           const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
           if (snap.exists()) profile = { ...profile, ...snap.data() };
         } catch (e) { console.warn('Perfil não carregado:', e); }
+        if (profile.banned === true) {
+          showToast('Sua conta foi banida por um administrador.', 'error');
+          await signOut(auth);
+          return;
+        }
         currentUser = { uid: firebaseUser.uid, ...profile };
+        // *** LIBERAÇÃO AUTOMÁTICA DO MODO ADMIN PELO FIRESTORE ***
+        if (profile.isAdmin === true || localStorage.getItem(STORAGE_KEYS.ADMIN) === 'true') {
+          isAdminMode = true;
+        } else {
+          isAdminMode = false;
+        }
         enterChatInterface();
         startPresence();
         startDMListener();
+        startChannelsListener();
+        updateAdminUI();
         updateSoundButtonUI();
       } else {
         currentUser = null;
@@ -1169,11 +1626,13 @@
         activeDMUsername = null;
         replyTarget = null;
         hideReplyBar();
+        isAdminMode = false;
         stopPresence();
         if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
         if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
         if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
         if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
+        if (unsubscribeChannels) { unsubscribeChannels(); unsubscribeChannels = null; }
         Object.values(unreadListeners).forEach(unsub => { try { unsub(); } catch(e){} });
         unreadListeners = {};
         dmUnreadCounts = {};
@@ -1186,7 +1645,45 @@
       }
     });
 
-    // ===== PRESENÇA =====
+    function startChannelsListener() {
+      if (!currentUser) return;
+      if (unsubscribeChannels) { unsubscribeChannels(); unsubscribeChannels = null; }
+      unsubscribeChannels = onSnapshot(collection(db, 'channels'), (snapshot) => {
+        dynamicChannels = [];
+        snapshot.forEach(d => {
+          const data = d.data();
+          const isFixed = FIXED_CHANNELS.some(f => f.id === d.id);
+          if (!isFixed) dynamicChannels.push({ id: d.id, ...data });
+        });
+        rebuildChannelsCache();
+        renderChannels();
+        if (document.getElementById('admin-panel-modal') && !document.getElementById('admin-panel-modal').classList.contains('hidden')) {
+          renderAdminChannels();
+        }
+      }, (err) => console.warn('Channels listener error:', err));
+    }
+
+    function rebuildChannelsCache() {
+      channelsCache = [...FIXED_CHANNELS];
+      dynamicChannels.forEach(dc => {
+        if (!channelsCache.find(c => c.id === dc.id)) {
+          channelsCache.push({
+            id: dc.id,
+            name: dc.name || dc.id,
+            icon: dc.icon || 'hash',
+            desc: dc.desc || '',
+            blocked: !!dc.blocked,
+            dynamic: true
+          });
+        }
+      });
+      const badge = document.getElementById('channel-count-badge');
+      if (badge) badge.textContent = channelsCache.length;
+      if (activeChatType === 'channel' && !channelsCache.find(c => c.id === activeChannelId)) {
+        selectChannel('geral');
+      }
+    }
+
     function startPresence() {
       if (!currentUser) return;
       stopPresence();
@@ -1208,6 +1705,9 @@
         });
         onlineUsersCache = alive;
         updatePresenceUI(alive);
+        if (document.getElementById('admin-panel-modal') && !document.getElementById('admin-panel-modal').classList.contains('hidden')) {
+          renderAdminUsers();
+        }
       }, (err) => console.warn('Presence listener error:', err));
     }
     function stopPresence() {
@@ -1247,7 +1747,6 @@
       lucide.createIcons({ root: list });
     }
 
-    // ===== DIGITANDO =====
     function typingDocId() {
       if (activeChatType === 'dm') return `dm_${dmConversationId(currentUser.uid, activeDMUserId)}_${currentUser.uid}`;
       return `${activeChannelId}_${currentUser.uid}`;
@@ -1302,7 +1801,6 @@
       }, (err) => console.warn('Typing listener error:', err));
     }
 
-    // ===== DM LISTENER =====
     function startDMListener() {
       if (!currentUser) return;
       if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
@@ -1411,7 +1909,6 @@
       });
     }
 
-    // ===== DM CHAT =====
     async function openDM(otherUid, otherUsername) {
       if (!currentUser || otherUid === currentUser.uid) return;
       activeChatType = 'dm';
@@ -1425,6 +1922,7 @@
       document.getElementById('header-online-badge').classList.add('hidden');
       document.getElementById('dm-private-badge').classList.remove('hidden');
       document.getElementById('dm-private-badge').classList.add('inline-flex');
+      document.getElementById('header-blocked-badge').classList.add('hidden');
       lucide.createIcons();
       const convId = dmConversationId(currentUser.uid, otherUid);
       dmUnreadCounts[convId] = 0;
@@ -1456,7 +1954,6 @@
     }
     window.openDM = openDM;
 
-    // ===== LISTENER PRINCIPAL CORRIGIDO (detecta updates/deletes em tempo real) =====
     function attachDMMessageListener(convId, otherUid, otherName) {
       if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
       const container = document.getElementById('messages-container');
@@ -1478,12 +1975,9 @@
           hasMoreMessages = true;
         } else { oldestLoadedMessage = null; hasMoreMessages = false; }
         renderMessagesPage(true);
-        // Listener em TEMPO REAL para TODA a coleção (pega adições, updates e deletes)
         unsubscribeMessages = onSnapshot(
           query(collection(db, 'dmConversations', convId, 'messages'), orderBy('createdAt', 'asc')),
-          (snapshot) => {
-            handleLiveSnapshot(snapshot);
-          },
+          (snapshot) => { handleLiveSnapshot(snapshot); },
           (err) => console.warn('Live DM listener:', err)
         );
       }).catch((err) => {
@@ -1496,7 +1990,6 @@
       attachTypingListener(`dm_${convId}`);
     }
 
-    // ===== CHAT UI =====
     function enterChatInterface() {
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('chat-screen').classList.remove('hidden');
@@ -1504,7 +1997,6 @@
       document.getElementById('profile-username').textContent = currentUser.username;
       document.getElementById('profile-age-badge').textContent = `${currentUser.age} anos`;
       document.getElementById('profile-gender-badge').textContent = currentUser.gender;
-      renderChannels();
       renderEmojiPicker();
       activeChatType = 'channel';
       selectChannel(activeChannelId);
@@ -1523,7 +2015,7 @@
     function renderChannels() {
       const list = document.getElementById('channels-list');
       list.innerHTML = '';
-      CHANNELS.forEach(channel => {
+      channelsCache.forEach(channel => {
         const isActive = activeChatType === 'channel' && channel.id === activeChannelId;
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -1532,7 +2024,8 @@
           ? 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold bg-white text-slate-900 border border-slate-200/90 shadow-xs transition-all cursor-pointer'
           : 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent transition-all cursor-pointer';
         if (isActive) { btn.style.background = 'var(--bg-card)'; btn.style.borderColor = 'var(--border-color-90)'; btn.style.color = 'var(--text-primary)'; }
-        btn.innerHTML = `<i data-lucide="${channel.icon}" class="w-4 h-4" style="${isActive ? 'color: var(--theme-accent);' : 'color: #94a3b8;'}"></i><span class="truncate">${channel.name}</span>`;
+        const blockedIcon = channel.blocked ? `<i data-lucide="lock" class="w-3 h-3 text-red-500 shrink-0" title="Sala bloqueada"></i>` : '';
+        btn.innerHTML = `<i data-lucide="${channel.icon || 'hash'}" class="w-4 h-4 shrink-0" style="${isActive ? 'color: var(--theme-accent);' : 'color: #94a3b8;'}"></i><span class="truncate flex-1 text-left">${escapeHTML(channel.name)}</span>${blockedIcon}`;
         list.appendChild(btn);
       });
       lucide.createIcons({ root: list });
@@ -1546,13 +2039,14 @@
       replyTarget = null;
       hideReplyBar();
       activeChannelId = channelId;
-      const channel = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
+      const channel = channelsCache.find(c => c.id === channelId) || channelsCache[0] || FIXED_CHANNELS[0];
       document.getElementById('current-channel-name').textContent = channel.name;
-      document.getElementById('current-channel-desc').textContent = channel.desc;
-      document.getElementById('current-channel-icon').setAttribute('data-lucide', channel.icon);
+      document.getElementById('current-channel-desc').textContent = channel.desc || '';
+      document.getElementById('current-channel-icon').setAttribute('data-lucide', channel.icon || 'hash');
       document.getElementById('dm-private-badge').classList.add('hidden');
       document.getElementById('dm-private-badge').classList.remove('inline-flex');
       document.getElementById('header-online-badge').classList.remove('hidden');
+      updateChannelBlockedUI();
       lucide.createIcons();
       renderChannels();
       attachMessageListener(channelId);
@@ -1560,7 +2054,24 @@
       renderDMConversations();
     }
 
-    // ===== MENSAGENS (CANAIS) =====
+    function updateChannelBlockedUI() {
+      const channel = channelsCache.find(c => c.id === activeChannelId);
+      const blockedBadge = document.getElementById('header-blocked-badge');
+      const input = document.getElementById('message-input');
+      const sendBtn = document.querySelector('#message-form button[type="submit"]');
+      if (channel && channel.blocked) {
+        blockedBadge.classList.remove('hidden');
+        blockedBadge.classList.add('inline-flex');
+        if (input) { input.disabled = true; input.placeholder = 'Sala bloqueada pelo administrador.'; }
+        if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '0.5'; }
+      } else {
+        blockedBadge.classList.add('hidden');
+        blockedBadge.classList.remove('inline-flex');
+        if (input) { input.disabled = false; input.placeholder = 'Digite sua mensagem aqui...'; }
+        if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = '1'; }
+      }
+    }
+
     function attachMessageListener(channelId) {
       if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
       const container = document.getElementById('messages-container');
@@ -1579,12 +2090,10 @@
           hasMoreMessages = true;
         } else { oldestLoadedMessage = null; hasMoreMessages = false; }
         renderMessagesPage(true);
-        // Listener em TEMPO REAL para TODA a coleção (pega adições, updates e deletes)
         unsubscribeMessages = onSnapshot(
           query(collection(db, 'channels', channelId, 'messages'), orderBy('createdAt', 'asc')),
           (snapshot) => {
             handleLiveSnapshot(snapshot);
-            // Notificação sonora para novas mensagens de outros no canal ativo
             snapshot.docChanges().forEach(ch => {
               if (ch.type === 'added') {
                 const data = ch.doc.data();
@@ -1605,7 +2114,6 @@
       });
     }
 
-    // Processa snapshot do listener em tempo real (added, modified, removed)
     function handleLiveSnapshot(snapshot) {
       if (!snapshot) return;
       let changed = false;
@@ -1632,13 +2140,15 @@
         }
       });
       if (changed) {
-        // Mantém ordenado por createdAt
         allCurrentMessages.sort((a, b) => {
           const aT = a.createdAt?.toMillis?.() || 0;
           const bT = b.createdAt?.toMillis?.() || 0;
           return aT - bT;
         });
         renderMessagesPage(false);
+        if (document.getElementById('admin-panel-modal') && !document.getElementById('admin-panel-modal').classList.contains('hidden')) {
+          renderAdminMessages();
+        }
       }
     }
 
@@ -1674,7 +2184,6 @@
     }
     window.loadOlderMessages = loadOlderMessages;
 
-    // ===== RESPONDER MENSAGEM =====
     function startReply(msgId, sender, text) {
       replyTarget = { id: msgId, sender, text: (text || '').substring(0, 120) };
       document.getElementById('reply-to-name').textContent = sender;
@@ -1694,7 +2203,6 @@
     window.startReply = startReply;
     window.cancelReply = cancelReply;
 
-    // ===== RENDER MENSAGENS =====
     function renderMessagesPage(isInitial, preserveScroll=false) {
       const container = document.getElementById('messages-container');
       const prevScrollHeight = container.scrollHeight;
@@ -1733,12 +2241,9 @@
         const time = msg.time || (msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '');
         const isDeleted = msg.deleted === true;
 
-        // ===== CONTEÚDO DO BALÃO =====
         const bubbleClasses = isDeleted ? 'bubble-received msg-deleted' : (isOwn ? 'bubble-sent' : 'bubble-received');
-        
-        // Citação de resposta, se houver
-        const replyQuote = (!isDeleted && msg.replyTo) 
-          ? `<div class="reply-quote"><span class="font-semibold">${escapeHTML(msg.replyTo.sender || 'Alguém')}</span>: ${escapeHTML((msg.replyTo.text || '').substring(0,80))}</div>` 
+        const replyQuote = (!isDeleted && msg.replyTo)
+          ? `<div class="reply-quote"><span class="font-semibold">${escapeHTML(msg.replyTo.sender || 'Alguém')}</span>: ${escapeHTML((msg.replyTo.text || '').substring(0,80))}</div>`
           : '';
 
         let bubbleContent;
@@ -1748,7 +2253,7 @@
           bubbleContent = `<div class="${bubbleClasses} px-4 py-2.5 text-sm leading-relaxed break-words">${replyQuote}${escapeHTML(msg.text)}</div>`;
         }
 
-        // ===== BOTÕES DE AÇÃO (lixeira + responder) =====
+        const canDelete = !isDeleted && (isOwn || isAdminMode);
         const actionButtons = !isDeleted ? `
           <div class="flex items-center gap-1 mt-1">
             <button type="button" class="msg-reply-btn p-1.5 rounded-lg bg-slate-50 hover:bg-sky-50 text-slate-400 hover:text-sky-600 border border-slate-200/70 hover:border-sky-200 flex items-center justify-center transition-all"
@@ -1756,14 +2261,13 @@
               onclick="startReply('${msg.id}', '${escapeHTML(msg.sender || '').replace(/'/g, "\\'")}', '${escapeHTML((msg.text || '').substring(0,100)).replace(/'/g, "\\'")}')">
               <i data-lucide="corner-up-left" class="w-3.5 h-3.5"></i>
             </button>
-            ${isOwn ? `<button type="button" class="msg-delete-btn p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 border border-red-200/70 flex items-center justify-center transition-all"
-              title="Remover mensagem" aria-label="Remover mensagem"
+            ${canDelete ? `<button type="button" class="msg-delete-btn p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 border border-red-200/70 flex items-center justify-center transition-all"
+              title="${isOwn ? 'Remover mensagem' : 'Remover (Admin)'}" aria-label="Remover mensagem"
               onclick="deleteMessage('${msg.id}', ${activeChatType === 'dm' ? "'dm'" : "'channel'"}, '${activeChatType === 'dm' ? dmConversationId(currentUser.uid, activeDMUserId) : activeChannelId}')">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>` : ''}
           </div>` : '';
 
-        // ===== ÍCONE DE GÊNERO =====
         const genderIcon = getGenderIcon(msg.gender);
 
         if (isOwn) {
@@ -1805,30 +2309,26 @@
       } else container.scrollTop = container.scrollHeight;
     }
 
-    // ===== DELETAR MENSAGEM (PARA TODOS) =====
     async function deleteMessage(msgId, type, contextId) {
       if (!currentUser) return;
+      const msg = allCurrentMessages.find(m => m.id === msgId);
+      const isOwn = msg && (msg.senderId === currentUser.uid || msg.uid === currentUser.uid);
+      if (!isOwn && !isAdminMode) {
+        showToast('Você só pode remover suas próprias mensagens.', 'error');
+        return;
+      }
       if (!confirm('Deseja remover esta mensagem para todos os participantes?')) return;
       try {
         let msgRef;
-        if (type === 'dm') {
-          msgRef = doc(db, 'dmConversations', contextId, 'messages', msgId);
-        } else {
-          msgRef = doc(db, 'channels', contextId, 'messages', msgId);
-        }
-        // Marca como deletada (soft delete) — o listener em tempo real atualiza todos
+        if (type === 'dm') msgRef = doc(db, 'dmConversations', contextId, 'messages', msgId);
+        else msgRef = doc(db, 'channels', contextId, 'messages', msgId);
         await updateDoc(msgRef, {
-          deleted: true,
-          text: '',
+          deleted: true, text: '',
           deletedAt: serverTimestamp(),
           deletedBy: currentUser.uid
         });
-        // Atualiza local imediatamente (otimista) para resposta instantânea
         const idx = allCurrentMessages.findIndex(m => m.id === msgId);
-        if (idx !== -1) {
-          allCurrentMessages[idx].deleted = true;
-          allCurrentMessages[idx].text = '';
-        }
+        if (idx !== -1) { allCurrentMessages[idx].deleted = true; allCurrentMessages[idx].text = ''; }
         renderMessagesPage(false);
         showToast('Mensagem removida para todos.', 'info');
       } catch (err) {
@@ -1838,12 +2338,25 @@
     }
     window.deleteMessage = deleteMessage;
 
-    // ===== ENVIAR MENSAGEM =====
     document.getElementById('message-form').addEventListener('submit', async function(e) {
       e.preventDefault();
       const input = document.getElementById('message-input');
       const text = input.value.trim();
       if (!text || !currentUser) return;
+
+      if (activeChatType === 'channel') {
+        const ch = channelsCache.find(c => c.id === activeChannelId);
+        if (ch && ch.blocked && !isAdminMode) {
+          showToast('Esta sala está bloqueada para novas mensagens.', 'error');
+          return;
+        }
+      }
+
+      if (currentUser.banned === true) {
+        showToast('Sua conta está banida. Você não pode enviar mensagens.', 'error');
+        return;
+      }
+
       input.value = '';
       stopTyping();
       try {
@@ -1853,7 +2366,6 @@
           text, time: getCurrentTime(), createdAt: serverTimestamp(),
           deleted: false
         };
-        // Adiciona resposta, se aplicável
         if (replyTarget) {
           msgData.replyTo = {
             id: replyTarget.id,
@@ -1890,7 +2402,6 @@
       }
     });
 
-    // ===== LIMPAR =====
     async function clearCurrentChannelHistory() {
       if (!currentUser) return;
       const target = activeChatType === 'dm' ? 'esta conversa privada' : 'esta sala';
@@ -1917,7 +2428,6 @@
     }
     window.clearCurrentChannelHistory = clearCurrentChannelHistory;
 
-    // ===== EMOJIS =====
     function renderEmojiPicker() {
       const picker = document.getElementById('emoji-picker');
       picker.innerHTML = '';
@@ -1940,7 +2450,26 @@
       document.getElementById('emoji-picker').classList.toggle('hidden');
     });
 
-    // ===== INICIALIZAÇÃO =====
+    let logoClickCount = 0;
+    let logoClickTimer = null;
+    document.addEventListener('DOMContentLoaded', () => {
+      const logo = document.querySelector('aside .theme-gradient-bg');
+      if (logo) {
+        logo.style.cursor = 'pointer';
+        logo.title = 'Chat Top';
+        logo.addEventListener('click', () => {
+          logoClickCount++;
+          if (logoClickTimer) clearTimeout(logoClickTimer);
+          logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1500);
+          if (logoClickCount >= 5) {
+            logoClickCount = 0;
+            if (!isAdminMode) openAdminLogin();
+            else openAdminPanel();
+          }
+        });
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       applyColorTheme(activeThemeId, false);
       applyDarkMode(isDarkMode, false);
