@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NexusChat — Comunicação Moderna em Tempo Real</title>
+  <title>Chat Top — Comunicação Moderna em Tempo Real</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -132,7 +132,7 @@
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl theme-gradient-bg mb-3">
           <i data-lucide="message-square-dashed" class="w-7 h-7"></i>
         </div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Nexus<span style="color: var(--theme-accent);">Chat</span></h1>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Chat <span style="color: var(--theme-accent);">Top</span></h1>
         <p class="text-xs sm:text-sm text-slate-500 mt-1">Conecte-se em tempo real com segurança e leveza</p>
       </div>
 
@@ -214,7 +214,7 @@
         </button>
 
         <p class="text-[11px] text-center text-slate-500 pt-1">
-          Dica: o nome de usuário vira um e-mail interno (<span class="font-mono">usuario@nexuschat.local</span>) para o Firebase Auth.
+          Dica: o nome de usuário vira um e-mail interno (<span class="font-mono">usuario@chattop.local</span>) para o Firebase Auth.
         </p>
       </form>
     </div>
@@ -232,7 +232,7 @@
             <i data-lucide="message-square-dashed" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="font-bold text-base tracking-tight text-slate-900">Nexus<span style="color: var(--theme-accent);">Chat</span></span>
+            <span class="font-bold text-base tracking-tight text-slate-900">Chat <span style="color: var(--theme-accent);">Top</span></span>
             <span class="block text-[10px] text-emerald-600 font-semibold leading-none">● Conectado</span>
           </div>
         </div>
@@ -306,7 +306,7 @@
                 <span id="header-online-count">…</span>
               </span>
             </div>
-            <p id="current-channel-desc" class="text-xs text-slate-500 truncate">Conversa aberta para toda a comunidade NexusChat</p>
+            <p id="current-channel-desc" class="text-xs text-slate-500 truncate">Conversa aberta para toda a comunidade Chat Top</p>
           </div>
         </div>
 
@@ -330,9 +330,12 @@
             class="p-2 rounded-xl bg-white/90 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200/90 transition-colors cursor-pointer">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
-          <button type="button" onclick="logout()" title="Sair"
-            class="sm:hidden p-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200/90 transition-colors cursor-pointer">
+
+          <!-- BOTÃO SAIR no header (sempre visível) -->
+          <button type="button" onclick="logout()" title="Sair da conta"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold">
             <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Sair</span>
           </button>
         </div>
       </header>
@@ -399,7 +402,7 @@
     lucide.createIcons();
 
     // ===== ESTADO =====
-    const STORAGE_KEYS = { THEME: 'nexuschat_theme_v1' };
+    const STORAGE_KEYS = { THEME: 'chattop_theme_v1' };
 
     const COLOR_THEMES = [
       { id:'indigo-cyan', name:'Índigo / Ciano', shortName:'Índigo', primary:'#4F46E5', secondary:'#0284C7', accent:'#0284C7', sentStart:'rgba(79,70,229,0.82)', sentEnd:'rgba(2,132,199,0.78)', sentBorder:'rgba(255,255,255,0.55)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(14,165,233,0.28)' },
@@ -418,26 +421,21 @@
     let currentUser = null;
     let activeChannelId = 'geral';
 
-    // Listener de mensagens
     let unsubscribeMessages = null;
-    // Listener de presença
     let unsubscribePresence = null;
-    // Listener de "digitando"
     let unsubscribeTyping = null;
 
-    // Paginação
     const PAGE_SIZE = 50;
-    let oldestLoadedMessage = null;    // snapshot doc da mensagem mais antiga já carregada
+    let oldestLoadedMessage = null;
     let hasMoreMessages = true;
-    let allCurrentMessages = [];        // mensagens da página atual (para renderizar)
+    let allCurrentMessages = [];
 
-    // Heartbeat de presença
     let presenceHeartbeat = null;
     let typingTimeout = null;
     let isTypingFlag = false;
 
     const CHANNELS = [
-      { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade NexusChat' },
+      { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade Chat Top' },
       { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA, hardware e novidades digitais' },
       { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Recomendações de playlists, games e e-sports' },
       { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração, filmes, séries e ideias do dia' }
@@ -480,7 +478,7 @@
       return new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
     }
     function usernameToEmail(username) {
-      return `${username.trim().toLowerCase()}@nexuschat.local`;
+      return `${username.trim().toLowerCase()}@chattop.local`;
     }
 
     // ===== TEMA =====
@@ -691,9 +689,7 @@
       }
     });
 
-    // ===== PRESENÇA (contador em tempo real) =====
-    // Cada usuário logado grava { uid, username, lastSeen } em /presence/{uid}.
-    // Um listener em tempo real conta os documentos com lastSeen < 60s atrás.
+    // ===== PRESENÇA =====
     function startPresence() {
       if (!currentUser) return;
       stopPresence();
@@ -708,12 +704,10 @@
       writePresence();
       presenceHeartbeat = setInterval(writePresence, 25000);
 
-      // Remove este usuário da presença ao fechar a página
       window.addEventListener('beforeunload', () => {
         try { deleteDoc(ref); } catch(e){}
       });
 
-      // Listener: escuta todos os presence docs e conta os que estão "vivos"
       const q = collection(db, 'presence');
       unsubscribePresence = onSnapshot(q, (snapshot) => {
         const now = Date.now();
@@ -722,15 +716,10 @@
           const data = d.data();
           let lastMs = 0;
           if (data.lastSeen && typeof data.lastSeen.toMillis === 'function') lastMs = data.lastSeen.toMillis();
-          // Considera online se escreveu nos últimos 90 segundos
-          if (now - lastMs < 90000) {
-            alive.push({ uid: d.id, username: data.username || 'Usuário' });
-          }
+          if (now - lastMs < 90000) alive.push({ uid: d.id, username: data.username || 'Usuário' });
         });
         updatePresenceUI(alive);
-      }, (err) => {
-        console.warn('Presence listener error:', err);
-      });
+      }, (err) => console.warn('Presence listener error:', err));
     }
 
     function stopPresence() {
@@ -749,7 +738,6 @@
 
       const list = document.getElementById('online-users-list');
       list.innerHTML = '';
-      // Coloca o próprio usuário primeiro
       aliveUsers.sort((a, b) => {
         if (a.uid === currentUser.uid) return -1;
         if (b.uid === currentUser.uid) return 1;
@@ -772,13 +760,10 @@
       });
     }
 
-    // ===== "DIGITANDO..." EM TEMPO REAL =====
-    // Cada usuário grava em /typing/{channelId_uid} enquanto digita. Um listener
-    // mostra o nome de quem estiver digitando há menos de 4 segundos.
+    // ===== DIGITANDO =====
     function typingDocId(channelId) {
       return `${channelId}_${currentUser.uid}`;
     }
-
     async function setTyping(isTyping) {
       if (!currentUser) return;
       const ref = doc(db, 'typing', typingDocId(activeChannelId));
@@ -795,7 +780,6 @@
         }
       } catch (e) { /* silencioso */ }
     }
-
     function stopTyping() {
       if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
       if (isTypingFlag) {
@@ -803,7 +787,6 @@
         setTyping(false);
       }
     }
-
     function handleTypingInput() {
       if (!currentUser) return;
       if (!isTypingFlag) {
@@ -816,13 +799,9 @@
         setTyping(false);
       }, 3000);
     }
-
     function attachTypingListener(channelId) {
       if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
-      const q = query(
-        collection(db, 'typing'),
-        where('channelId', '==', channelId)
-      );
+      const q = query(collection(db, 'typing'), where('channelId', '==', channelId));
       unsubscribeTyping = onSnapshot(q, (snapshot) => {
         const now = Date.now();
         const names = [];
@@ -843,9 +822,7 @@
             : `${names.slice(0,2).join(', ')}${names.length > 2 ? ` e mais ${names.length - 2}` : ''} estão digitando...`;
           typingEl.classList.remove('hidden');
         }
-      }, (err) => {
-        console.warn('Typing listener error:', err);
-      });
+      }, (err) => console.warn('Typing listener error:', err));
     }
 
     // ===== CHAT UI =====
@@ -901,9 +878,6 @@
     }
 
     // ===== MENSAGENS COM PAGINAÇÃO =====
-    // Carrega as últimas PAGE_SIZE mensagens por ordem decrescente, depois
-    // inverte para exibir em ordem cronológica e escuta em tempo real apenas
-    // as mensagens novas (createdAt >= mais recente carregado).
     function attachMessageListener(channelId) {
       if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
       const container = document.getElementById('messages-container');
@@ -913,7 +887,6 @@
       hasMoreMessages = true;
       allCurrentMessages = [];
 
-      // 1) Carrega as últimas PAGE_SIZE mensagens
       const initialQ = query(
         collection(db, 'channels', channelId, 'messages'),
         orderBy('createdAt', 'desc'),
@@ -923,11 +896,9 @@
       getDocs(initialQ).then((snap) => {
         const arr = [];
         snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-        // arr está em ordem desc; inverte para cronológica
         arr.reverse();
         allCurrentMessages = arr;
         if (snap.docs.length === PAGE_SIZE) {
-          // O mais antigo da página = último doc do snapshot original (desc)
           oldestLoadedMessage = snap.docs[snap.docs.length - 1];
           hasMoreMessages = true;
         } else {
@@ -936,7 +907,6 @@
         }
         renderMessagesPage(true);
 
-        // 2) Escuta em tempo real apenas as mensagens novas (>= a mais recente carregada)
         const newest = allCurrentMessages[allCurrentMessages.length - 1];
         if (newest && newest.createdAt) {
           const liveQ = query(
@@ -990,7 +960,7 @@
             hasMoreMessages = false;
           }
         }
-        renderMessagesPage(false, /*preserveScroll=*/true);
+        renderMessagesPage(false, true);
       } catch (err) {
         console.error(err);
         showToast('Falha ao carregar mensagens antigas: ' + err.message, 'error');
@@ -1006,7 +976,6 @@
       const prevScrollTop = container.scrollTop;
       container.innerHTML = '';
 
-      // Botão "Carregar mais" (se houver mais)
       if (hasMoreMessages && allCurrentMessages.length > 0) {
         const moreWrap = document.createElement('div');
         moreWrap.className = 'flex justify-center pb-3';
@@ -1064,11 +1033,9 @@
       if (isInitial) {
         container.scrollTop = container.scrollHeight;
       } else if (preserveScroll) {
-        // Mantém a posição do usuário ao carregar antigas
         const added = container.scrollHeight - prevScrollHeight;
         container.scrollTop = prevScrollTop + added;
       } else {
-        // Novas mensagens: rola para o fim
         container.scrollTop = container.scrollHeight;
       }
     }
@@ -1098,7 +1065,7 @@
       }
     });
 
-    // ===== LIMPAR (apenas minhas mensagens) =====
+    // ===== LIMPAR =====
     async function clearCurrentChannelHistory() {
       if (!confirm('Tem certeza que deseja apagar TODAS as SUAS mensagens nesta sala?')) return;
       try {
@@ -1144,7 +1111,6 @@
       lucide.createIcons();
     });
 
-    // Detecta digitação no campo de mensagem
     document.getElementById('message-input').addEventListener('input', handleTypingInput);
   </script>
 </body>
