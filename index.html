@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexusChat — Comunicação Moderna em Tempo Real</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            ice: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --theme-primary: #4F46E5;
+      --theme-secondary: #0284C7;
+      --theme-accent: #0284C7;
+      --theme-sent-start: rgba(79, 70, 229, 0.82);
+      --theme-sent-end: rgba(2, 132, 199, 0.78);
+      --theme-sent-border: rgba(255, 255, 255, 0.55);
+      --theme-sent-text: #FFFFFF;
+      --theme-btn-text: #FFFFFF;
+      --theme-glow: rgba(14, 165, 233, 0.25);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(226, 232, 240, 0.5); }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.55); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
+
+    .bubble-sent {
+      border-radius: 22px 22px 4px 22px;
+      background: linear-gradient(135deg, var(--theme-sent-start) 0%, var(--theme-sent-end) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--theme-sent-border);
+      color: var(--theme-sent-text);
+      box-shadow: 0 8px 20px -6px var(--theme-glow), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      position: relative;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .bubble-sent:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px -5px var(--theme-glow), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+    .bubble-received {
+      border-radius: 22px 22px 22px 4px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.84) 0%, rgba(248, 250, 252, 0.72) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      color: #0f172a;
+      box-shadow: 0 6px 18px -6px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      position: relative;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .bubble-received:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px -6px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+    }
+    .theme-gradient-bg {
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+      color: var(--theme-btn-text);
+      box-shadow: 0 6px 16px -4px var(--theme-glow);
+    }
+    .theme-gradient-bg:hover { filter: brightness(1.04); }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .message-animate { animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-4px); opacity: 1; }
+    }
+    .typing-dot { animation: typingBounce 1.3s infinite ease-in-out; }
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .bg-grid-pattern {
+      background-color: #f1f5f9;
+      background-image: radial-gradient(rgba(100, 116, 139, 0.16) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-ice-100 text-slate-900 selection:bg-sky-200 selection:text-slate-900">
+
+  <!-- TOASTS -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ============================ TELA 1: AUTH ============================ -->
+  <main id="auth-screen" class="flex-1 flex items-center justify-center p-4 sm:p-6 bg-grid-pattern relative overflow-y-auto">
+    <div class="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/90 rounded-3xl shadow-xl shadow-slate-300/50 overflow-hidden relative z-10 my-4">
+
+      <div class="absolute top-4 right-4 z-20" id="auth-palette-wrapper">
+        <button type="button" id="auth-palette-btn" title="Escolher cor do tema" aria-label="Escolher cor do tema"
+          class="w-8 h-8 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs">
+          <span class="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
+        </button>
+        <div id="auth-palette-popover" class="hidden absolute right-0 mt-2 w-56 p-2.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50">
+          <div class="px-1 pb-2 mb-2 border-b border-slate-100">
+            <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+              <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i>
+              Paleta de Cores
+            </span>
+          </div>
+          <div id="auth-palette-options" class="grid grid-cols-4 gap-1.5"></div>
+        </div>
+      </div>
+
+      <div class="px-6 pt-7 pb-5 text-center border-b border-slate-200/70 bg-gradient-to-b from-white/70 to-transparent">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl theme-gradient-bg mb-3">
+          <i data-lucide="message-square-dashed" class="w-7 h-7"></i>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Nexus<span style="color: var(--theme-accent);">Chat</span></h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Conecte-se em tempo real com segurança e leveza</p>
+      </div>
+
+      <div class="px-6 pt-5">
+        <div class="grid grid-cols-2 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80">
+          <button type="button" id="tab-login" onclick="switchAuthTab('login')" class="py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 theme-gradient-bg shadow-sm">Entrar</button>
+          <button type="button" id="tab-register" onclick="switchAuthTab('register')" class="py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-800">Criar Conta</button>
+        </div>
+      </div>
+
+      <form id="auth-form" class="p-6 space-y-4" novalidate>
+        <div>
+          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Nome de Usuário</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="user" class="w-4 h-4"></i></span>
+            <input type="text" id="username" required autocomplete="username" placeholder="Ex: LucasSilva"
+              class="w-full pl-10 pr-4 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Senha</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="lock" class="w-4 h-4"></i></span>
+            <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••"
+              class="w-full pl-10 pr-11 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
+            <button type="button" id="toggle-password" aria-label="Mostrar senha" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 transition-colors">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label for="age" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Idade <span class="text-sky-600 font-normal">(13+)</span></label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="calendar" class="w-4 h-4"></i></span>
+              <input type="number" id="age" min="13" max="120" required placeholder="Ex: 24"
+                class="w-full pl-10 pr-3 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
+            </div>
+          </div>
+          <div>
+            <label for="gender" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Gênero</label>
+            <div class="relative">
+              <select id="gender" required class="w-full px-3.5 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all appearance-none cursor-pointer">
+                <option value="" disabled selected class="text-slate-400">Selecione...</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+                <option value="Não-binário">Não-binário</option>
+                <option value="Outro">Outro</option>
+                <option value="Prefiro não informar">Prefiro não informar</option>
+              </select>
+              <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none"><i data-lucide="chevron-down" class="w-4 h-4"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+              Verificação Humana (Captcha)
+            </span>
+            <button type="button" id="refresh-captcha" title="Gerar novo cálculo"
+              class="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 transition-all cursor-pointer">
+              <i data-lucide="refresh-cw" class="w-3 h-3"></i> Novo
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <div id="captcha-question" class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-center font-mono text-sm sm:text-base font-bold text-slate-800 tracking-wide select-none shadow-2xs">Quanto é 8 + 5?</div>
+            <input type="number" id="captcha-answer" required placeholder="Resposta"
+              class="w-28 px-3 py-2 bg-white border border-slate-200 rounded-xl text-center font-mono text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+          </div>
+        </div>
+
+        <button type="submit" id="auth-submit-btn"
+          class="w-full py-3 px-4 rounded-2xl font-semibold text-sm theme-gradient-bg active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span id="auth-submit-text">Entrar no Chat</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+
+        <p class="text-[11px] text-center text-slate-500 pt-1">
+          Dica: o nome de usuário vira um e-mail interno (<span class="font-mono">usuario@nexuschat.local</span>) para o Firebase Auth.
+        </p>
+      </form>
+    </div>
+  </main>
+
+  <!-- ============================ TELA 2: CHAT ============================ -->
+  <div id="chat-screen" class="hidden h-screen w-full overflow-hidden flex relative bg-ice-100">
+
+    <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity"></div>
+
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-76 sm:w-80 bg-white/80 backdrop-blur-xl border-r border-slate-200/80 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out shadow-lg lg:shadow-none">
+      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-200/70 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl theme-gradient-bg flex items-center justify-center">
+            <i data-lucide="message-square-dashed" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="font-bold text-base tracking-tight text-slate-900">Nexus<span style="color: var(--theme-accent);">Chat</span></span>
+            <span class="block text-[10px] text-emerald-600 font-semibold leading-none">● Conectado</span>
+          </div>
+        </div>
+        <button type="button" onclick="toggleSidebar(false)" class="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 border-b border-slate-200/70 bg-slate-50/60 shrink-0">
+        <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-2xs">
+          <div class="relative shrink-0">
+            <div id="user-avatar" class="w-11 h-11 rounded-2xl theme-gradient-bg flex items-center justify-center font-bold text-sm">US</div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" title="Online"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p id="profile-username" class="text-sm font-semibold text-slate-900 truncate">Usuário</p>
+            <div class="flex flex-wrap items-center gap-1.5 mt-1">
+              <span id="profile-age-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">20 anos</span>
+              <span id="profile-gender-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200/80 truncate max-w-[115px]">Gênero</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-6">
+        <div>
+          <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canais Disponíveis</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-mono">4</span>
+          </div>
+          <nav id="channels-list" class="space-y-1"></nav>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Membros Online</span>
+            <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="online-count-sidebar">5</span>
+            </span>
+          </div>
+          <ul id="online-users-list" class="space-y-1.5"></ul>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-200/70 shrink-0">
+        <button type="button" onclick="logout()"
+          class="w-full py-2.5 px-4 rounded-2xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/80 hover:border-red-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Sair da Conta
+        </button>
+      </div>
+    </aside>
+
+    <section class="flex-1 flex flex-col min-w-0 bg-grid-pattern relative overflow-hidden">
+      <header class="h-16 px-4 sm:px-6 bg-white/75 backdrop-blur-xl border-b border-slate-200/80 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center gap-3 min-w-0">
+          <button type="button" onclick="toggleSidebar(true)" aria-label="Abrir menu"
+            class="lg:hidden p-2.5 rounded-xl bg-white/90 text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-200 transition-colors">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+
+          <div class="w-10 h-10 rounded-2xl bg-white/90 border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0" style="color: var(--theme-accent);">
+            <i id="current-channel-icon" data-lucide="hash" class="w-5 h-5"></i>
+          </div>
+
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h2 id="current-channel-name" class="text-base sm:text-lg font-bold text-slate-900 truncate">Geral</h2>
+              <span class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span id="header-online-count">5 online</span>
+              </span>
+            </div>
+            <p id="current-channel-desc" class="text-xs text-slate-500 truncate">Conversa aberta para toda a comunidade NexusChat</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
+          <div class="relative" id="palette-wrapper">
+            <button type="button" id="palette-toggle-btn" title="Paleta de cores do chat" aria-label="Escolher paleta de cores"
+              class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs">
+              <span id="active-palette-dot" class="w-3.5 h-3.5 rounded-full border border-slate-300/80 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
+            </button>
+            <div id="palette-popover" class="hidden absolute right-0 mt-2 w-60 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50">
+              <div class="flex items-center justify-between px-1 pb-2 mb-2.5 border-b border-slate-100">
+                <span class="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5">
+                  <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Cor dos Balões
+                </span>
+              </div>
+              <div id="palette-options" class="grid grid-cols-4 gap-2"></div>
+            </div>
+          </div>
+
+          <button type="button" onclick="clearCurrentChannelHistory()" title="Apagar minhas mensagens desta sala"
+            class="p-2 rounded-xl bg-white/90 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200/90 transition-colors cursor-pointer">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+          <button type="button" onclick="logout()" title="Sair"
+            class="sm:hidden p-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-600 border border-slate-200/90 transition-colors cursor-pointer">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <div id="messages-container" class="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-4 scroll-smooth z-10"></div>
+
+      <div id="typing-indicator" class="hidden px-5 py-2 text-xs text-slate-600 flex items-center gap-2 bg-white/70 backdrop-blur-md border-t border-slate-200/70 z-10">
+        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-2xs">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
+        </div>
+        <span id="typing-user-text" class="font-medium text-slate-600">Alguém está digitando...</span>
+      </div>
+
+      <div id="emoji-picker" class="hidden px-4 sm:px-6 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200/80 flex flex-wrap gap-2 z-10"></div>
+
+      <footer class="p-3 sm:p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 shrink-0 z-10">
+        <form id="message-form" class="max-w-5xl mx-auto flex items-center gap-2 sm:gap-3">
+          <button type="button" id="emoji-toggle-btn" aria-label="Emojis rápidos"
+            class="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer">
+            <i data-lucide="smile" class="w-5 h-5"></i>
+          </button>
+          <div class="flex-1 relative">
+            <input type="text" id="message-input" autocomplete="off" placeholder="Digite sua mensagem aqui..."
+              class="w-full px-4 py-3 bg-white/95 border border-slate-200/90 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 shadow-2xs transition-all" />
+          </div>
+          <button type="submit" aria-label="Enviar mensagem"
+            class="px-4 sm:px-5 py-3 rounded-2xl font-semibold text-sm theme-gradient-bg active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer">
+            <span class="hidden sm:inline">Enviar</span>
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </footer>
+    </section>
+  </div>
+
+  <!-- ============================ LÓGICA ============================ -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      signOut, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, getDoc, collection, addDoc,
+      query, orderBy, onSnapshot, serverTimestamp,
+      getDocs, writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // ===== FIREBASE INIT =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyDTtGsSaqRHULKfzhkQU3UafoDSUP9wQ68",
+      authDomain: "chat-top-120a2.firebaseapp.com",
+      projectId: "chat-top-120a2",
+      storageBucket: "chat-top-120a2.firebasestorage.app",
+      messagingSenderId: "156258575236",
+      appId: "1:156258575236:web:f8e784896101d8c223b3d1"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    lucide.createIcons();
+
+    // ===== ESTADO =====
+    const STORAGE_KEYS = { THEME: 'nexuschat_theme_v1' };
+
+    const COLOR_THEMES = [
+      { id:'indigo-cyan', name:'Índigo / Ciano', shortName:'Índigo', primary:'#4F46E5', secondary:'#0284C7', accent:'#0284C7', sentStart:'rgba(79,70,229,0.82)', sentEnd:'rgba(2,132,199,0.78)', sentBorder:'rgba(255,255,255,0.55)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(14,165,233,0.28)' },
+      { id:'soft-green', name:'Verde Fraco / Menta', shortName:'Verde Fraco', primary:'#86efac', secondary:'#bbf7d0', accent:'#15803d', sentStart:'rgba(134,239,172,0.78)', sentEnd:'rgba(187,247,208,0.72)', sentBorder:'rgba(255,255,255,0.85)', sentText:'#064e3b', btnText:'#064e3b', glow:'rgba(34,197,94,0.25)' },
+      { id:'soft-yellow', name:'Amarelo Solar / Suave', shortName:'Amarelo', primary:'#fde047', secondary:'#fef08a', accent:'#a16207', sentStart:'rgba(253,224,71,0.80)', sentEnd:'rgba(254,240,138,0.74)', sentBorder:'rgba(255,255,255,0.88)', sentText:'#422006', btnText:'#422006', glow:'rgba(234,179,8,0.26)' },
+      { id:'emerald-teal', name:'Esmeralda / Teal', shortName:'Esmeralda', primary:'#10b981', secondary:'#14b8a6', accent:'#0d9488', sentStart:'rgba(16,185,129,0.80)', sentEnd:'rgba(20,184,166,0.76)', sentBorder:'rgba(255,255,255,0.58)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(16,185,129,0.26)' },
+      { id:'sky-blue', name:'Azul Céu', shortName:'Azul Céu', primary:'#38bdf8', secondary:'#60a5fa', accent:'#0284c7', sentStart:'rgba(56,189,248,0.78)', sentEnd:'rgba(96,165,250,0.75)', sentBorder:'rgba(255,255,255,0.75)', sentText:'#0c4a6e', btnText:'#0c4a6e', glow:'rgba(56,189,248,0.28)' },
+      { id:'amber-orange', name:'Âmbar / Laranja', shortName:'Âmbar', primary:'#fb923c', secondary:'#f59e0b', accent:'#d97706', sentStart:'rgba(251,146,60,0.80)', sentEnd:'rgba(245,158,11,0.76)', sentBorder:'rgba(255,255,255,0.65)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(245,158,11,0.26)' },
+      { id:'lavender-purple', name:'Roxo Lavanda', shortName:'Lavanda', primary:'#8b5cf6', secondary:'#a78bfa', accent:'#7c3aed', sentStart:'rgba(139,92,246,0.80)', sentEnd:'rgba(167,139,250,0.76)', sentBorder:'rgba(255,255,255,0.58)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(139,92,246,0.26)' },
+      { id:'soft-graphite', name:'Grafite Suave', shortName:'Grafite', primary:'#475569', secondary:'#64748b', accent:'#334155', sentStart:'rgba(71,85,105,0.84)', sentEnd:'rgba(100,116,139,0.78)', sentBorder:'rgba(255,255,255,0.50)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(71,85,105,0.22)' }
+    ];
+
+    let activeThemeId = localStorage.getItem(STORAGE_KEYS.THEME) || 'indigo-cyan';
+    let currentAuthMode = 'login';
+    let currentCaptchaResult = 0;
+    let currentUser = null; // { uid, username, age, gender }
+    let activeChannelId = 'geral';
+    let unsubscribeMessages = null;
+
+    const CHANNELS = [
+      { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade NexusChat' },
+      { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA, hardware e novidades digitais' },
+      { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Recomendações de playlists, games e e-sports' },
+      { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração, filmes, séries e ideias do dia' }
+    ];
+
+    const SIMULATED_USERS = [
+      { name:'Mariana Costa', age:26, gender:'Feminino', color:'from-sky-500 to-blue-600' },
+      { name:'Rafael Mendes', age:29, gender:'Masculino', color:'from-indigo-500 to-slate-700' },
+      { name:'Alex Rivera', age:23, gender:'Não-binário', color:'from-emerald-500 to-teal-600' },
+      { name:'Camila Duarte', age:31, gender:'Feminino', color:'from-amber-500 to-orange-600' }
+    ];
+
+    const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
+
+    // ===== HELPERS =====
+    function showToast(message, type='info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const styles = {
+        error:'bg-white/95 border-red-300 text-red-700 shadow-red-200/50',
+        success:'bg-white/95 border-emerald-300 text-emerald-700 shadow-emerald-200/50',
+        info:'bg-white/95 border-sky-300 text-slate-800 shadow-slate-300/50'
+      };
+      const icons = { error:'alert-circle', success:'check-circle-2', info:'info' };
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-lg text-xs sm:text-sm font-medium transition-all duration-300 transform translate-y-0 ${styles[type]||styles.info}`;
+      toast.innerHTML = `<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 shrink-0"></i><span class="flex-1">${escapeHTML(message)}</span>`;
+      container.appendChild(toast);
+      lucide.createIcons({ root: toast });
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str ?? '';
+      return div.innerHTML;
+    }
+    function getInitials(name) {
+      if (!name) return 'US';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
+      return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+    }
+    function getCurrentTime() {
+      return new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+    }
+    function usernameToEmail(username) {
+      return `${username.trim().toLowerCase()}@nexuschat.local`;
+    }
+
+    // ===== TEMA =====
+    function applyColorTheme(themeId, notify=false) {
+      const theme = COLOR_THEMES.find(t => t.id === themeId) || COLOR_THEMES[0];
+      activeThemeId = theme.id;
+      const root = document.documentElement;
+      root.style.setProperty('--theme-primary', theme.primary);
+      root.style.setProperty('--theme-secondary', theme.secondary);
+      root.style.setProperty('--theme-accent', theme.accent);
+      root.style.setProperty('--theme-sent-start', theme.sentStart);
+      root.style.setProperty('--theme-sent-end', theme.sentEnd);
+      root.style.setProperty('--theme-sent-border', theme.sentBorder);
+      root.style.setProperty('--theme-sent-text', theme.sentText);
+      root.style.setProperty('--theme-btn-text', theme.btnText);
+      root.style.setProperty('--theme-glow', theme.glow);
+      try { localStorage.setItem(STORAGE_KEYS.THEME, theme.id); } catch(e){}
+      renderPaletteOptions();
+      if (notify) showToast(`Tema "${theme.name}" aplicado!`, 'info');
+    }
+    function renderPaletteGridInto(container, closePopoverId) {
+      if (!container) return;
+      container.innerHTML = '';
+      COLOR_THEMES.forEach(theme => {
+        const isSelected = theme.id === activeThemeId;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.title = theme.name;
+        btn.ariaLabel = theme.name;
+        btn.className = `group flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all cursor-pointer ${
+          isSelected ? 'bg-slate-100 border-slate-400 scale-105 shadow-xs' : 'bg-white hover:bg-slate-50 border-slate-200/80 hover:border-slate-300'
+        }`;
+        const checkColor = theme.btnText === '#FFFFFF' ? 'text-white' : 'text-slate-900';
+        btn.innerHTML = `
+          <span class="w-6 h-6 rounded-full border border-slate-300/80 shadow-inner flex items-center justify-center"
+                style="background: linear-gradient(135deg, ${theme.primary}, ${theme.secondary});">
+            ${isSelected ? `<i data-lucide="check" class="w-3.5 h-3.5 ${checkColor}"></i>` : ''}
+          </span>
+          <span class="text-[9px] font-medium text-slate-600 truncate w-full text-center leading-tight">${theme.shortName}</span>`;
+        btn.onclick = () => {
+          applyColorTheme(theme.id, true);
+          const pop = document.getElementById(closePopoverId);
+          if (pop) pop.classList.add('hidden');
+        };
+        container.appendChild(btn);
+      });
+      lucide.createIcons({ root: container });
+    }
+    function renderPaletteOptions() {
+      renderPaletteGridInto(document.getElementById('palette-options'), 'palette-popover');
+      renderPaletteGridInto(document.getElementById('auth-palette-options'), 'auth-palette-popover');
+    }
+    document.getElementById('palette-toggle-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      document.getElementById('palette-popover').classList.toggle('hidden');
+    });
+    document.getElementById('auth-palette-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      document.getElementById('auth-palette-popover').classList.toggle('hidden');
+    });
+    document.addEventListener('click', e => {
+      const w = document.getElementById('palette-wrapper');
+      const p = document.getElementById('palette-popover');
+      if (w && p && !w.contains(e.target)) p.classList.add('hidden');
+      const aw = document.getElementById('auth-palette-wrapper');
+      const ap = document.getElementById('auth-palette-popover');
+      if (aw && ap && !aw.contains(e.target)) ap.classList.add('hidden');
+    });
+
+    // ===== CAPTCHA =====
+    function generateMathCaptcha() {
+      const ops = ['+','-','×'];
+      const op = ops[Math.floor(Math.random()*ops.length)];
+      let a, b, answer;
+      if (op === '+') { a = Math.floor(Math.random()*15)+2; b = Math.floor(Math.random()*15)+1; answer = a+b; }
+      else if (op === '-') { a = Math.floor(Math.random()*15)+8; b = Math.floor(Math.random()*(a-1))+1; answer = a-b; }
+      else { a = Math.floor(Math.random()*7)+2; b = Math.floor(Math.random()*6)+2; answer = a*b; }
+      currentCaptchaResult = answer;
+      const qEl = document.getElementById('captcha-question');
+      const aEl = document.getElementById('captcha-answer');
+      if (qEl) qEl.textContent = `Quanto é ${a} ${op} ${b}?`;
+      if (aEl) aEl.value = '';
+    }
+    document.getElementById('refresh-captcha').addEventListener('click', () => {
+      generateMathCaptcha();
+      showToast('Novo desafio matemático gerado.', 'info');
+    });
+
+    // ===== AUTH UI =====
+    function switchAuthTab(mode) {
+      currentAuthMode = mode;
+      const tabLogin = document.getElementById('tab-login');
+      const tabRegister = document.getElementById('tab-register');
+      const submitText = document.getElementById('auth-submit-text');
+      if (mode === 'login') {
+        tabLogin.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 theme-gradient-bg shadow-sm';
+        tabRegister.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-800';
+        submitText.textContent = 'Entrar no Chat';
+      } else {
+        tabRegister.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 theme-gradient-bg shadow-sm';
+        tabLogin.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-800';
+        submitText.textContent = 'Criar Conta e Entrar';
+      }
+      generateMathCaptcha();
+    }
+    window.switchAuthTab = switchAuthTab;
+
+    document.getElementById('toggle-password').addEventListener('click', function() {
+      const pwdInput = document.getElementById('password');
+      const isPassword = pwdInput.type === 'password';
+      pwdInput.type = isPassword ? 'text' : 'password';
+      this.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
+      lucide.createIcons({ root: this });
+    });
+
+    document.getElementById('auth-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const ageVal = document.getElementById('age').value.trim();
+      const gender = document.getElementById('gender').value;
+      const captchaVal = document.getElementById('captcha-answer').value.trim();
+      const submitBtn = document.getElementById('auth-submit-btn');
+
+      if (username.length < 3) { showToast('O nome de usuário deve ter pelo menos 3 caracteres.', 'error'); return; }
+      if (!/^[a-zA-Z0-9_.]+$/.test(username)) { showToast('Use apenas letras, números, ponto e sublinhado no usuário.', 'error'); return; }
+      if (password.length < 6) { showToast('A senha deve ter pelo menos 6 caracteres.', 'error'); return; }
+      const age = parseInt(ageVal, 10);
+      if (isNaN(age) || age < 13 || age > 120) { showToast('Informe uma idade válida (mínimo 13 anos).', 'error'); return; }
+      if (!gender) { showToast('Por favor, selecione seu gênero.', 'error'); return; }
+      if (captchaVal === '' || parseInt(captchaVal, 10) !== currentCaptchaResult) {
+        showToast('Resposta do Captcha incorreta! Tente novamente.', 'error');
+        generateMathCaptcha();
+        return;
+      }
+
+      const email = usernameToEmail(username);
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.7';
+
+      try {
+        if (currentAuthMode === 'register') {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, 'users', cred.user.uid), {
+            username, age, gender, createdAt: serverTimestamp()
+          });
+          showToast(`Conta criada com sucesso! Bem-vindo(a), ${username}!`, 'success');
+        } else {
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          await setDoc(doc(db, 'users', cred.user.uid), { username, age, gender }, { merge: true });
+          showToast(`Bem-vindo(a) de volta, ${username}!`, 'success');
+        }
+      } catch (err) {
+        console.error(err);
+        let msg = 'Erro ao autenticar. Tente novamente.';
+        if (err.code === 'auth/email-already-in-use') msg = 'Este nome de usuário já está cadastrado. Faça login.';
+        else if (err.code === 'auth/user-not-found') msg = 'Usuário não encontrado. Crie uma conta.';
+        else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'Senha incorreta.';
+        else if (err.code === 'auth/invalid-email') msg = 'Nome de usuário inválido.';
+        else if (err.code === 'auth/weak-password') msg = 'Senha muito fraca (mínimo 6 caracteres).';
+        else if (err.code === 'auth/network-request-failed') msg = 'Falha de rede. Verifique sua conexão.';
+        showToast(msg, 'error');
+        generateMathCaptcha();
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+      }
+    });
+
+    async function logout() {
+      try {
+        if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+        await signOut(auth);
+        showToast('Você saiu da sua conta com segurança.', 'info');
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao sair.', 'error');
+      }
+    }
+    window.logout = logout;
+
+    // ===== AUTH STATE =====
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        let profile = { username: firebaseUser.email.split('@')[0], age: 18, gender: 'Prefiro não informar' };
+        try {
+          const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (snap.exists()) profile = { ...profile, ...snap.data() };
+        } catch (e) { console.warn('Perfil não carregado:', e); }
+        currentUser = { uid: firebaseUser.uid, ...profile };
+        enterChatInterface();
+      } else {
+        currentUser = null;
+        if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+        document.getElementById('chat-screen').classList.add('hidden');
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('password').value = '';
+        generateMathCaptcha();
+        toggleSidebar(false);
+      }
+    });
+
+    // ===== CHAT UI =====
+    function enterChatInterface() {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('chat-screen').classList.remove('hidden');
+      document.getElementById('user-avatar').textContent = getInitials(currentUser.username);
+      document.getElementById('profile-username').textContent = currentUser.username;
+      document.getElementById('profile-age-badge').textContent = `${currentUser.age} anos`;
+      document.getElementById('profile-gender-badge').textContent = currentUser.gender;
+      renderChannels();
+      renderOnlineUsers();
+      renderEmojiPicker();
+      selectChannel(activeChannelId);
+      lucide.createIcons();
+    }
+    function toggleSidebar(open) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (open) { sidebar.classList.remove('-translate-x-full'); backdrop.classList.remove('hidden'); }
+      else { sidebar.classList.add('-translate-x-full'); backdrop.classList.add('hidden'); }
+    }
+    window.toggleSidebar = toggleSidebar;
+
+    function renderChannels() {
+      const list = document.getElementById('channels-list');
+      list.innerHTML = '';
+      CHANNELS.forEach(channel => {
+        const isActive = channel.id === activeChannelId;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => { selectChannel(channel.id); toggleSidebar(false); };
+        btn.className = isActive
+          ? 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold bg-white text-slate-900 border border-slate-200/90 shadow-xs transition-all cursor-pointer'
+          : 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent transition-all cursor-pointer';
+        btn.innerHTML = `<i data-lucide="${channel.icon}" class="w-4 h-4" style="${isActive ? 'color: var(--theme-accent);' : 'color: #94a3b8;'}"></i><span class="truncate">${channel.name}</span>`;
+        list.appendChild(btn);
+      });
+      lucide.createIcons({ root: list });
+    }
+
+    function renderOnlineUsers() {
+      const list = document.getElementById('online-users-list');
+      list.innerHTML = '';
+      const allOnline = [
+        { name:`${currentUser.username} (Você)`, age:currentUser.age, gender:currentUser.gender, color:'from-sky-500 to-indigo-600' },
+        ...SIMULATED_USERS
+      ];
+      document.getElementById('online-count-sidebar').textContent = allOnline.length;
+      document.getElementById('header-online-count').textContent = `${allOnline.length} online`;
+      allOnline.forEach(u => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center gap-2.5 px-2.5 py-2 rounded-2xl hover:bg-white/70 transition-colors';
+        li.innerHTML = `
+          <div class="relative shrink-0">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br ${u.color} flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(u.name)}</div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold text-slate-800 truncate">${escapeHTML(u.name)}</p>
+            <p class="text-[10px] text-slate-500 truncate">${u.age} anos • ${escapeHTML(u.gender)}</p>
+          </div>`;
+        list.appendChild(li);
+      });
+    }
+
+    function selectChannel(channelId) {
+      activeChannelId = channelId;
+      const channel = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
+      document.getElementById('current-channel-name').textContent = channel.name;
+      document.getElementById('current-channel-desc').textContent = channel.desc;
+      const iconEl = document.getElementById('current-channel-icon');
+      iconEl.setAttribute('data-lucide', channel.icon);
+      lucide.createIcons();
+      renderChannels();
+      attachMessageListener(channelId);
+    }
+
+    function attachMessageListener(channelId) {
+      if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+      const container = document.getElementById('messages-container');
+      container.innerHTML = `<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando mensagens...</div>`;
+
+      const q = query(collection(db, 'channels', channelId, 'messages'), orderBy('createdAt', 'asc'));
+      unsubscribeMessages = onSnapshot(q, (snapshot) => {
+        const msgs = [];
+        snapshot.forEach(d => msgs.push({ id: d.id, ...d.data() }));
+        renderMessagesList(msgs);
+      }, (err) => {
+        console.error('Snapshot error:', err);
+        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
+          <p class="text-sm font-semibold">Erro ao carregar mensagens</p>
+          <p class="text-xs mt-1">${escapeHTML(err.message)}</p>
+        </div>`;
+      });
+    }
+
+    function renderMessagesList(msgs) {
+      const container = document.getElementById('messages-container');
+      container.innerHTML = '';
+      if (msgs.length === 0) {
+        container.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
+            <div class="w-14 h-14 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 flex items-center justify-center mb-3 shadow-xs" style="color: var(--theme-accent);">
+              <i data-lucide="message-circle" class="w-7 h-7"></i>
+            </div>
+            <p class="text-sm font-semibold text-slate-700">Nenhuma mensagem nesta sala ainda</p>
+            <p class="text-xs text-slate-500 mt-1">Envie a primeira mensagem para iniciar a conversa!</p>
+          </div>`;
+        lucide.createIcons({ root: container });
+        return;
+      }
+      msgs.forEach(msg => {
+        const isOwn = currentUser && (msg.uid === currentUser.uid || (msg.sender || '').toLowerCase() === currentUser.username.toLowerCase());
+        const wrapper = document.createElement('div');
+        wrapper.className = `flex items-end gap-2.5 message-animate ${isOwn ? 'justify-end' : 'justify-start'}`;
+        const time = msg.time || (msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '');
+        if (isOwn) {
+          wrapper.innerHTML = `
+            <div class="flex flex-col items-end max-w-[82%] sm:max-w-[70%]">
+              <div class="flex items-center gap-2 mb-1 px-1">
+                <span class="text-[10px] text-slate-400">${escapeHTML(time)}</span>
+                <span class="text-xs font-semibold" style="color: var(--theme-accent);">Você</span>
+              </div>
+              <div class="bubble-sent px-4 py-2.5 text-sm font-medium leading-relaxed break-words">${escapeHTML(msg.text)}</div>
+            </div>
+            <div class="w-8 h-8 rounded-2xl theme-gradient-bg flex items-center justify-center text-xs font-bold shrink-0">${getInitials(msg.sender)}</div>`;
+        } else {
+          wrapper.innerHTML = `
+            <div class="w-8 h-8 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-xs font-bold text-slate-700 shrink-0">${getInitials(msg.sender)}</div>
+            <div class="flex flex-col items-start max-w-[82%] sm:max-w-[70%]">
+              <div class="flex flex-wrap items-center gap-1.5 mb-1 px-1">
+                <span class="text-xs font-semibold text-slate-800">${escapeHTML(msg.sender)}</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white/80 text-slate-500 border border-slate-200/80">${msg.age}a • ${escapeHTML(msg.gender)}</span>
+                <span class="text-[10px] text-slate-400">${escapeHTML(time)}</span>
+              </div>
+              <div class="bubble-received px-4 py-2.5 text-sm leading-relaxed break-words">${escapeHTML(msg.text)}</div>
+            </div>`;
+        }
+        container.appendChild(wrapper);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // ===== ENVIAR MENSAGEM =====
+    document.getElementById('message-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const input = document.getElementById('message-input');
+      const text = input.value.trim();
+      if (!text || !currentUser) return;
+      input.value = '';
+      try {
+        await addDoc(collection(db, 'channels', activeChannelId, 'messages'), {
+          uid: currentUser.uid,
+          sender: currentUser.username,
+          age: currentUser.age,
+          gender: currentUser.gender,
+          text,
+          time: getCurrentTime(),
+          createdAt: serverTimestamp()
+        });
+        document.getElementById('emoji-picker').classList.add('hidden');
+        triggerSimulatedReply(text, activeChannelId);
+      } catch (err) {
+        console.error(err);
+        showToast('Falha ao enviar mensagem: ' + err.message, 'error');
+      }
+    });
+
+    function triggerSimulatedReply(userText, channelId) {
+      const bot = SIMULATED_USERS[Math.floor(Math.random()*SIMULATED_USERS.length)];
+      const typingEl = document.getElementById('typing-indicator');
+      const typingText = document.getElementById('typing-user-text');
+      setTimeout(() => {
+        if (activeChannelId !== channelId) return;
+        typingText.textContent = `${bot.name} está digitando...`;
+        typingEl.classList.remove('hidden');
+      }, 600);
+      setTimeout(async () => {
+        typingEl.classList.add('hidden');
+        const lower = userText.toLowerCase();
+        let reply;
+        if (['oi','olá','ola','bom dia','boa noite','boa tarde'].some(w => lower.includes(w))) {
+          reply = `Olá, ${currentUser.username}! Tudo ótimo por aqui, e com você? 👋`;
+        } else if (lower.includes('?')) {
+          reply = `Ótima pergunta, ${currentUser.username}! Eu concordo totalmente com essa ideia. 💡`;
+        } else if (['tecnologia','código','site','app'].some(w => lower.includes(w))) {
+          reply = `Esse assunto é excelente! A evolução das interfaces modernas está incrível. 🚀`;
+        } else {
+          const generic = [
+            `Muito bem colocado, ${currentUser.username}! 👏`,
+            `Curti bastante o que você disse! Faz todo sentido.`,
+            `Com certeza! Sempre bom trocar ideias por aqui. ✨`,
+            `Totalmente de acordo! Vamos continuar nessa linha. 🔥`
+          ];
+          reply = generic[Math.floor(Math.random()*generic.length)];
+        }
+        try {
+          await addDoc(collection(db, 'channels', channelId, 'messages'), {
+            uid: 'bot_' + bot.name.replace(/\s+/g,'_'),
+            sender: bot.name,
+            age: bot.age,
+            gender: bot.gender,
+            text: reply,
+            time: getCurrentTime(),
+            createdAt: serverTimestamp(),
+            isSystemBot: true
+          });
+        } catch (err) { console.warn('Bot reply failed:', err); }
+      }, 2100);
+    }
+
+    // ===== LIMPAR (apenas minhas mensagens) =====
+    async function clearCurrentChannelHistory() {
+      if (!confirm('Tem certeza que deseja apagar TODAS as SUAS mensagens nesta sala?')) return;
+      try {
+        const snap = await getDocs(collection(db, 'channels', activeChannelId, 'messages'));
+        const batch = writeBatch(db);
+        snap.forEach(d => {
+          if (d.data().uid === currentUser.uid) batch.delete(d.ref);
+        });
+        await batch.commit();
+        showToast('Suas mensagens foram removidas.', 'info');
+      } catch (err) {
+        console.error(err);
+        showToast('Falha ao limpar: ' + err.message, 'error');
+      }
+    }
+    window.clearCurrentChannelHistory = clearCurrentChannelHistory;
+
+    // ===== EMOJIS =====
+    function renderEmojiPicker() {
+      const picker = document.getElementById('emoji-picker');
+      picker.innerHTML = '';
+      QUICK_EMOJIS.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = emoji;
+        btn.className = 'w-9 h-9 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 shadow-2xs flex items-center justify-center text-base transition-transform hover:scale-110 cursor-pointer';
+        btn.onclick = () => {
+          const input = document.getElementById('message-input');
+          input.value += emoji;
+          input.focus();
+        };
+        picker.appendChild(btn);
+      });
+    }
+    document.getElementById('emoji-toggle-btn').addEventListener('click', () => {
+      document.getElementById('emoji-picker').classList.toggle('hidden');
+    });
+
+    // ===== INICIALIZAÇÃO =====
+    window.addEventListener('DOMContentLoaded', () => {
+      applyColorTheme(activeThemeId, false);
+      generateMathCaptcha();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
