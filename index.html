@@ -84,6 +84,8 @@
     }
     .edit-profile-modal { animation: modalIn 0.25s ease-out; }
     @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .online-msg-icon { transition: transform .15s, color .15s; }
+    .online-item:hover .online-msg-icon { transform: scale(1.15); color: var(--theme-accent); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-900 transition-colors duration-300">
@@ -222,7 +224,6 @@
         </div>
       </div>
 
-      <!-- Botão de sair da sidebar REMOVIDO (mantido só o do header) -->
       <div class="p-3 border-t border-slate-200" style="border-color: var(--border-color);">
         <button type="button" onclick="toggleDarkMode()" class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
           <i data-lucide="moon" class="w-4 h-4 dark-icon"></i> Modo Escuro
@@ -251,7 +252,12 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-          <!-- Paleta de cores -->
+          <!-- Contador de online no topo -->
+          <span id="header-online-badge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="header-online-count">0</span> online
+          </span>
+
           <div class="relative" id="palette-wrapper">
             <button type="button" id="palette-toggle-btn" title="Paleta de cores"
               class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
@@ -267,19 +273,16 @@
             </div>
           </div>
 
-          <!-- Som de notificação -->
           <button type="button" id="sound-toggle-btn" onclick="toggleSound()" title="Som de notificação"
             class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
             <i data-lucide="volume-2" class="w-4 h-4 text-slate-600 sound-toggle-icon"></i>
           </button>
 
-          <!-- Modo escuro -->
           <button type="button" onclick="toggleDarkMode()" title="Modo escuro"
             class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
             <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
           </button>
 
-          <!-- Sair (único botão de sair) -->
           <button type="button" onclick="logout()" title="Sair da conta"
             class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold" style="background: var(--bg-card); border-color: var(--border-color);">
             <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -299,7 +302,6 @@
         <span id="typing-user-text" class="font-medium" style="color: var(--text-secondary);">Alguém está digitando...</span>
       </div>
 
-      <!-- Emojis rápidos -->
       <div id="emoji-picker" class="hidden px-4 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200 flex flex-wrap gap-2 z-10" style="background: var(--bg-card); border-color: var(--border-color);"></div>
 
       <footer class="p-3 bg-white/90 backdrop-blur-xl border-t border-slate-200 shrink-0 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
@@ -409,7 +411,8 @@
       { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para todos' },
       { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA e hardware' },
       { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Playlists, games e e-sports' },
-      { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' }
+      { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' },
+      { id:'cantinho-amizade', name:'Cantinho da Amizade', icon:'heart', desc:'Um espaço acolhedor para fazer amigos' }
     ];
 
     const COLOR_THEMES = [
@@ -540,11 +543,10 @@
         btn.title=theme.name;
         btn.className=`flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all cursor-pointer ${isSelected?'bg-slate-100 border-slate-400 scale-105':'bg-white hover:bg-slate-50 border-slate-200/80'}`;
         if(isDarkMode && isSelected) btn.style.background='var(--bg-slate-200,#334155)';
-        const checkColor = '#fff';
         btn.innerHTML=`
           <span class="w-6 h-6 rounded-full border border-slate-300/80 shadow-inner flex items-center justify-center"
                 style="background: linear-gradient(135deg, ${theme.primary}, ${theme.secondary});">
-            ${isSelected?`<i data-lucide="check" class="w-3.5 h-3.5" style="color:${checkColor}"></i>`:''}
+            ${isSelected?`<i data-lucide="check" class="w-3.5 h-3.5" style="color:#fff"></i>`:''}
           </span>
           <span class="text-[9px] font-medium truncate w-full text-center leading-tight" style="color:var(--text-secondary)">${theme.name}</span>`;
         btn.onclick=()=>{ applyTheme(theme.id); document.getElementById('palette-popover').classList.add('hidden'); showToast(`Tema "${theme.name}" aplicado!`,'info'); };
@@ -1149,19 +1151,31 @@
       if(currentUser) deleteDoc(doc(db,'presence',currentUser.uid)).catch(()=>{});
     }
     function renderOnline(users) {
-      document.getElementById('online-count-sidebar').textContent=users.length;
+      const total = users.length;
+      document.getElementById('online-count-sidebar').textContent = total;
+      const headerBadge = document.getElementById('header-online-badge');
+      const headerCount = document.getElementById('header-online-count');
+      if (headerBadge && headerCount) {
+        headerCount.textContent = total;
+        headerBadge.classList.remove('hidden');
+      }
       const list=document.getElementById('online-users-list');
       list.innerHTML='';
       const sorted=[...users].sort((a,b)=>{if(a.uid===currentUser.uid)return-1;if(b.uid===currentUser.uid)return 1;return a.username.localeCompare(b.username);});
       sorted.forEach(u=>{
         const me=u.uid===currentUser.uid;
         const li=document.createElement('li');
-        li.className='flex items-center gap-2 px-2 py-1.5 rounded-xl';
+        li.className='online-item flex items-center gap-2 px-2 py-1.5 rounded-xl transition-colors';
         li.style.cursor=me?'default':'pointer';
-        li.innerHTML=`<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">${getInitials(u.username)}</div><p class="text-xs truncate flex-1" style="color:var(--text-primary)">${escapeHTML(u.username)}${me?' (Você)':''}</p><span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>`;
+        li.innerHTML=`
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">${getInitials(u.username)}</div>
+          <p class="text-xs truncate flex-1" style="color:var(--text-primary)">${escapeHTML(u.username)}${me?' (Você)':''}</p>
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+          ${!me?`<i data-lucide="message-circle" class="online-msg-icon w-3.5 h-3.5 text-slate-400 shrink-0" title="Enviar mensagem"></i>`:''}`;
         if(!me) li.onclick=()=>openDM(u.uid,u.username);
         list.appendChild(li);
       });
+      lucide.createIcons({root:list});
     }
 
     // ===== INIT =====
