@@ -75,7 +75,7 @@
     .msg-wrapper:hover .msg-delete-btn { opacity: 1; }
     @media (hover: none) { .msg-delete-btn { opacity: .7; } }
     @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:.4;} 30%{transform:translateY(-4px);opacity:1;} }
-    .typing-dot { animation: typingBounce 1.3s infinite ease-in-out; }
+    .typing-dot { animation: typingBounce 1.3s ease-in-out infinite; }
     .typing-dot:nth-child(1){animation-delay:0s;} .typing-dot:nth-child(2){animation-delay:.2s;} .typing-dot:nth-child(3){animation-delay:.4s;}
     .dm-unread-badge {
       min-width: 18px; height: 18px; padding: 0 5px;
@@ -177,6 +177,11 @@
             <i data-lucide="message-square-dashed" class="w-5 h-5"></i>
           </div>
           <span class="font-bold" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></span>
+          <!-- Botão de som ao lado do nome -->
+          <button type="button" id="sound-toggle-btn" onclick="toggleSound()" title="Som de notificação"
+            class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer" style="background: var(--bg-slate-100, #f1f5f9); border-color: var(--border-color);">
+            <i data-lucide="volume-2" class="w-3.5 h-3.5 text-slate-600 sound-toggle-icon"></i>
+          </button>
         </div>
         <button type="button" onclick="toggleSidebar(false)" class="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -224,11 +229,7 @@
         </div>
       </div>
 
-      <div class="p-3 border-t border-slate-200" style="border-color: var(--border-color);">
-        <button type="button" onclick="toggleDarkMode()" class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
-          <i data-lucide="moon" class="w-4 h-4 dark-icon"></i> Modo Escuro
-        </button>
-      </div>
+      <!-- Botão duplicado de modo noturno REMOVIDO daqui -->
     </aside>
 
     <section class="flex-1 flex flex-col min-w-0 bg-grid relative overflow-hidden">
@@ -267,11 +268,7 @@
             </div>
           </div>
 
-          <button type="button" id="sound-toggle-btn" onclick="toggleSound()" title="Som de notificação"
-            class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
-            <i data-lucide="volume-2" class="w-4 h-4 text-slate-600 sound-toggle-icon"></i>
-          </button>
-
+          <!-- Botão de modo noturno no TOPO (único) -->
           <button type="button" onclick="toggleDarkMode()" title="Modo escuro"
             class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
             <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
@@ -382,10 +379,31 @@
     </div>
   </div>
 
+  <!-- MODAL DE OPÇÕES DE EXCLUSÃO -->
+  <div id="delete-options-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="w-full max-w-xs bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="p-4 space-y-2">
+        <p class="text-sm font-semibold text-center mb-2" style="color: var(--text-primary);">Apagar mensagem</p>
+        <button type="button" id="delete-for-all-btn"
+          class="w-full py-2.5 rounded-2xl bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm border border-red-200 transition-colors flex items-center justify-center gap-2">
+          <i data-lucide="trash-2" class="w-4 h-4"></i> Apagar para todos
+        </button>
+        <button type="button" id="delete-for-me-btn"
+          class="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm border border-slate-200 transition-colors flex items-center justify-center gap-2" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
+          <i data-lucide="eye-off" class="w-4 h-4"></i> Apagar só para mim
+        </button>
+        <button type="button" onclick="closeDeleteOptions()"
+          class="w-full py-2 rounded-2xl text-slate-400 hover:text-slate-700 text-xs font-medium transition-colors">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, orderBy, limit, startAfter, onSnapshot, serverTimestamp, getDocs, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, orderBy, limit, startAfter, onSnapshot, serverTimestamp, getDocs, where, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDTtGsSaqRHULKfzhkQU3UafoDSUP9wQ68",
@@ -423,6 +441,7 @@
     const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
 
     const PAGE_SIZE = 30;
+    const TOAST_DURATION = 1800; // Tempo de exibição do toast (1.8s)
 
     let currentUser = null;
     let currentAuthMode = 'login';
@@ -432,7 +451,6 @@
     let activeDMUserId = null;
     let activeDMUsername = null;
 
-    // DOIS listeners: um para novas mensagens, outro para updates/removes da página carregada
     let unsubscribeNewMessages = null;
     let unsubscribePageUpdates = null;
     let unsubscribePresence = null;
@@ -455,10 +473,13 @@
     let oldestLoadedDoc = null;
     let hasMoreMessages = true;
     let allCurrentMessages = [];
-    let loadedPageCount = 0; // quantas páginas já foram carregadas (para o listener de updates)
+    let loadedPageCount = 0;
 
     let historyDepth = 0;
     let isLoggingOut = false;
+
+    // Estado do modal de exclusão
+    let pendingDeleteMsgId = null;
 
     function pushChatHistoryState() {
       historyDepth++;
@@ -504,7 +525,7 @@
       t.innerHTML = `<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 shrink-0"></i><span>${escapeHTML(msg)}</span>`;
       c.appendChild(t);
       lucide.createIcons({ root: t });
-      setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3500);
+      setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, TOAST_DURATION);
     }
     function escapeHTML(s) { const d = document.createElement('div'); d.textContent = s ?? ''; return d.innerHTML; }
     function getInitials(n) { if(!n) return 'US'; const p=n.trim().split(/\s+/); return p.length===1?p[0].substring(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase(); }
@@ -815,13 +836,17 @@
       attachTypingListener(ch.id);
     }
 
-    // ===== LIMPA OS DOIS LISTENERS =====
     function cleanupMessageListeners() {
       if(unsubscribeNewMessages){unsubscribeNewMessages();unsubscribeNewMessages=null;}
       if(unsubscribePageUpdates){unsubscribePageUpdates();unsubscribePageUpdates=null;}
     }
 
-    // ===== PAGINAÇÃO + LISTENERS =====
+    // Filtra mensagens que o usuário ocultou (apagar só para mim)
+    function isHiddenForMe(msg) {
+      if (!msg.hiddenFor || !Array.isArray(msg.hiddenFor)) return false;
+      return msg.hiddenFor.includes(currentUser?.uid);
+    }
+
     async function loadMessages(reset = false) {
       if (reset) {
         cleanupMessageListeners();
@@ -868,7 +893,6 @@
           loadedPageCount = 1;
           renderMessages(true);
 
-          // ===== LISTENER 1: NOVAS MENSAGENS (após a mais recente carregada) =====
           const newest = allCurrentMessages[allCurrentMessages.length - 1];
           let liveNewQ;
           if (newest && newest.createdAt) {
@@ -882,7 +906,6 @@
             snapshot.docChanges().forEach(ch => {
               if (ch.type === 'added') {
                 const data = ch.doc.data();
-                // Se for deletada, não adiciona
                 if (data.deleted === true) return;
                 if (!allCurrentMessages.find(m => m.id === ch.doc.id)) {
                   additions.push({ id: ch.doc.id, ...data });
@@ -901,8 +924,6 @@
             }
           }, err => console.warn('Live new messages listener:', err));
 
-          // ===== LISTENER 2: UPDATES/REMOVES DA PÁGINA CARREGADA =====
-          // Escuta as mesmas últimas mensagens que já estão na tela (até PAGE_SIZE * loadedPageCount)
           const pageLimit = PAGE_SIZE * Math.max(loadedPageCount, 1);
           const livePageQ = query(colRef, orderBy('createdAt', 'desc'), limit(pageLimit));
           unsubscribePageUpdates = onSnapshot(livePageQ, (snapshot) => {
@@ -910,18 +931,13 @@
             snapshot.docChanges().forEach(ch => {
               const id = ch.doc.id;
               if (ch.type === 'removed') {
-                // Foi removida de verdade do Firestore (ou saiu da janela)
                 const idx = allCurrentMessages.findIndex(m => m.id === id);
-                if (idx !== -1) {
-                  allCurrentMessages.splice(idx, 1);
-                  changed = true;
-                }
+                if (idx !== -1) { allCurrentMessages.splice(idx, 1); changed = true; }
               } else if (ch.type === 'modified') {
                 const data = ch.doc.data();
                 const idx = allCurrentMessages.findIndex(m => m.id === id);
                 if (idx !== -1) {
                   if (data.deleted === true) {
-                    // Soft delete: remove da tela
                     allCurrentMessages.splice(idx, 1);
                   } else {
                     allCurrentMessages[idx] = { id, ...data };
@@ -930,16 +946,13 @@
                 }
               }
             });
-            if (changed) {
-              renderMessages(false);
-            }
+            if (changed) renderMessages(false);
           }, err => console.warn('Page updates listener:', err));
 
         } else {
           allCurrentMessages = arr.concat(allCurrentMessages);
           loadedPageCount++;
           renderMessages(false, true);
-          // Reinicia o listener de updates com a nova janela maior
           if (unsubscribePageUpdates) { unsubscribePageUpdates(); unsubscribePageUpdates = null; }
           const pageLimit = PAGE_SIZE * loadedPageCount;
           const livePageQ = query(colRef, orderBy('createdAt', 'desc'), limit(pageLimit));
@@ -984,7 +997,8 @@
       const prevScrollHeight = container.scrollHeight;
       const prevScrollTop = container.scrollTop;
 
-      const visibleMessages = allCurrentMessages.filter(m => !m.deleted);
+      // Filtra deletadas para todos e ocultas para mim
+      const visibleMessages = allCurrentMessages.filter(m => !m.deleted && !isHiddenForMe(m));
 
       container.innerHTML = '';
 
@@ -1014,7 +1028,7 @@
         const bubbleContent = `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words">${escapeHTML(msg.text)}</div>`;
 
         const deleteBtn = own
-          ? `<button type="button" class="msg-delete-btn mt-1 p-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-200" title="Remover" onclick="deleteMsg('${msg.id}')"><i data-lucide="trash-2" class="w-3 h-3"></i></button>`
+          ? `<button type="button" class="msg-delete-btn mt-1 p-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-200" title="Apagar mensagem" onclick="openDeleteOptions('${msg.id}')"><i data-lucide="trash-2" class="w-3 h-3"></i></button>`
           : '';
 
         if(own){
@@ -1056,8 +1070,24 @@
       }
     }
 
-    async function deleteMsg(id) {
-      if(!confirm('Remover esta mensagem para todos?'))return;
+    // ===== MODAL DE OPÇÕES DE EXCLUSÃO =====
+    function openDeleteOptions(msgId) {
+      pendingDeleteMsgId = msgId;
+      document.getElementById('delete-options-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeDeleteOptions() {
+      pendingDeleteMsgId = null;
+      document.getElementById('delete-options-modal').classList.add('hidden');
+    }
+    window.openDeleteOptions = openDeleteOptions;
+    window.closeDeleteOptions = closeDeleteOptions;
+
+    document.getElementById('delete-for-all-btn').addEventListener('click', async () => {
+      if (!pendingDeleteMsgId) return;
+      const id = pendingDeleteMsgId;
+      closeDeleteOptions();
+      if(!confirm('Apagar esta mensagem para TODOS os participantes?'))return;
       try{
         let ref;
         if(activeChatType==='dm' && activeDMUserId) {
@@ -1067,13 +1097,31 @@
           ref=doc(db,'channels',activeChannelId,'messages',id);
         }
         await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
-        // Remove localmente (feedback imediato) — o listener confirma depois
         allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
         renderMessages(false);
-        showToast('Mensagem removida.','info');
+        showToast('Mensagem apagada para todos.','info');
       }catch(e){ showToast('Erro: '+e.message,'error'); }
-    }
-    window.deleteMsg = deleteMsg;
+    });
+
+    document.getElementById('delete-for-me-btn').addEventListener('click', async () => {
+      if (!pendingDeleteMsgId) return;
+      const id = pendingDeleteMsgId;
+      closeDeleteOptions();
+      try{
+        let ref;
+        if(activeChatType==='dm' && activeDMUserId) {
+          const convId=dmConvId(currentUser.uid,activeDMUserId);
+          ref=doc(db,'dmConversations',convId,'messages',id);
+        } else {
+          ref=doc(db,'channels',activeChannelId,'messages',id);
+        }
+        await updateDoc(ref,{ hiddenFor: arrayUnion(currentUser.uid) });
+        // Remove da lista local imediatamente
+        allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
+        renderMessages(false);
+        showToast('Mensagem oculta só para você.','info');
+      }catch(e){ showToast('Erro: '+e.message,'error'); }
+    });
 
     document.getElementById('message-form').addEventListener('submit', async e=>{
       e.preventDefault();
@@ -1244,6 +1292,7 @@
             const data=d.data();
             if(data.senderId===currentUser.uid)return;
             if(data.deleted===true)return;
+            if(isHiddenForMe(data))return;
             const ts=data.createdAt?.toMillis?.()||0;
             if(ts>lastRead)count++;
           });
