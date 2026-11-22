@@ -82,6 +82,8 @@
       border-radius: 9999px; background: #ef4444; color: #fff;
       font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
     }
+    .edit-profile-modal { animation: modalIn 0.25s ease-out; }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-900 transition-colors duration-300">
@@ -186,6 +188,10 @@
             <p id="profile-username" class="text-sm font-semibold truncate" style="color: var(--text-primary);">Usuário</p>
             <p id="profile-info" class="text-[10px] truncate" style="color: var(--text-secondary);">20 anos</p>
           </div>
+          <button type="button" onclick="openEditProfile()" title="Editar perfil"
+            class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
         </div>
       </div>
 
@@ -216,12 +222,10 @@
         </div>
       </div>
 
+      <!-- Botão de sair da sidebar REMOVIDO (mantido só o do header) -->
       <div class="p-3 border-t border-slate-200" style="border-color: var(--border-color);">
-        <button type="button" onclick="toggleDarkMode()" class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 mb-2" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
+        <button type="button" onclick="toggleDarkMode()" class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
           <i data-lucide="moon" class="w-4 h-4 dark-icon"></i> Modo Escuro
-        </button>
-        <button type="button" onclick="logout()" class="w-full py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold flex items-center justify-center gap-2 border border-red-200">
-          <i data-lucide="log-out" class="w-4 h-4"></i> Sair
         </button>
       </div>
     </aside>
@@ -245,9 +249,43 @@
             <p id="current-channel-desc" class="text-xs truncate" style="color: var(--text-secondary);">Conversa aberta</p>
           </div>
         </div>
-        <button type="button" onclick="logout()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 text-xs font-semibold flex items-center gap-1.5" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
-          <i data-lucide="log-out" class="w-4 h-4"></i> Sair
-        </button>
+
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
+          <!-- Paleta de cores -->
+          <div class="relative" id="palette-wrapper">
+            <button type="button" id="palette-toggle-btn" title="Paleta de cores"
+              class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
+              <span id="active-palette-dot" class="w-3.5 h-3.5 rounded-full border border-slate-300/80 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
+            </button>
+            <div id="palette-popover" class="hidden absolute right-0 mt-2 w-60 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50" style="background: var(--bg-card); border-color: var(--border-color);">
+              <div class="flex items-center justify-between px-1 pb-2 mb-2.5 border-b border-slate-100" style="border-color: var(--border-color);">
+                <span class="text-[11px] font-semibold flex items-center gap-1.5" style="color: var(--text-primary);">
+                  <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Cor dos Balões
+                </span>
+              </div>
+              <div id="palette-options" class="grid grid-cols-4 gap-2"></div>
+            </div>
+          </div>
+
+          <!-- Som de notificação -->
+          <button type="button" id="sound-toggle-btn" onclick="toggleSound()" title="Som de notificação"
+            class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
+            <i data-lucide="volume-2" class="w-4 h-4 text-slate-600 sound-toggle-icon"></i>
+          </button>
+
+          <!-- Modo escuro -->
+          <button type="button" onclick="toggleDarkMode()" title="Modo escuro"
+            class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
+            <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
+          </button>
+
+          <!-- Sair (único botão de sair) -->
+          <button type="button" onclick="logout()" title="Sair da conta"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold" style="background: var(--bg-card); border-color: var(--border-color);">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Sair</span>
+          </button>
+        </div>
       </header>
 
       <div id="messages-container" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 z-10"></div>
@@ -261,8 +299,15 @@
         <span id="typing-user-text" class="font-medium" style="color: var(--text-secondary);">Alguém está digitando...</span>
       </div>
 
+      <!-- Emojis rápidos -->
+      <div id="emoji-picker" class="hidden px-4 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200 flex flex-wrap gap-2 z-10" style="background: var(--bg-card); border-color: var(--border-color);"></div>
+
       <footer class="p-3 bg-white/90 backdrop-blur-xl border-t border-slate-200 shrink-0 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
         <form id="message-form" class="max-w-4xl mx-auto flex items-center gap-2">
+          <button type="button" id="emoji-toggle-btn" aria-label="Emojis"
+            class="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color);">
+            <i data-lucide="smile" class="w-5 h-5"></i>
+          </button>
           <input type="text" id="message-input" autocomplete="off" placeholder="Digite sua mensagem..."
             class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);" />
           <button type="submit" class="px-4 py-3 rounded-2xl theme-gradient-bg font-semibold text-sm flex items-center gap-1.5 active:scale-95 transition-all">
@@ -288,6 +333,56 @@
         <p class="text-xs text-slate-500 mt-1" style="color: var(--text-secondary);">Selecione um usuário online.</p>
       </div>
       <div id="new-dm-user-list" class="p-4 max-h-80 overflow-y-auto space-y-1.5"></div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR PERFIL -->
+  <div id="edit-profile-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="edit-profile-modal w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-6 pb-4 border-b border-slate-200" style="border-color: var(--border-color);">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold flex items-center gap-2" style="color: var(--text-primary);">
+            <i data-lucide="user-cog" class="w-5 h-5" style="color: var(--theme-accent);"></i> Editar Perfil
+          </h3>
+          <button type="button" onclick="closeEditProfile()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+      <form id="edit-profile-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Nome de Usuário</label>
+          <input type="text" id="edit-username" required minlength="3" maxlength="30"
+            class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Idade</label>
+            <input type="number" id="edit-age" min="13" max="120" required
+              class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Gênero</label>
+            <select id="edit-gender" required class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Não-binário">Não-binário</option>
+              <option value="Outro">Outro</option>
+              <option value="Prefiro não informar">Prefiro não informar</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeEditProfile()"
+            class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
+            Cancelar
+          </button>
+          <button type="submit" id="edit-profile-submit"
+            class="flex-1 py-2.5 rounded-2xl theme-gradient-bg font-semibold text-sm active:scale-[0.98] transition-all">
+            Salvar
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -317,6 +412,19 @@
       { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' }
     ];
 
+    const COLOR_THEMES = [
+      { id:'indigo-cyan', name:'Índigo', primary:'#4F46E5', secondary:'#0284C7' },
+      { id:'soft-green', name:'Menta', primary:'#86efac', secondary:'#bbf7d0' },
+      { id:'soft-yellow', name:'Amarelo', primary:'#fde047', secondary:'#fef08a' },
+      { id:'emerald-teal', name:'Esmeralda', primary:'#10b981', secondary:'#14b8a6' },
+      { id:'sky-blue', name:'Azul Céu', primary:'#38bdf8', secondary:'#60a5fa' },
+      { id:'amber-orange', name:'Âmbar', primary:'#fb923c', secondary:'#f59e0b' },
+      { id:'lavender-purple', name:'Lavanda', primary:'#8b5cf6', secondary:'#a78bfa' },
+      { id:'soft-graphite', name:'Grafite', primary:'#475569', secondary:'#64748b' }
+    ];
+
+    const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
+
     let currentUser = null;
     let currentAuthMode = 'login';
     let currentCaptchaResult = 0;
@@ -340,6 +448,8 @@
     let dmUnreadCounts = {};
 
     let isDarkMode = localStorage.getItem('chattop_dark') === 'true';
+    let soundEnabled = localStorage.getItem('chattop_sound') !== 'false';
+    let activeThemeId = localStorage.getItem('chattop_theme') || 'indigo-cyan';
 
     // ===== HELPERS =====
     function showToast(msg, type='info') {
@@ -362,6 +472,41 @@
     function getGenderIcon(g) { const x=(g||'').toLowerCase(); if(x==='masculino')return'mars'; if(x==='feminino')return'venus'; return'user'; }
     function dmConvId(a,b) { return [a,b].sort().join('_'); }
 
+    // ===== SOM =====
+    let audioCtx = null;
+    function playSound() {
+      if(!soundEnabled) return;
+      try {
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
+        const now = audioCtx.currentTime;
+        const beep = (freq, start, dur, vol) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type='sine';
+          osc.frequency.value=freq;
+          gain.gain.setValueAtTime(0,start);
+          gain.gain.linearRampToValueAtTime(vol,start+0.01);
+          gain.gain.exponentialRampToValueAtTime(0.001,start+dur);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(start);
+          osc.stop(start+dur+0.02);
+        };
+        beep(880, now, 0.12, 0.15);
+        beep(1174.66, now+0.13, 0.15, 0.13);
+      } catch(e){}
+    }
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      localStorage.setItem('chattop_sound', soundEnabled?'true':'false');
+      document.querySelectorAll('.sound-toggle-icon').forEach(el=>el.setAttribute('data-lucide', soundEnabled?'volume-2':'volume-x'));
+      lucide.createIcons();
+      if(soundEnabled) playSound();
+      showToast(soundEnabled?'Som ativado 🔊':'Som desativado 🔇','info');
+    }
+    window.toggleSound = toggleSound;
+
     // ===== DARK MODE =====
     function applyDark(dark) {
       isDarkMode = dark;
@@ -372,6 +517,69 @@
     }
     function toggleDarkMode() { applyDark(!isDarkMode); showToast(isDarkMode?'Modo escuro 🌙':'Modo claro ☀️','info'); }
     window.toggleDarkMode = toggleDarkMode;
+
+    // ===== PALETA =====
+    function applyTheme(themeId) {
+      const theme = COLOR_THEMES.find(t=>t.id===themeId) || COLOR_THEMES[0];
+      activeThemeId = theme.id;
+      const root = document.documentElement;
+      root.style.setProperty('--theme-primary', theme.primary);
+      root.style.setProperty('--theme-secondary', theme.secondary);
+      root.style.setProperty('--theme-accent', theme.secondary);
+      localStorage.setItem('chattop_theme', theme.id);
+      renderPalette();
+    }
+    function renderPalette() {
+      const container = document.getElementById('palette-options');
+      if(!container) return;
+      container.innerHTML='';
+      COLOR_THEMES.forEach(theme=>{
+        const isSelected = theme.id===activeThemeId;
+        const btn = document.createElement('button');
+        btn.type='button';
+        btn.title=theme.name;
+        btn.className=`flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all cursor-pointer ${isSelected?'bg-slate-100 border-slate-400 scale-105':'bg-white hover:bg-slate-50 border-slate-200/80'}`;
+        if(isDarkMode && isSelected) btn.style.background='var(--bg-slate-200,#334155)';
+        const checkColor = '#fff';
+        btn.innerHTML=`
+          <span class="w-6 h-6 rounded-full border border-slate-300/80 shadow-inner flex items-center justify-center"
+                style="background: linear-gradient(135deg, ${theme.primary}, ${theme.secondary});">
+            ${isSelected?`<i data-lucide="check" class="w-3.5 h-3.5" style="color:${checkColor}"></i>`:''}
+          </span>
+          <span class="text-[9px] font-medium truncate w-full text-center leading-tight" style="color:var(--text-secondary)">${theme.name}</span>`;
+        btn.onclick=()=>{ applyTheme(theme.id); document.getElementById('palette-popover').classList.add('hidden'); showToast(`Tema "${theme.name}" aplicado!`,'info'); };
+        container.appendChild(btn);
+      });
+      lucide.createIcons({root:container});
+    }
+    document.getElementById('palette-toggle-btn').addEventListener('click', e=>{
+      e.stopPropagation();
+      document.getElementById('palette-popover').classList.toggle('hidden');
+    });
+    document.addEventListener('click', e=>{
+      const w = document.getElementById('palette-wrapper');
+      const p = document.getElementById('palette-popover');
+      if(w && p && !w.contains(e.target)) p.classList.add('hidden');
+    });
+
+    // ===== EMOJIS =====
+    function renderEmojis() {
+      const picker = document.getElementById('emoji-picker');
+      picker.innerHTML='';
+      QUICK_EMOJIS.forEach(e=>{
+        const btn = document.createElement('button');
+        btn.type='button';
+        btn.textContent=e;
+        btn.className='w-9 h-9 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-base transition-transform hover:scale-110 cursor-pointer';
+        btn.style.background='var(--bg-card)';
+        btn.style.borderColor='var(--border-color)';
+        btn.onclick=()=>{ const i=document.getElementById('message-input'); i.value+=e; i.focus(); };
+        picker.appendChild(btn);
+      });
+    }
+    document.getElementById('emoji-toggle-btn').addEventListener('click', ()=>{
+      document.getElementById('emoji-picker').classList.toggle('hidden');
+    });
 
     // ===== CAPTCHA =====
     function genCaptcha() {
@@ -443,14 +651,50 @@
         if(unsubscribeTyping){unsubscribeTyping();unsubscribeTyping=null;}
         if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
         Object.values(unreadListeners).forEach(u=>{try{u();}catch(e){}});
-        unreadListeners={};
-        dmUnreadCounts={};
-        dmConversationsCache=[];
+        unreadListeners={}; dmUnreadCounts={}; dmConversationsCache=[];
         await signOut(auth);
         showToast('Você saiu.','info');
       } catch(e){ showToast('Erro ao sair.','error'); }
     }
     window.logout = logout;
+
+    // ===== EDITAR PERFIL =====
+    function openEditProfile() {
+      if(!currentUser) return;
+      document.getElementById('edit-username').value = currentUser.username;
+      document.getElementById('edit-age').value = currentUser.age;
+      document.getElementById('edit-gender').value = currentUser.gender;
+      document.getElementById('edit-profile-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeEditProfile() { document.getElementById('edit-profile-modal').classList.add('hidden'); }
+    window.openEditProfile = openEditProfile;
+    window.closeEditProfile = closeEditProfile;
+
+    document.getElementById('edit-profile-form').addEventListener('submit', async e=>{
+      e.preventDefault();
+      if(!currentUser) return;
+      const newU = document.getElementById('edit-username').value.trim();
+      const newA = parseInt(document.getElementById('edit-age').value,10);
+      const newG = document.getElementById('edit-gender').value;
+      const btn = document.getElementById('edit-profile-submit');
+
+      if(newU.length<3||!/^[a-zA-Z0-9_.]+$/.test(newU)){showToast('Nome inválido','error');return;}
+      if(isNaN(newA)||newA<13||newA>120){showToast('Idade inválida','error');return;}
+
+      btn.disabled=true; btn.textContent='Salvando...';
+      try {
+        await setDoc(doc(db,'users',currentUser.uid),{username:newU,age:newA,gender:newG},{merge:true});
+        currentUser.username=newU; currentUser.age=newA; currentUser.gender=newG;
+        document.getElementById('profile-username').textContent=newU;
+        document.getElementById('profile-info').textContent=`${newA} anos • ${newG}`;
+        document.getElementById('user-avatar').textContent=getInitials(newU);
+        await setDoc(doc(db,'presence',currentUser.uid),{username:newU},{merge:true});
+        closeEditProfile();
+        showToast('Perfil atualizado!','success');
+      } catch(err){ showToast('Erro: '+err.message,'error'); }
+      finally { btn.disabled=false; btn.textContent='Salvar'; }
+    });
 
     // ===== AUTH STATE =====
     onAuthStateChanged(auth, async user => {
@@ -487,6 +731,7 @@
       document.getElementById('profile-info').textContent=`${currentUser.age} anos • ${currentUser.gender}`;
       renderChannels();
       renderDMConversations();
+      renderEmojis();
       selectChannel('geral');
       lucide.createIcons();
     }
@@ -547,9 +792,14 @@
 
       unsubscribeMessages=onSnapshot(q, snap=>{
         const msgs=[];
+        snap.docChanges().forEach(ch=>{
+          if(ch.type==='added' && !ch.doc.metadata.hasPendingWrites) {
+            const data=ch.doc.data();
+            if(data.senderId!==currentUser.uid) playSound();
+          }
+        });
         snap.forEach(d=>msgs.push({id:d.id,...d.data()}));
         renderMessages(msgs, container);
-        // marca como lido no DM ativo
         if(activeChatType==='dm' && activeDMUserId) {
           const convId=dmConvId(currentUser.uid,activeDMUserId);
           dmUnreadCounts[convId]=0;
@@ -665,6 +915,7 @@
         } else {
           await addDoc(collection(db,'channels',activeChannelId,'messages'),msgData);
         }
+        document.getElementById('emoji-picker').classList.add('hidden');
       }catch(err){ console.error(err); showToast('Falha ao enviar: '+err.message,'error'); }
     });
 
@@ -803,7 +1054,9 @@
             const ts=data.createdAt?.toMillis?.()||0;
             if(ts>lastRead)count++;
           });
+          const prev=dmUnreadCounts[conv.id]||0;
           dmUnreadCounts[conv.id]=count;
+          if(count>prev) playSound();
           renderDMConversations();
         }, err=>console.warn('Unread listener:',err));
       });
@@ -914,7 +1167,9 @@
     // ===== INIT =====
     window.addEventListener('DOMContentLoaded',()=>{
       applyDark(isDarkMode);
+      applyTheme(activeThemeId);
       genCaptcha();
+      document.querySelectorAll('.sound-toggle-icon').forEach(el=>el.setAttribute('data-lucide', soundEnabled?'volume-2':'volume-x'));
       lucide.createIcons();
     });
 
