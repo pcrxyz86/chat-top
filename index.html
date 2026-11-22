@@ -252,11 +252,7 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-          <!-- Contador de online no topo -->
-          <span id="header-online-badge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span id="header-online-count">0</span> online
-          </span>
+          <!-- Contador de online REMOVIDO do topo -->
 
           <div class="relative" id="palette-wrapper">
             <button type="button" id="palette-toggle-btn" title="Paleta de cores"
@@ -454,6 +450,48 @@
     let soundEnabled = localStorage.getItem('chattop_sound') !== 'false';
     let activeThemeId = localStorage.getItem('chattop_theme') || 'indigo-cyan';
 
+    // ===== CONTROLE DE HISTÓRICO (botão voltar do celular) =====
+    let historyDepth = 0;
+    let isLoggingOut = false;
+
+    function pushChatHistoryState() {
+      historyDepth++;
+      history.pushState({ chattop: true, depth: historyDepth }, '');
+    }
+
+    // Processa o botão voltar do celular
+    function handleBackButton() {
+      // 1) Se a sidebar estiver aberta no mobile, fecha
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
+        toggleSidebar(false);
+        pushChatHistoryState();
+        return;
+      }
+      // 2) Se estiver em uma DM, volta para a sala atual (ou geral)
+      if (activeChatType === 'dm') {
+        selectChannel(activeChannelId || 'geral');
+        pushChatHistoryState();
+        return;
+      }
+      // 3) Se estiver em uma sala que não é a Geral, volta para Geral
+      if (activeChatType === 'channel' && activeChannelId !== 'geral') {
+        selectChannel('geral');
+        pushChatHistoryState();
+        return;
+      }
+      // 4) Se já estiver na Geral, não faz nada (deixa o navegador/sistema gerenciar)
+      historyDepth = Math.max(0, historyDepth - 1);
+    }
+
+    window.addEventListener('popstate', () => {
+      const chatScreen = document.getElementById('chat-screen');
+      if (isLoggingOut) return;
+      if (chatScreen && !chatScreen.classList.contains('hidden')) {
+        handleBackButton();
+      }
+    });
+
     // ===== HELPERS =====
     function showToast(msg, type='info') {
       const c = document.getElementById('toast-container');
@@ -646,6 +684,7 @@
 
     async function logout() {
       try {
+        isLoggingOut = true;
         stopPresence();
         stopTyping();
         if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
@@ -654,9 +693,12 @@
         if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
         Object.values(unreadListeners).forEach(u=>{try{u();}catch(e){}});
         unreadListeners={}; dmUnreadCounts={}; dmConversationsCache=[];
+        // Limpa o histórico artificial para não sobrar estados
+        while (historyDepth > 0) { history.back(); historyDepth--; }
         await signOut(auth);
         showToast('Você saiu.','info');
       } catch(e){ showToast('Erro ao sair.','error'); }
+      finally { isLoggingOut = false; }
     }
     window.logout = logout;
 
@@ -736,6 +778,9 @@
       renderEmojis();
       selectChannel('geral');
       lucide.createIcons();
+      // Cria um estado inicial no histórico para o botão voltar funcionar
+      historyDepth = 0;
+      pushChatHistoryState();
     }
     function toggleSidebar(open){
       const s=document.getElementById('sidebar'), b=document.getElementById('sidebar-backdrop');
@@ -1089,6 +1134,8 @@
       }catch(e){}
       attachMessages();
       attachTypingListener(`dm_${convId}`);
+      // Registra no histórico para o botão voltar sair da DM
+      pushChatHistoryState();
     }
     window.openDM = openDM;
 
@@ -1152,13 +1199,8 @@
     }
     function renderOnline(users) {
       const total = users.length;
+      // Contador fica apenas na sidebar (abaixo de "Online")
       document.getElementById('online-count-sidebar').textContent = total;
-      const headerBadge = document.getElementById('header-online-badge');
-      const headerCount = document.getElementById('header-online-count');
-      if (headerBadge && headerCount) {
-        headerCount.textContent = total;
-        headerBadge.classList.remove('hidden');
-      }
       const list=document.getElementById('online-users-list');
       list.innerHTML='';
       const sorted=[...users].sort((a,b)=>{if(a.uid===currentUser.uid)return-1;if(b.uid===currentUser.uid)return 1;return a.username.localeCompare(b.username);});
