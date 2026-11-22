@@ -44,6 +44,8 @@
     body { background-color: var(--bg-main); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background-color .3s, color .3s; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: rgba(148,163,184,.5); border-radius: 9999px; }
+    
+    /* CORREÇÃO AQUI: Adicionado word-break e overflow-wrap */
     .bubble-sent {
       border-radius: 20px 20px 4px 20px;
       background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
@@ -51,6 +53,8 @@
       box-shadow: 0 4px 12px -4px rgba(79,70,229,.3);
       cursor: pointer;
       transition: transform .15s, box-shadow .15s;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .bubble-sent:hover {
       transform: translateY(-1px);
@@ -62,9 +66,10 @@
       color: var(--bubble-received-text);
       border: 1px solid var(--border-color);
       box-shadow: 0 2px 8px -4px rgba(0,0,0,.1);
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     @media (hover: none) {
-      /* No mobile, evita selecionar texto ao tocar na bolha enviada */
       .bubble-sent { -webkit-user-select: none; user-select: none; }
     }
     .theme-gradient-bg {
@@ -285,7 +290,7 @@
         </div>
       </header>
 
-      <div id="messages-container" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 z-10"></div>
+      <div id="messages-container" class="flex-1 overflow-y-auto overflow-x-hidden px-4 py-5 space-y-4 z-10"></div>
 
       <div id="typing-indicator" class="hidden px-5 py-2 text-xs flex items-center gap-2 bg-white/70 backdrop-blur-md border-t border-slate-200 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
         <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200" style="background: var(--bg-card); border-color: var(--border-color);">
@@ -305,7 +310,7 @@
             <i data-lucide="smile" class="w-5 h-5"></i>
           </button>
           <input type="text" id="message-input" autocomplete="off" placeholder="Digite sua mensagem..."
-            class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);" />
+            class="flex-1 min-w-0 px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);" />
           <button type="submit" class="px-4 py-3 rounded-2xl theme-gradient-bg font-semibold text-sm flex items-center gap-1.5 active:scale-95 transition-all">
             <i data-lucide="send" class="w-4 h-4"></i>
           </button>
@@ -1028,18 +1033,19 @@
       visibleMessages.forEach(msg=>{
         const own = currentUser && (msg.senderId===currentUser.uid||msg.uid===currentUser.uid);
         const wrapper=document.createElement('div');
-        wrapper.className=`msg-wrapper flex items-end gap-2 msg-anim ${own?'justify-end':'justify-start'}`;
+        // CORREÇÃO AQUI: Adicionado min-w-0 e max-w-full no wrapper geral
+        wrapper.className=`msg-wrapper flex items-end gap-2 msg-anim w-full min-w-0 max-w-full ${own?'justify-end':'justify-start'}`;
         const bubbleClass = own?'bubble-sent':'bubble-received';
         
-        // Clique na bolha: só abre opções se for a própria mensagem
         const clickAttr = own ? `onclick="openDeleteOptions('${msg.id}')"` : '';
         const titleAttr = own ? 'title="Clique para apagar"' : '';
         
-        const bubbleContent = `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words" ${clickAttr} ${titleAttr}>${escapeHTML(msg.text)}</div>`;
+        const bubbleContent = `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words min-w-0 max-w-full" ${clickAttr} ${titleAttr}>${escapeHTML(msg.text)}</div>`;
 
         if(own){
+          // CORREÇÃO AQUI: Adicionado min-w-0, w-full
           wrapper.innerHTML=`
-            <div class="flex flex-col items-end max-w-[80%]">
+            <div class="flex flex-col items-end max-w-[85%] min-w-0 w-full">
               <div class="flex items-center gap-1.5 mb-1 px-1">
                 <span class="text-[10px] text-slate-400">${escapeHTML(msg.time||'')}</span>
                 <span class="text-xs font-semibold" style="color:var(--theme-accent)">Você</span>
@@ -1048,9 +1054,10 @@
             </div>
             <div class="w-8 h-8 rounded-xl theme-gradient-bg flex items-center justify-center text-xs font-bold shrink-0">${getInitials(msg.sender)}</div>`;
         } else {
+          // CORREÇÃO AQUI: Adicionado min-w-0, w-full
           wrapper.innerHTML=`
             <div class="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-xs font-bold shrink-0" style="background:var(--bg-card);border-color:var(--border-color);color:var(--text-primary)">${getInitials(msg.sender)}</div>
-            <div class="flex flex-col items-start max-w-[80%]">
+            <div class="flex flex-col items-start max-w-[85%] min-w-0 w-full">
               <div class="flex flex-wrap items-center gap-1.5 mb-1 px-1">
                 <span class="text-xs font-semibold" style="color:var(--text-primary)">${escapeHTML(msg.sender)}</span>
                 <span class="inline-flex items-center gap-1 text-[10px] px-1.5 rounded-full bg-slate-100 border border-slate-200" style="background:var(--bg-slate-100,#f1f5f9);border-color:var(--border-color);color:var(--text-muted)" title="${escapeHTML(msg.gender||'')}">
