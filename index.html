@@ -74,6 +74,14 @@
     .msg-delete-btn { opacity: 0; transition: opacity .15s; cursor: pointer; }
     .msg-wrapper:hover .msg-delete-btn { opacity: 1; }
     @media (hover: none) { .msg-delete-btn { opacity: .7; } }
+    @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:.4;} 30%{transform:translateY(-4px);opacity:1;} }
+    .typing-dot { animation: typingBounce 1.3s infinite ease-in-out; }
+    .typing-dot:nth-child(1){animation-delay:0s;} .typing-dot:nth-child(2){animation-delay:.2s;} .typing-dot:nth-child(3){animation-delay:.4s;}
+    .dm-unread-badge {
+      min-width: 18px; height: 18px; padding: 0 5px;
+      border-radius: 9999px; background: #ef4444; color: #fff;
+      font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-900 transition-colors duration-300">
@@ -188,6 +196,19 @@
         </div>
         <div>
           <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mensagens Privadas</span>
+            <button type="button" onclick="openNewDMPicker()" title="Nova conversa privada"
+              class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <ul id="dm-conversations-list" class="space-y-1"></ul>
+          <p id="dm-empty-hint" class="text-[10px] text-slate-400 px-2 py-2 italic hidden" style="color: var(--text-muted);">
+            Nenhuma conversa privada ainda.
+          </p>
+        </div>
+        <div>
+          <div class="flex items-center justify-between px-2 mb-2">
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Online</span>
             <span class="text-[10px] text-emerald-600 font-semibold" id="online-count-sidebar">0</span>
           </div>
@@ -215,7 +236,12 @@
             <i id="current-channel-icon" data-lucide="hash" class="w-5 h-5"></i>
           </div>
           <div class="min-w-0">
-            <h2 id="current-channel-name" class="text-base font-bold truncate" style="color: var(--text-primary);">Geral</h2>
+            <div class="flex items-center gap-2">
+              <h2 id="current-channel-name" class="text-base font-bold truncate" style="color: var(--text-primary);">Geral</h2>
+              <span id="dm-private-badge" class="hidden items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
+                <i data-lucide="lock" class="w-3 h-3"></i> Privado
+              </span>
+            </div>
             <p id="current-channel-desc" class="text-xs truncate" style="color: var(--text-secondary);">Conversa aberta</p>
           </div>
         </div>
@@ -225,6 +251,15 @@
       </header>
 
       <div id="messages-container" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 z-10"></div>
+
+      <div id="typing-indicator" class="hidden px-5 py-2 text-xs flex items-center gap-2 bg-white/70 backdrop-blur-md border-t border-slate-200 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
+        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200" style="background: var(--bg-card); border-color: var(--border-color);">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
+        </div>
+        <span id="typing-user-text" class="font-medium" style="color: var(--text-secondary);">Alguém está digitando...</span>
+      </div>
 
       <footer class="p-3 bg-white/90 backdrop-blur-xl border-t border-slate-200 shrink-0 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
         <form id="message-form" class="max-w-4xl mx-auto flex items-center gap-2">
@@ -236,6 +271,24 @@
         </form>
       </footer>
     </section>
+  </div>
+
+  <!-- MODAL NOVA DM -->
+  <div id="new-dm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-6 pb-4 border-b border-slate-200" style="border-color: var(--border-color);">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold flex items-center gap-2" style="color: var(--text-primary);">
+            <i data-lucide="message-circle-plus" class="w-5 h-5" style="color: var(--theme-accent);"></i> Nova Conversa
+          </h3>
+          <button type="button" onclick="closeNewDMPicker()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 mt-1" style="color: var(--text-secondary);">Selecione um usuário online.</p>
+      </div>
+      <div id="new-dm-user-list" class="p-4 max-h-80 overflow-y-auto space-y-1.5"></div>
+    </div>
   </div>
 
   <script type="module">
@@ -268,11 +321,25 @@
     let currentAuthMode = 'login';
     let currentCaptchaResult = 0;
     let activeChannelId = 'geral';
+    let activeChatType = 'channel';
+    let activeDMUserId = null;
+    let activeDMUsername = null;
+
     let unsubscribeMessages = null;
     let unsubscribePresence = null;
+    let unsubscribeTyping = null;
+    let unsubscribeDMs = null;
+    let unreadListeners = {};
+
     let presenceHeartbeat = null;
-    let isDarkMode = localStorage.getItem('chattop_dark') === 'true';
+    let typingTimeout = null;
+    let isTypingFlag = false;
+
     let onlineCache = [];
+    let dmConversationsCache = [];
+    let dmUnreadCounts = {};
+
+    let isDarkMode = localStorage.getItem('chattop_dark') === 'true';
 
     // ===== HELPERS =====
     function showToast(msg, type='info') {
@@ -293,6 +360,7 @@
     function getTime() { return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
     function userToEmail(u) { return `${u.trim().toLowerCase()}@chattop.local`; }
     function getGenderIcon(g) { const x=(g||'').toLowerCase(); if(x==='masculino')return'mars'; if(x==='feminino')return'venus'; return'user'; }
+    function dmConvId(a,b) { return [a,b].sort().join('_'); }
 
     // ===== DARK MODE =====
     function applyDark(dark) {
@@ -318,7 +386,6 @@
     }
     document.getElementById('refresh-captcha').addEventListener('click', genCaptcha);
 
-    // ===== AUTH TABS =====
     function switchAuthTab(mode) {
       currentAuthMode=mode;
       const tl=document.getElementById('tab-login'), tr=document.getElementById('tab-register'), st=document.getElementById('auth-submit-text');
@@ -328,7 +395,6 @@
     }
     window.switchAuthTab = switchAuthTab;
 
-    // ===== AUTH SUBMIT =====
     document.getElementById('auth-form').addEventListener('submit', async e => {
       e.preventDefault();
       const u=document.getElementById('username').value.trim();
@@ -368,12 +434,18 @@
       } finally { btn.disabled=false; btn.style.opacity='1'; }
     });
 
-    // ===== LOGOUT =====
     async function logout() {
       try {
         stopPresence();
+        stopTyping();
         if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
         if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
+        if(unsubscribeTyping){unsubscribeTyping();unsubscribeTyping=null;}
+        if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
+        Object.values(unreadListeners).forEach(u=>{try{u();}catch(e){}});
+        unreadListeners={};
+        dmUnreadCounts={};
+        dmConversationsCache=[];
         await signOut(auth);
         showToast('Você saiu.','info');
       } catch(e){ showToast('Erro ao sair.','error'); }
@@ -388,11 +460,17 @@
         currentUser={uid:user.uid,...profile};
         enterChat();
         startPresence();
+        startDMListener();
       } else {
         currentUser=null;
-        stopPresence();
+        activeChatType='channel'; activeDMUserId=null; activeDMUsername=null;
+        stopPresence(); stopTyping();
         if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
         if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
+        if(unsubscribeTyping){unsubscribeTyping();unsubscribeTyping=null;}
+        if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
+        Object.values(unreadListeners).forEach(u=>{try{u();}catch(e){}});
+        unreadListeners={}; dmUnreadCounts={}; dmConversationsCache=[];
         document.getElementById('chat-screen').classList.add('hidden');
         document.getElementById('auth-screen').classList.remove('hidden');
         document.getElementById('password').value='';
@@ -408,6 +486,7 @@
       document.getElementById('profile-username').textContent=currentUser.username;
       document.getElementById('profile-info').textContent=`${currentUser.age} anos • ${currentUser.gender}`;
       renderChannels();
+      renderDMConversations();
       selectChannel('geral');
       lucide.createIcons();
     }
@@ -422,7 +501,7 @@
       const list=document.getElementById('channels-list');
       list.innerHTML='';
       CHANNELS.forEach(ch=>{
-        const active=ch.id===activeChannelId;
+        const active=activeChatType==='channel'&&ch.id===activeChannelId;
         const btn=document.createElement('button');
         btn.type='button';
         btn.onclick=()=>{selectChannel(ch.id);toggleSidebar(false);};
@@ -435,26 +514,48 @@
     }
 
     function selectChannel(id) {
+      stopTyping();
+      activeChatType='channel';
+      activeDMUserId=null; activeDMUsername=null;
       activeChannelId=id;
       const ch=CHANNELS.find(c=>c.id===id)||CHANNELS[0];
       document.getElementById('current-channel-name').textContent=ch.name;
       document.getElementById('current-channel-desc').textContent=ch.desc;
       document.getElementById('current-channel-icon').setAttribute('data-lucide',ch.icon);
+      document.getElementById('dm-private-badge').classList.add('hidden');
+      document.getElementById('dm-private-badge').classList.remove('inline-flex');
       renderChannels();
+      renderDMConversations();
       lucide.createIcons();
-      attachMessages(id);
+      attachMessages();
+      attachTypingListener(ch.id);
     }
 
     // ===== MENSAGENS =====
-    function attachMessages(channelId) {
+    function attachMessages() {
       if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
       const container=document.getElementById('messages-container');
       container.innerHTML='<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando...</div>';
-      const q=query(collection(db,'channels',channelId,'messages'),orderBy('createdAt','asc'),limit(200));
+
+      let q;
+      if(activeChatType==='dm' && activeDMUserId) {
+        const convId=dmConvId(currentUser.uid,activeDMUserId);
+        q=query(collection(db,'dmConversations',convId,'messages'),orderBy('createdAt','asc'),limit(200));
+      } else {
+        q=query(collection(db,'channels',activeChannelId,'messages'),orderBy('createdAt','asc'),limit(200));
+      }
+
       unsubscribeMessages=onSnapshot(q, snap=>{
         const msgs=[];
         snap.forEach(d=>msgs.push({id:d.id,...d.data()}));
         renderMessages(msgs, container);
+        // marca como lido no DM ativo
+        if(activeChatType==='dm' && activeDMUserId) {
+          const convId=dmConvId(currentUser.uid,activeDMUserId);
+          dmUnreadCounts[convId]=0;
+          setDoc(doc(db,'dmConversations',convId),{lastRead:{[currentUser.uid]:serverTimestamp()}},{merge:true}).catch(()=>{});
+          renderDMConversations();
+        }
       }, err=>{
         console.error('Erro ao carregar mensagens:',err);
         container.innerHTML=`<div class="h-full flex flex-col items-center justify-center text-red-500 text-sm"><p>Erro ao carregar</p><p class="text-xs mt-1">${escapeHTML(err.message)}</p></div>`;
@@ -463,7 +564,7 @@
 
     function renderMessages(msgs, container) {
       if(msgs.length===0){
-        container.innerHTML=`<div class="h-full flex flex-col items-center justify-center text-slate-400 text-sm"><i data-lucide="message-circle" class="w-10 h-10 mb-2 opacity-50"></i><p>Nenhuma mensagem ainda</p><p class="text-xs mt-1">Seja o primeiro a enviar!</p></div>`;
+        container.innerHTML=`<div class="h-full flex flex-col items-center justify-center text-slate-400 text-sm"><i data-lucide="${activeChatType==='dm'?'lock':'message-circle'}" class="w-10 h-10 mb-2 opacity-50"></i><p>Nenhuma mensagem ainda</p><p class="text-xs mt-1">Seja o primeiro a enviar!</p></div>`;
         lucide.createIcons({root:container});
         return;
       }
@@ -513,11 +614,17 @@
       container.scrollTop=container.scrollHeight;
     }
 
-    // ===== DELETAR =====
     async function deleteMsg(id) {
       if(!confirm('Remover esta mensagem?'))return;
       try{
-        await updateDoc(doc(db,'channels',activeChannelId,'messages',id),{deleted:true,text:'',deletedAt:serverTimestamp()});
+        let ref;
+        if(activeChatType==='dm' && activeDMUserId) {
+          const convId=dmConvId(currentUser.uid,activeDMUserId);
+          ref=doc(db,'dmConversations',convId,'messages',id);
+        } else {
+          ref=doc(db,'channels',activeChannelId,'messages',id);
+        }
+        await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
         showToast('Mensagem removida.','info');
       }catch(e){ showToast('Erro: '+e.message,'error'); }
     }
@@ -530,14 +637,239 @@
       const text=input.value.trim();
       if(!text||!currentUser)return;
       input.value='';
+      stopTyping();
       try{
-        await addDoc(collection(db,'channels',activeChannelId,'messages'),{
+        const msgData={
           uid:currentUser.uid, senderId:currentUser.uid,
           sender:currentUser.username, age:currentUser.age, gender:currentUser.gender,
           text, time:getTime(), createdAt:serverTimestamp(), deleted:false
-        });
+        };
+        if(activeChatType==='dm' && activeDMUserId) {
+          const convId=dmConvId(currentUser.uid,activeDMUserId);
+          const convRef=doc(db,'dmConversations',convId);
+          const convSnap=await getDoc(convRef);
+          if(!convSnap.exists()){
+            await setDoc(convRef,{
+              participants:[currentUser.uid,activeDMUserId],
+              participantNames:{[currentUser.uid]:currentUser.username,[activeDMUserId]:activeDMUsername||'Usuário'},
+              lastMessage:text,lastMessageAt:serverTimestamp(),updatedAt:serverTimestamp()
+            });
+          } else {
+            await setDoc(convRef,{
+              lastMessage:text,lastMessageAt:serverTimestamp(),updatedAt:serverTimestamp(),
+              participantNames:{[currentUser.uid]:currentUser.username,[activeDMUserId]:activeDMUsername||'Usuário'},
+              lastRead:{[currentUser.uid]:serverTimestamp()}
+            },{merge:true});
+          }
+          await addDoc(collection(db,'dmConversations',convId,'messages'),msgData);
+        } else {
+          await addDoc(collection(db,'channels',activeChannelId,'messages'),msgData);
+        }
       }catch(err){ console.error(err); showToast('Falha ao enviar: '+err.message,'error'); }
     });
+
+    // ===== DIGITANDO =====
+    function typingDocId() {
+      if(activeChatType==='dm' && activeDMUserId) return `dm_${dmConvId(currentUser.uid,activeDMUserId)}_${currentUser.uid}`;
+      return `${activeChannelId}_${currentUser.uid}`;
+    }
+    async function setTyping(isTyping) {
+      if(!currentUser)return;
+      const ref=doc(db,'typing',typingDocId());
+      try{
+        if(isTyping){
+          await setDoc(ref,{
+            uid:currentUser.uid,username:currentUser.username,
+            channelId:activeChatType==='dm'?`dm_${dmConvId(currentUser.uid,activeDMUserId)}`:activeChannelId,
+            updatedAt:serverTimestamp()
+          },{merge:true});
+        } else {
+          await deleteDoc(ref);
+        }
+      }catch(e){}
+    }
+    function stopTyping() {
+      if(typingTimeout){clearTimeout(typingTimeout);typingTimeout=null;}
+      if(isTypingFlag){isTypingFlag=false;setTyping(false);}
+    }
+    function handleTypingInput() {
+      if(!currentUser)return;
+      if(!isTypingFlag){isTypingFlag=true;setTyping(true);}
+      if(typingTimeout)clearTimeout(typingTimeout);
+      typingTimeout=setTimeout(()=>{isTypingFlag=false;setTyping(false);},3000);
+    }
+    function attachTypingListener(contextId) {
+      if(unsubscribeTyping){unsubscribeTyping();unsubscribeTyping=null;}
+      const q=query(collection(db,'typing'),where('channelId','==',contextId));
+      unsubscribeTyping=onSnapshot(q, snap=>{
+        const now=Date.now(); const names=[];
+        snap.forEach(d=>{
+          const data=d.data();
+          if(!data.uid||data.uid===currentUser.uid)return;
+          let ms=0; if(data.updatedAt&&typeof data.updatedAt.toMillis==='function') ms=data.updatedAt.toMillis();
+          if(now-ms<5000) names.push(data.username||'Alguém');
+        });
+        const el=document.getElementById('typing-indicator');
+        const txt=document.getElementById('typing-user-text');
+        if(names.length===0) el.classList.add('hidden');
+        else {
+          txt.textContent = names.length===1?`${names[0]} está digitando...`:`${names.slice(0,2).join(', ')}${names.length>2?` e mais ${names.length-2}`:''} estão digitando...`;
+          el.classList.remove('hidden');
+        }
+      }, err=>console.warn('Typing listener:',err));
+    }
+
+    // ===== DMs =====
+    function startDMListener() {
+      if(!currentUser)return;
+      if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
+      const q=query(collection(db,'dmConversations'),where('participants','array-contains',currentUser.uid));
+      unsubscribeDMs=onSnapshot(q, snap=>{
+        dmConversationsCache=[];
+        snap.forEach(d=>dmConversationsCache.push({id:d.id,...d.data()}));
+        dmConversationsCache.sort((a,b)=>{
+          const at=a.lastMessageAt?.toMillis?.()||0;
+          const bt=b.lastMessageAt?.toMillis?.()||0;
+          return bt-at;
+        });
+        renderDMConversations();
+        startUnreadListener();
+      }, err=>console.warn('DM listener:',err));
+    }
+
+    function renderDMConversations() {
+      const list=document.getElementById('dm-conversations-list');
+      const emptyHint=document.getElementById('dm-empty-hint');
+      if(!list)return;
+      list.innerHTML='';
+      const convs=dmConversationsCache;
+      if(convs.length===0){ if(emptyHint)emptyHint.classList.remove('hidden'); return; }
+      if(emptyHint)emptyHint.classList.add('hidden');
+
+      convs.forEach(conv=>{
+        const otherId=conv.participants.find(p=>p!==currentUser.uid);
+        if(!otherId)return;
+        const otherName=conv.participantNames?.[otherId]||'Usuário';
+        const unread=dmUnreadCounts[conv.id]||0;
+        const isActive=activeChatType==='dm'&&activeDMUserId===otherId;
+        const li=document.createElement('li');
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className=`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-2xl transition-all text-left cursor-pointer border ${isActive?'bg-white border-slate-200 shadow-xs':'border-transparent hover:bg-white/60'}`;
+        if(isActive){btn.style.background='var(--bg-card)';btn.style.borderColor='var(--border-color)';}
+        btn.innerHTML=`
+          <div class="relative shrink-0">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">${getInitials(otherName)}</div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-semibold truncate" style="color:var(--text-primary)">${escapeHTML(otherName)}</p>
+            <p class="text-[10px] truncate" style="color:var(--text-muted)">${conv.lastMessage?escapeHTML(conv.lastMessage).substring(0,30):'Conversa privada'}</p>
+          </div>
+          ${unread>0?`<span class="dm-unread-badge">${unread>9?'9+':unread}</span>`:`<i data-lucide="lock" class="w-3 h-3 text-slate-400 shrink-0"></i>`}`;
+        btn.onclick=()=>{openDM(otherId,otherName);toggleSidebar(false);};
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+      lucide.createIcons({root:list});
+    }
+
+    function startUnreadListener() {
+      if(!currentUser)return;
+      Object.keys(unreadListeners).forEach(convId=>{
+        if(!dmConversationsCache.find(c=>c.id===convId)){
+          try{unreadListeners[convId]();}catch(e){}
+          delete unreadListeners[convId];
+          delete dmUnreadCounts[convId];
+        }
+      });
+      dmConversationsCache.forEach(conv=>{
+        if(unreadListeners[conv.id])return;
+        const q=query(collection(db,'dmConversations',conv.id,'messages'),orderBy('createdAt','asc'));
+        unreadListeners[conv.id]=onSnapshot(q, snap=>{
+          if(!currentUser)return;
+          const isActiveDM=activeChatType==='dm'&&dmConvId(currentUser.uid,activeDMUserId)===conv.id;
+          if(isActiveDM){
+            dmUnreadCounts[conv.id]=0;
+            renderDMConversations();
+            return;
+          }
+          const convData=dmConversationsCache.find(c=>c.id===conv.id);
+          const lastRead=convData?.lastRead?.[currentUser.uid]?.toMillis?.()||0;
+          let count=0;
+          snap.forEach(d=>{
+            const data=d.data();
+            if(data.senderId===currentUser.uid)return;
+            const ts=data.createdAt?.toMillis?.()||0;
+            if(ts>lastRead)count++;
+          });
+          dmUnreadCounts[conv.id]=count;
+          renderDMConversations();
+        }, err=>console.warn('Unread listener:',err));
+      });
+    }
+
+    async function openDM(otherUid, otherUsername) {
+      if(!currentUser||otherUid===currentUser.uid)return;
+      stopTyping();
+      activeChatType='dm';
+      activeDMUserId=otherUid;
+      activeDMUsername=otherUsername;
+      document.getElementById('current-channel-name').textContent=otherUsername;
+      document.getElementById('current-channel-desc').textContent='Conversa privada';
+      document.getElementById('current-channel-icon').setAttribute('data-lucide','lock');
+      document.getElementById('dm-private-badge').classList.remove('hidden');
+      document.getElementById('dm-private-badge').classList.add('inline-flex');
+      lucide.createIcons();
+      const convId=dmConvId(currentUser.uid,otherUid);
+      dmUnreadCounts[convId]=0;
+      renderDMConversations();
+      try{
+        await setDoc(doc(db,'dmConversations',convId),{
+          participants:[currentUser.uid,otherUid],
+          participantNames:{[currentUser.uid]:currentUser.username,[otherUid]:otherUsername},
+          lastRead:{[currentUser.uid]:serverTimestamp()},
+          updatedAt:serverTimestamp()
+        },{merge:true});
+      }catch(e){}
+      attachMessages();
+      attachTypingListener(`dm_${convId}`);
+    }
+    window.openDM = openDM;
+
+    function openNewDMPicker() {
+      const modal=document.getElementById('new-dm-modal');
+      const list=document.getElementById('new-dm-user-list');
+      list.innerHTML='';
+      const others=onlineCache.filter(u=>u.uid!==currentUser?.uid);
+      if(others.length===0){
+        list.innerHTML=`<p class="text-xs text-slate-500 text-center py-6" style="color:var(--text-secondary)">Nenhum outro usuário online.</p>`;
+      } else {
+        others.forEach(u=>{
+          const btn=document.createElement('button');
+          btn.type='button';
+          btn.className='w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-100 transition-colors text-left cursor-pointer';
+          btn.style.color='var(--text-primary)';
+          btn.innerHTML=`
+            <div class="relative shrink-0">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white">${getInitials(u.username)}</div>
+              <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold truncate">${escapeHTML(u.username)}</p>
+              <p class="text-[10px] text-emerald-600">● Online</p>
+            </div>
+            <i data-lucide="message-circle" class="w-4 h-4 text-slate-400"></i>`;
+          btn.onclick=()=>{closeNewDMPicker();openDM(u.uid,u.username);};
+          list.appendChild(btn);
+        });
+      }
+      modal.classList.remove('hidden');
+      lucide.createIcons({root:list});
+    }
+    function closeNewDMPicker() { document.getElementById('new-dm-modal').classList.add('hidden'); }
+    window.openNewDMPicker = openNewDMPicker;
+    window.closeNewDMPicker = closeNewDMPicker;
 
     // ===== PRESENÇA =====
     function startPresence() {
@@ -572,7 +904,9 @@
         const me=u.uid===currentUser.uid;
         const li=document.createElement('li');
         li.className='flex items-center gap-2 px-2 py-1.5 rounded-xl';
+        li.style.cursor=me?'default':'pointer';
         li.innerHTML=`<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">${getInitials(u.username)}</div><p class="text-xs truncate flex-1" style="color:var(--text-primary)">${escapeHTML(u.username)}${me?' (Você)':''}</p><span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>`;
+        if(!me) li.onclick=()=>openDM(u.uid,u.username);
         list.appendChild(li);
       });
     }
@@ -583,6 +917,8 @@
       genCaptcha();
       lucide.createIcons();
     });
+
+    document.getElementById('message-input').addEventListener('input', handleTypingInput);
   </script>
 </body>
 </html>
