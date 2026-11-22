@@ -97,6 +97,9 @@
     @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     .online-msg-icon { transition: transform .15s, color .15s; }
     .online-item:hover .online-msg-icon { transform: scale(1.15); color: var(--theme-accent); }
+    
+    /* Animação para o novo modal de confirmação */
+    .confirm-modal { animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-900 transition-colors duration-300">
@@ -412,7 +415,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO (NOVO - Substitui o confirm() feio) -->
+  <!-- MODAL DE CONFIRMAÇÃO (MODERNO) -->
   <div id="confirm-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
     <div class="confirm-modal w-full max-w-[280px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="p-5 text-center">
