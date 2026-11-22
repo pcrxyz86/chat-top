@@ -422,7 +422,7 @@
 
     const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
 
-    const PAGE_SIZE = 30; // Quantidade de mensagens por página
+    const PAGE_SIZE = 30;
 
     let currentUser = null;
     let currentAuthMode = 'login';
@@ -432,7 +432,9 @@
     let activeDMUserId = null;
     let activeDMUsername = null;
 
-    let unsubscribeMessages = null;
+    // DOIS listeners: um para novas mensagens, outro para updates/removes da página carregada
+    let unsubscribeNewMessages = null;
+    let unsubscribePageUpdates = null;
     let unsubscribePresence = null;
     let unsubscribeTyping = null;
     let unsubscribeDMs = null;
@@ -450,12 +452,11 @@
     let soundEnabled = localStorage.getItem('chattop_sound') !== 'false';
     let activeThemeId = localStorage.getItem('chattop_theme') || 'indigo-cyan';
 
-    // ===== ESTADO DA PAGINAÇÃO =====
-    let oldestLoadedDoc = null;   // último documento (mais antigo) carregado
-    let hasMoreMessages = true;   // se ainda há mensagens antigas para carregar
-    let allCurrentMessages = [];  // mensagens atualmente exibidas
+    let oldestLoadedDoc = null;
+    let hasMoreMessages = true;
+    let allCurrentMessages = [];
+    let loadedPageCount = 0; // quantas páginas já foram carregadas (para o listener de updates)
 
-    // ===== CONTROLE DE HISTÓRICO =====
     let historyDepth = 0;
     let isLoggingOut = false;
 
@@ -492,7 +493,6 @@
       }
     });
 
-    // ===== HELPERS =====
     function showToast(msg, type='info') {
       const c = document.getElementById('toast-container');
       const t = document.createElement('div');
@@ -513,7 +513,6 @@
     function getGenderIcon(g) { const x=(g||'').toLowerCase(); if(x==='masculino')return'mars'; if(x==='feminino')return'venus'; return'user'; }
     function dmConvId(a,b) { return [a,b].sort().join('_'); }
 
-    // ===== SOM =====
     let audioCtx = null;
     function playSound() {
       if(!soundEnabled) return;
@@ -548,7 +547,6 @@
     }
     window.toggleSound = toggleSound;
 
-    // ===== DARK MODE =====
     function applyDark(dark) {
       isDarkMode = dark;
       document.body.classList.toggle('dark', dark);
@@ -559,7 +557,6 @@
     function toggleDarkMode() { applyDark(!isDarkMode); showToast(isDarkMode?'Modo escuro 🌙':'Modo claro ☀️','info'); }
     window.toggleDarkMode = toggleDarkMode;
 
-    // ===== PALETA =====
     function applyTheme(themeId) {
       const theme = COLOR_THEMES.find(t=>t.id===themeId) || COLOR_THEMES[0];
       activeThemeId = theme.id;
@@ -602,7 +599,6 @@
       if(w && p && !w.contains(e.target)) p.classList.add('hidden');
     });
 
-    // ===== EMOJIS =====
     function renderEmojis() {
       const picker = document.getElementById('emoji-picker');
       picker.innerHTML='';
@@ -621,7 +617,6 @@
       document.getElementById('emoji-picker').classList.toggle('hidden');
     });
 
-    // ===== CAPTCHA =====
     function genCaptcha() {
       const ops=['+','-','×'], op=ops[Math.floor(Math.random()*3)];
       let a,b,ans;
@@ -687,7 +682,8 @@
         isLoggingOut = true;
         stopPresence();
         stopTyping();
-        if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
+        if(unsubscribeNewMessages){unsubscribeNewMessages();unsubscribeNewMessages=null;}
+        if(unsubscribePageUpdates){unsubscribePageUpdates();unsubscribePageUpdates=null;}
         if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
         if(unsubscribeTyping){unsubscribeTyping();unsubscribeTyping=null;}
         if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
@@ -701,7 +697,6 @@
     }
     window.logout = logout;
 
-    // ===== EDITAR PERFIL =====
     function openEditProfile() {
       if(!currentUser) return;
       document.getElementById('edit-username').value = currentUser.username;
@@ -739,7 +734,6 @@
       finally { btn.disabled=false; btn.textContent='Salvar'; }
     });
 
-    // ===== AUTH STATE =====
     onAuthStateChanged(auth, async user => {
       if(user){
         let profile={username:user.email.split('@')[0],age:18,gender:'Prefiro não informar'};
@@ -752,7 +746,8 @@
         currentUser=null;
         activeChatType='channel'; activeDMUserId=null; activeDMUsername=null;
         stopPresence(); stopTyping();
-        if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
+        if(unsubscribeNewMessages){unsubscribeNewMessages();unsubscribeNewMessages=null;}
+        if(unsubscribePageUpdates){unsubscribePageUpdates();unsubscribePageUpdates=null;}
         if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
         if(unsubscribeTyping){unsubscribeTyping();unsubscribeTyping=null;}
         if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
@@ -765,7 +760,6 @@
       }
     });
 
-    // ===== CHAT UI =====
     function enterChat() {
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('chat-screen').classList.remove('hidden');
@@ -821,14 +815,20 @@
       attachTypingListener(ch.id);
     }
 
-    // ===== PAGINAÇÃO E MENSAGENS =====
-    // Carrega a primeira página (últimas PAGE_SIZE mensagens) ou próxima página antiga
+    // ===== LIMPA OS DOIS LISTENERS =====
+    function cleanupMessageListeners() {
+      if(unsubscribeNewMessages){unsubscribeNewMessages();unsubscribeNewMessages=null;}
+      if(unsubscribePageUpdates){unsubscribePageUpdates();unsubscribePageUpdates=null;}
+    }
+
+    // ===== PAGINAÇÃO + LISTENERS =====
     async function loadMessages(reset = false) {
       if (reset) {
-        if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
+        cleanupMessageListeners();
         oldestLoadedDoc = null;
         hasMoreMessages = true;
         allCurrentMessages = [];
+        loadedPageCount = 0;
         const container = document.getElementById('messages-container');
         container.innerHTML = '<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando...</div>';
       }
@@ -841,7 +841,6 @@
         colRef = collection(db, 'channels', activeChannelId, 'messages');
       }
 
-      // Constrói a query (últimas PAGE_SIZE, ordenadas desc para pegar as mais recentes)
       let q;
       if (reset) {
         q = query(colRef, orderBy('createdAt', 'desc'), limit(PAGE_SIZE));
@@ -854,7 +853,7 @@
         const snap = await getDocs(q);
         const arr = [];
         snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-        arr.reverse(); // volta para ordem crescente (mais antiga -> mais recente)
+        arr.reverse();
 
         if (snap.docs.length === PAGE_SIZE) {
           oldestLoadedDoc = snap.docs[snap.docs.length - 1];
@@ -866,23 +865,29 @@
 
         if (reset) {
           allCurrentMessages = arr;
+          loadedPageCount = 1;
           renderMessages(true);
-          // Listener em tempo real apenas para NOVAS mensagens (após a mais recente carregada)
+
+          // ===== LISTENER 1: NOVAS MENSAGENS (após a mais recente carregada) =====
           const newest = allCurrentMessages[allCurrentMessages.length - 1];
-          let liveQ;
+          let liveNewQ;
           if (newest && newest.createdAt) {
-            liveQ = query(colRef, orderBy('createdAt', 'asc'), startAfter(newest.createdAt));
+            liveNewQ = query(colRef, orderBy('createdAt', 'asc'), startAfter(newest.createdAt));
           } else {
-            liveQ = query(colRef, orderBy('createdAt', 'asc'));
+            liveNewQ = query(colRef, orderBy('createdAt', 'asc'));
           }
-          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
+          unsubscribeNewMessages = onSnapshot(liveNewQ, (snapshot) => {
             if (snapshot.empty) return;
             const additions = [];
             snapshot.docChanges().forEach(ch => {
               if (ch.type === 'added') {
                 const data = ch.doc.data();
-                additions.push({ id: ch.doc.id, ...data });
-                if (data.senderId !== currentUser.uid) playSound();
+                // Se for deletada, não adiciona
+                if (data.deleted === true) return;
+                if (!allCurrentMessages.find(m => m.id === ch.doc.id)) {
+                  additions.push({ id: ch.doc.id, ...data });
+                  if (data.senderId !== currentUser.uid) playSound();
+                }
               }
             });
             if (additions.length === 0) return;
@@ -894,11 +899,69 @@
               setDoc(doc(db,'dmConversations',convId),{lastRead:{[currentUser.uid]:serverTimestamp()}},{merge:true}).catch(()=>{});
               renderDMConversations();
             }
-          }, err => console.warn('Live messages listener:', err));
+          }, err => console.warn('Live new messages listener:', err));
+
+          // ===== LISTENER 2: UPDATES/REMOVES DA PÁGINA CARREGADA =====
+          // Escuta as mesmas últimas mensagens que já estão na tela (até PAGE_SIZE * loadedPageCount)
+          const pageLimit = PAGE_SIZE * Math.max(loadedPageCount, 1);
+          const livePageQ = query(colRef, orderBy('createdAt', 'desc'), limit(pageLimit));
+          unsubscribePageUpdates = onSnapshot(livePageQ, (snapshot) => {
+            let changed = false;
+            snapshot.docChanges().forEach(ch => {
+              const id = ch.doc.id;
+              if (ch.type === 'removed') {
+                // Foi removida de verdade do Firestore (ou saiu da janela)
+                const idx = allCurrentMessages.findIndex(m => m.id === id);
+                if (idx !== -1) {
+                  allCurrentMessages.splice(idx, 1);
+                  changed = true;
+                }
+              } else if (ch.type === 'modified') {
+                const data = ch.doc.data();
+                const idx = allCurrentMessages.findIndex(m => m.id === id);
+                if (idx !== -1) {
+                  if (data.deleted === true) {
+                    // Soft delete: remove da tela
+                    allCurrentMessages.splice(idx, 1);
+                  } else {
+                    allCurrentMessages[idx] = { id, ...data };
+                  }
+                  changed = true;
+                }
+              }
+            });
+            if (changed) {
+              renderMessages(false);
+            }
+          }, err => console.warn('Page updates listener:', err));
+
         } else {
-          // Adiciona as mensagens antigas no início
           allCurrentMessages = arr.concat(allCurrentMessages);
-          renderMessages(false, true); // preserva o scroll
+          loadedPageCount++;
+          renderMessages(false, true);
+          // Reinicia o listener de updates com a nova janela maior
+          if (unsubscribePageUpdates) { unsubscribePageUpdates(); unsubscribePageUpdates = null; }
+          const pageLimit = PAGE_SIZE * loadedPageCount;
+          const livePageQ = query(colRef, orderBy('createdAt', 'desc'), limit(pageLimit));
+          unsubscribePageUpdates = onSnapshot(livePageQ, (snapshot) => {
+            let changed = false;
+            snapshot.docChanges().forEach(ch => {
+              const id = ch.doc.id;
+              if (ch.type === 'removed') {
+                const idx = allCurrentMessages.findIndex(m => m.id === id);
+                if (idx !== -1) { allCurrentMessages.splice(idx, 1); changed = true; }
+              } else if (ch.type === 'modified') {
+                const data = ch.doc.data();
+                const idx = allCurrentMessages.findIndex(m => m.id === id);
+                if (idx !== -1) {
+                  if (data.deleted === true) allCurrentMessages.splice(idx, 1);
+                  else allCurrentMessages[idx] = { id, ...data };
+                  changed = true;
+                }
+              }
+            });
+            if (changed) renderMessages(false);
+          }, err => console.warn('Page updates listener:', err));
         }
       } catch (err) {
         console.error('Erro ao carregar mensagens:', err);
@@ -907,7 +970,6 @@
       }
     }
 
-    // Carrega mais mensagens antigas
     async function loadOlderMessages() {
       if (!hasMoreMessages || !oldestLoadedDoc) return;
       const btn = document.getElementById('load-more-btn');
@@ -922,12 +984,10 @@
       const prevScrollHeight = container.scrollHeight;
       const prevScrollTop = container.scrollTop;
 
-      // Filtra mensagens excluídas (não mostra mais o "Mensagem removida")
       const visibleMessages = allCurrentMessages.filter(m => !m.deleted);
 
       container.innerHTML = '';
 
-      // Botão "Carregar mensagens antigas" no topo (se houver mais)
       if (hasMoreMessages && visibleMessages.length > 0) {
         const moreWrap = document.createElement('div');
         moreWrap.className = 'flex justify-center pb-3';
@@ -986,7 +1046,6 @@
       });
       lucide.createIcons({root:container});
 
-      // Controle de scroll
       if (isInitial) {
         container.scrollTop = container.scrollHeight;
       } else if (preserveScroll) {
@@ -997,7 +1056,6 @@
       }
     }
 
-    // ===== DELETAR (soft delete: some da tela para todos) =====
     async function deleteMsg(id) {
       if(!confirm('Remover esta mensagem para todos?'))return;
       try{
@@ -1009,7 +1067,7 @@
           ref=doc(db,'channels',activeChannelId,'messages',id);
         }
         await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
-        // Remove localmente da lista imediatamente
+        // Remove localmente (feedback imediato) — o listener confirma depois
         allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
         renderMessages(false);
         showToast('Mensagem removida.','info');
@@ -1017,7 +1075,6 @@
     }
     window.deleteMsg = deleteMsg;
 
-    // ===== ENVIAR =====
     document.getElementById('message-form').addEventListener('submit', async e=>{
       e.preventDefault();
       const input=document.getElementById('message-input');
@@ -1056,7 +1113,6 @@
       }catch(err){ console.error(err); showToast('Falha ao enviar: '+err.message,'error'); }
     });
 
-    // ===== DIGITANDO =====
     function typingDocId() {
       if(activeChatType==='dm' && activeDMUserId) return `dm_${dmConvId(currentUser.uid,activeDMUserId)}_${currentUser.uid}`;
       return `${activeChannelId}_${currentUser.uid}`;
@@ -1107,7 +1163,6 @@
       }, err=>console.warn('Typing listener:',err));
     }
 
-    // ===== DMs =====
     function startDMListener() {
       if(!currentUser)return;
       if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
@@ -1263,7 +1318,6 @@
     window.openNewDMPicker = openNewDMPicker;
     window.closeNewDMPicker = closeNewDMPicker;
 
-    // ===== PRESENÇA =====
     function startPresence() {
       if(!currentUser)return;
       stopPresence();
@@ -1309,7 +1363,6 @@
       lucide.createIcons({root:list});
     }
 
-    // ===== INIT =====
     window.addEventListener('DOMContentLoaded',()=>{
       applyDark(isDarkMode);
       applyTheme(activeThemeId);
