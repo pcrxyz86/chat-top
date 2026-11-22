@@ -252,8 +252,6 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-          <!-- Contador de online REMOVIDO do topo -->
-
           <div class="relative" id="palette-wrapper">
             <button type="button" id="palette-toggle-btn" title="Paleta de cores"
               class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
@@ -387,7 +385,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, orderBy, limit, onSnapshot, serverTimestamp, getDocs, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, orderBy, limit, startAfter, onSnapshot, serverTimestamp, getDocs, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDTtGsSaqRHULKfzhkQU3UafoDSUP9wQ68",
@@ -424,6 +422,8 @@
 
     const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
 
+    const PAGE_SIZE = 30; // Quantidade de mensagens por página
+
     let currentUser = null;
     let currentAuthMode = 'login';
     let currentCaptchaResult = 0;
@@ -450,7 +450,12 @@
     let soundEnabled = localStorage.getItem('chattop_sound') !== 'false';
     let activeThemeId = localStorage.getItem('chattop_theme') || 'indigo-cyan';
 
-    // ===== CONTROLE DE HISTÓRICO (botão voltar do celular) =====
+    // ===== ESTADO DA PAGINAÇÃO =====
+    let oldestLoadedDoc = null;   // último documento (mais antigo) carregado
+    let hasMoreMessages = true;   // se ainda há mensagens antigas para carregar
+    let allCurrentMessages = [];  // mensagens atualmente exibidas
+
+    // ===== CONTROLE DE HISTÓRICO =====
     let historyDepth = 0;
     let isLoggingOut = false;
 
@@ -459,28 +464,23 @@
       history.pushState({ chattop: true, depth: historyDepth }, '');
     }
 
-    // Processa o botão voltar do celular
     function handleBackButton() {
-      // 1) Se a sidebar estiver aberta no mobile, fecha
       const sidebar = document.getElementById('sidebar');
       if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
         toggleSidebar(false);
         pushChatHistoryState();
         return;
       }
-      // 2) Se estiver em uma DM, volta para a sala atual (ou geral)
       if (activeChatType === 'dm') {
         selectChannel(activeChannelId || 'geral');
         pushChatHistoryState();
         return;
       }
-      // 3) Se estiver em uma sala que não é a Geral, volta para Geral
       if (activeChatType === 'channel' && activeChannelId !== 'geral') {
         selectChannel('geral');
         pushChatHistoryState();
         return;
       }
-      // 4) Se já estiver na Geral, não faz nada (deixa o navegador/sistema gerenciar)
       historyDepth = Math.max(0, historyDepth - 1);
     }
 
@@ -693,7 +693,6 @@
         if(unsubscribeDMs){unsubscribeDMs();unsubscribeDMs=null;}
         Object.values(unreadListeners).forEach(u=>{try{u();}catch(e){}});
         unreadListeners={}; dmUnreadCounts={}; dmConversationsCache=[];
-        // Limpa o histórico artificial para não sobrar estados
         while (historyDepth > 0) { history.back(); historyDepth--; }
         await signOut(auth);
         showToast('Você saiu.','info');
@@ -778,7 +777,6 @@
       renderEmojis();
       selectChannel('geral');
       lucide.createIcons();
-      // Cria um estado inicial no histórico para o botão voltar funcionar
       historyDepth = 0;
       pushChatHistoryState();
     }
@@ -819,64 +817,143 @@
       renderChannels();
       renderDMConversations();
       lucide.createIcons();
-      attachMessages();
+      loadMessages(true);
       attachTypingListener(ch.id);
     }
 
-    // ===== MENSAGENS =====
-    function attachMessages() {
-      if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
-      const container=document.getElementById('messages-container');
-      container.innerHTML='<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando...</div>';
-
-      let q;
-      if(activeChatType==='dm' && activeDMUserId) {
-        const convId=dmConvId(currentUser.uid,activeDMUserId);
-        q=query(collection(db,'dmConversations',convId,'messages'),orderBy('createdAt','asc'),limit(200));
-      } else {
-        q=query(collection(db,'channels',activeChannelId,'messages'),orderBy('createdAt','asc'),limit(200));
+    // ===== PAGINAÇÃO E MENSAGENS =====
+    // Carrega a primeira página (últimas PAGE_SIZE mensagens) ou próxima página antiga
+    async function loadMessages(reset = false) {
+      if (reset) {
+        if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
+        oldestLoadedDoc = null;
+        hasMoreMessages = true;
+        allCurrentMessages = [];
+        const container = document.getElementById('messages-container');
+        container.innerHTML = '<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando...</div>';
       }
 
-      unsubscribeMessages=onSnapshot(q, snap=>{
-        const msgs=[];
-        snap.docChanges().forEach(ch=>{
-          if(ch.type==='added' && !ch.doc.metadata.hasPendingWrites) {
-            const data=ch.doc.data();
-            if(data.senderId!==currentUser.uid) playSound();
-          }
-        });
-        snap.forEach(d=>msgs.push({id:d.id,...d.data()}));
-        renderMessages(msgs, container);
-        if(activeChatType==='dm' && activeDMUserId) {
-          const convId=dmConvId(currentUser.uid,activeDMUserId);
-          dmUnreadCounts[convId]=0;
-          setDoc(doc(db,'dmConversations',convId),{lastRead:{[currentUser.uid]:serverTimestamp()}},{merge:true}).catch(()=>{});
-          renderDMConversations();
+      let colRef;
+      if (activeChatType === 'dm' && activeDMUserId) {
+        const convId = dmConvId(currentUser.uid, activeDMUserId);
+        colRef = collection(db, 'dmConversations', convId, 'messages');
+      } else {
+        colRef = collection(db, 'channels', activeChannelId, 'messages');
+      }
+
+      // Constrói a query (últimas PAGE_SIZE, ordenadas desc para pegar as mais recentes)
+      let q;
+      if (reset) {
+        q = query(colRef, orderBy('createdAt', 'desc'), limit(PAGE_SIZE));
+      } else {
+        if (!oldestLoadedDoc) return;
+        q = query(colRef, orderBy('createdAt', 'desc'), startAfter(oldestLoadedDoc), limit(PAGE_SIZE));
+      }
+
+      try {
+        const snap = await getDocs(q);
+        const arr = [];
+        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+        arr.reverse(); // volta para ordem crescente (mais antiga -> mais recente)
+
+        if (snap.docs.length === PAGE_SIZE) {
+          oldestLoadedDoc = snap.docs[snap.docs.length - 1];
+          hasMoreMessages = true;
+        } else {
+          oldestLoadedDoc = null;
+          hasMoreMessages = false;
         }
-      }, err=>{
-        console.error('Erro ao carregar mensagens:',err);
-        container.innerHTML=`<div class="h-full flex flex-col items-center justify-center text-red-500 text-sm"><p>Erro ao carregar</p><p class="text-xs mt-1">${escapeHTML(err.message)}</p></div>`;
-      });
+
+        if (reset) {
+          allCurrentMessages = arr;
+          renderMessages(true);
+          // Listener em tempo real apenas para NOVAS mensagens (após a mais recente carregada)
+          const newest = allCurrentMessages[allCurrentMessages.length - 1];
+          let liveQ;
+          if (newest && newest.createdAt) {
+            liveQ = query(colRef, orderBy('createdAt', 'asc'), startAfter(newest.createdAt));
+          } else {
+            liveQ = query(colRef, orderBy('createdAt', 'asc'));
+          }
+          unsubscribeMessages = onSnapshot(liveQ, (snapshot) => {
+            if (snapshot.empty) return;
+            const additions = [];
+            snapshot.docChanges().forEach(ch => {
+              if (ch.type === 'added') {
+                const data = ch.doc.data();
+                additions.push({ id: ch.doc.id, ...data });
+                if (data.senderId !== currentUser.uid) playSound();
+              }
+            });
+            if (additions.length === 0) return;
+            allCurrentMessages = allCurrentMessages.concat(additions);
+            renderMessages(false);
+            if (activeChatType === 'dm' && activeDMUserId) {
+              const convId = dmConvId(currentUser.uid, activeDMUserId);
+              dmUnreadCounts[convId] = 0;
+              setDoc(doc(db,'dmConversations',convId),{lastRead:{[currentUser.uid]:serverTimestamp()}},{merge:true}).catch(()=>{});
+              renderDMConversations();
+            }
+          }, err => console.warn('Live messages listener:', err));
+        } else {
+          // Adiciona as mensagens antigas no início
+          allCurrentMessages = arr.concat(allCurrentMessages);
+          renderMessages(false, true); // preserva o scroll
+        }
+      } catch (err) {
+        console.error('Erro ao carregar mensagens:', err);
+        const container = document.getElementById('messages-container');
+        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-red-500 text-sm"><p>Erro ao carregar</p><p class="text-xs mt-1">${escapeHTML(err.message)}</p></div>`;
+      }
     }
 
-    function renderMessages(msgs, container) {
-      if(msgs.length===0){
-        container.innerHTML=`<div class="h-full flex flex-col items-center justify-center text-slate-400 text-sm"><i data-lucide="${activeChatType==='dm'?'lock':'message-circle'}" class="w-10 h-10 mb-2 opacity-50"></i><p>Nenhuma mensagem ainda</p><p class="text-xs mt-1">Seja o primeiro a enviar!</p></div>`;
+    // Carrega mais mensagens antigas
+    async function loadOlderMessages() {
+      if (!hasMoreMessages || !oldestLoadedDoc) return;
+      const btn = document.getElementById('load-more-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
+      await loadMessages(false);
+      if (btn) { btn.disabled = false; }
+    }
+    window.loadOlderMessages = loadOlderMessages;
+
+    function renderMessages(isInitial, preserveScroll=false) {
+      const container = document.getElementById('messages-container');
+      const prevScrollHeight = container.scrollHeight;
+      const prevScrollTop = container.scrollTop;
+
+      // Filtra mensagens excluídas (não mostra mais o "Mensagem removida")
+      const visibleMessages = allCurrentMessages.filter(m => !m.deleted);
+
+      container.innerHTML = '';
+
+      // Botão "Carregar mensagens antigas" no topo (se houver mais)
+      if (hasMoreMessages && visibleMessages.length > 0) {
+        const moreWrap = document.createElement('div');
+        moreWrap.className = 'flex justify-center pb-3';
+        moreWrap.innerHTML = `
+          <button type="button" id="load-more-btn" onclick="loadOlderMessages()"
+            class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+            style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-secondary);">
+            Carregar mensagens antigas
+          </button>`;
+        container.appendChild(moreWrap);
+      }
+
+      if (visibleMessages.length === 0) {
+        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-400 text-sm"><i data-lucide="${activeChatType==='dm'?'lock':'message-circle'}" class="w-10 h-10 mb-2 opacity-50"></i><p>Nenhuma mensagem ainda</p><p class="text-xs mt-1">Seja o primeiro a enviar!</p></div>`;
         lucide.createIcons({root:container});
         return;
       }
-      container.innerHTML='';
-      msgs.forEach(msg=>{
+
+      visibleMessages.forEach(msg=>{
         const own = currentUser && (msg.senderId===currentUser.uid||msg.uid===currentUser.uid);
-        const deleted = msg.deleted===true;
         const wrapper=document.createElement('div');
         wrapper.className=`msg-wrapper flex items-end gap-2 msg-anim ${own?'justify-end':'justify-start'}`;
-        const bubbleClass = deleted?'bubble-received':(own?'bubble-sent':'bubble-received');
-        const bubbleContent = deleted
-          ? `<div class="${bubbleClass} px-4 py-2.5 text-sm italic opacity-60"><i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i>Mensagem removida</div>`
-          : `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words">${escapeHTML(msg.text)}</div>`;
+        const bubbleClass = own?'bubble-sent':'bubble-received';
+        const bubbleContent = `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words">${escapeHTML(msg.text)}</div>`;
 
-        const deleteBtn = (own && !deleted)
+        const deleteBtn = own
           ? `<button type="button" class="msg-delete-btn mt-1 p-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-200" title="Remover" onclick="deleteMsg('${msg.id}')"><i data-lucide="trash-2" class="w-3 h-3"></i></button>`
           : '';
 
@@ -908,11 +985,21 @@
         container.appendChild(wrapper);
       });
       lucide.createIcons({root:container});
-      container.scrollTop=container.scrollHeight;
+
+      // Controle de scroll
+      if (isInitial) {
+        container.scrollTop = container.scrollHeight;
+      } else if (preserveScroll) {
+        const added = container.scrollHeight - prevScrollHeight;
+        container.scrollTop = prevScrollTop + added;
+      } else {
+        container.scrollTop = container.scrollHeight;
+      }
     }
 
+    // ===== DELETAR (soft delete: some da tela para todos) =====
     async function deleteMsg(id) {
-      if(!confirm('Remover esta mensagem?'))return;
+      if(!confirm('Remover esta mensagem para todos?'))return;
       try{
         let ref;
         if(activeChatType==='dm' && activeDMUserId) {
@@ -922,6 +1009,9 @@
           ref=doc(db,'channels',activeChannelId,'messages',id);
         }
         await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
+        // Remove localmente da lista imediatamente
+        allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
+        renderMessages(false);
         showToast('Mensagem removida.','info');
       }catch(e){ showToast('Erro: '+e.message,'error'); }
     }
@@ -1098,6 +1188,7 @@
           snap.forEach(d=>{
             const data=d.data();
             if(data.senderId===currentUser.uid)return;
+            if(data.deleted===true)return;
             const ts=data.createdAt?.toMillis?.()||0;
             if(ts>lastRead)count++;
           });
@@ -1132,9 +1223,8 @@
           updatedAt:serverTimestamp()
         },{merge:true});
       }catch(e){}
-      attachMessages();
+      loadMessages(true);
       attachTypingListener(`dm_${convId}`);
-      // Registra no histórico para o botão voltar sair da DM
       pushChatHistoryState();
     }
     window.openDM = openDM;
@@ -1199,7 +1289,6 @@
     }
     function renderOnline(users) {
       const total = users.length;
-      // Contador fica apenas na sidebar (abaixo de "Online")
       document.getElementById('online-count-sidebar').textContent = total;
       const list=document.getElementById('online-users-list');
       list.innerHTML='';
