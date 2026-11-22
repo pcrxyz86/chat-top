@@ -45,7 +45,6 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: rgba(148,163,184,.5); border-radius: 9999px; }
     
-    /* CORREÇÃO AQUI: Adicionado word-break e overflow-wrap */
     .bubble-sent {
       border-radius: 20px 20px 4px 20px;
       background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
@@ -413,6 +412,27 @@
     </div>
   </div>
 
+  <!-- MODAL DE CONFIRMAÇÃO (NOVO - Substitui o confirm() feio) -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+    <div class="confirm-modal w-full max-w-[280px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="p-5 text-center">
+        <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
+          <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500"></i>
+        </div>
+        <h3 class="text-base font-bold mb-1" style="color: var(--text-primary);" id="confirm-title">Apagar mensagem?</h3>
+        <p class="text-xs mb-4" style="color: var(--text-secondary);" id="confirm-desc">Isso não pode ser desfeito.</p>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeConfirmModal()" class="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
+            Cancelar
+          </button>
+          <button type="button" id="confirm-yes-btn" class="flex-1 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-xs transition-colors">
+            Apagar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -492,6 +512,7 @@
     let isLoggingOut = false;
 
     let pendingDeleteMsgId = null;
+    let pendingDeleteAction = null;
 
     function pushChatHistoryState() {
       historyDepth++;
@@ -1033,7 +1054,6 @@
       visibleMessages.forEach(msg=>{
         const own = currentUser && (msg.senderId===currentUser.uid||msg.uid===currentUser.uid);
         const wrapper=document.createElement('div');
-        // CORREÇÃO AQUI: Adicionado min-w-0 e max-w-full no wrapper geral
         wrapper.className=`msg-wrapper flex items-end gap-2 msg-anim w-full min-w-0 max-w-full ${own?'justify-end':'justify-start'}`;
         const bubbleClass = own?'bubble-sent':'bubble-received';
         
@@ -1043,7 +1063,6 @@
         const bubbleContent = `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words min-w-0 max-w-full" ${clickAttr} ${titleAttr}>${escapeHTML(msg.text)}</div>`;
 
         if(own){
-          // CORREÇÃO AQUI: Adicionado min-w-0, w-full
           wrapper.innerHTML=`
             <div class="flex flex-col items-end max-w-[85%] min-w-0 w-full">
               <div class="flex items-center gap-1.5 mb-1 px-1">
@@ -1054,7 +1073,6 @@
             </div>
             <div class="w-8 h-8 rounded-xl theme-gradient-bg flex items-center justify-center text-xs font-bold shrink-0">${getInitials(msg.sender)}</div>`;
         } else {
-          // CORREÇÃO AQUI: Adicionado min-w-0, w-full
           wrapper.innerHTML=`
             <div class="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-xs font-bold shrink-0" style="background:var(--bg-card);border-color:var(--border-color);color:var(--text-primary)">${getInitials(msg.sender)}</div>
             <div class="flex flex-col items-start max-w-[85%] min-w-0 w-full">
@@ -1094,11 +1112,28 @@
     window.openDeleteOptions = openDeleteOptions;
     window.closeDeleteOptions = closeDeleteOptions;
 
-    document.getElementById('delete-for-all-btn').addEventListener('click', async () => {
-      if (!pendingDeleteMsgId) return;
+    // NOVA FUNÇÃO DE CONFIRMAÇÃO
+    function openConfirmModal(title, desc, actionType) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-desc').textContent = desc;
+      pendingDeleteAction = actionType;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      pendingDeleteAction = null;
+    }
+    window.closeConfirmModal = closeConfirmModal;
+
+    document.getElementById('confirm-yes-btn').addEventListener('click', async () => {
+      if (!pendingDeleteMsgId || !pendingDeleteAction) return;
       const id = pendingDeleteMsgId;
+      const action = pendingDeleteAction;
+      
+      closeConfirmModal();
       closeDeleteOptions();
-      if(!confirm('Apagar esta mensagem para TODOS os participantes?'))return;
+      
       try{
         let ref;
         if(activeChatType==='dm' && activeDMUserId) {
@@ -1107,30 +1142,29 @@
         } else {
           ref=doc(db,'channels',activeChannelId,'messages',id);
         }
-        await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
-        allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
-        renderMessages(false);
-        showToast('Mensagem apagada para todos.','info');
+
+        if (action === 'all') {
+          await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
+          allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
+          renderMessages(false);
+          showToast('Mensagem apagada para todos.','info');
+        } else if (action === 'me') {
+          await updateDoc(ref,{ hiddenFor: arrayUnion(currentUser.uid) });
+          allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
+          renderMessages(false);
+          showToast('Mensagem oculta só para você.','info');
+        }
       }catch(e){ showToast('Erro: '+e.message,'error'); }
     });
 
-    document.getElementById('delete-for-me-btn').addEventListener('click', async () => {
+    document.getElementById('delete-for-all-btn').addEventListener('click', () => {
       if (!pendingDeleteMsgId) return;
-      const id = pendingDeleteMsgId;
-      closeDeleteOptions();
-      try{
-        let ref;
-        if(activeChatType==='dm' && activeDMUserId) {
-          const convId=dmConvId(currentUser.uid,activeDMUserId);
-          ref=doc(db,'dmConversations',convId,'messages',id);
-        } else {
-          ref=doc(db,'channels',activeChannelId,'messages',id);
-        }
-        await updateDoc(ref,{ hiddenFor: arrayUnion(currentUser.uid) });
-        allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
-        renderMessages(false);
-        showToast('Mensagem oculta só para você.','info');
-      }catch(e){ showToast('Erro: '+e.message,'error'); }
+      openConfirmModal('Apagar para todos?', 'A mensagem sumirá para todas as pessoas.', 'all');
+    });
+
+    document.getElementById('delete-for-me-btn').addEventListener('click', () => {
+      if (!pendingDeleteMsgId) return;
+      openConfirmModal('Apagar só para mim?', 'A mensagem sumirá apenas na sua tela.', 'me');
     });
 
     document.getElementById('message-form').addEventListener('submit', async e=>{
