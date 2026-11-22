@@ -3,568 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat Top — Comunicação Moderna em Tempo Real</title>
-
+  <title>Chat Top — Comunicação em Tempo Real</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: { ice: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0' } }
-        }
-      }
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
     }
   </script>
-
   <style>
     :root {
       --theme-primary: #4F46E5;
       --theme-secondary: #0284C7;
       --theme-accent: #0284C7;
-      --theme-sent-start: rgba(79, 70, 229, 0.82);
-      --theme-sent-end: rgba(2, 132, 199, 0.78);
-      --theme-sent-border: rgba(255, 255, 255, 0.55);
-      --theme-sent-text: #FFFFFF;
-      --theme-btn-text: #FFFFFF;
-      --theme-glow: rgba(14, 165, 233, 0.25);
       --bg-main: #f1f5f9;
       --bg-card: #ffffff;
-      --bg-card-80: rgba(255,255,255,0.8);
-      --bg-card-90: rgba(255,255,255,0.9);
-      --bg-card-95: rgba(255,255,255,0.95);
-      --bg-input: #ffffff;
-      --bg-input-90: rgba(255,255,255,0.9);
-      --bg-input-95: rgba(255,255,255,0.95);
       --text-primary: #0f172a;
       --text-secondary: #64748b;
       --text-muted: #94a3b8;
       --border-color: #e2e8f0;
-      --border-color-80: rgba(226,232,240,0.8);
-      --border-color-90: rgba(226,232,240,0.9);
-      --bg-slate-50: #f8fafc;
-      --bg-slate-100: #f1f5f9;
-      --bg-slate-200: #e2e8f0;
-      --bg-grid-dot: rgba(100, 116, 139, 0.16);
-      --bubble-received-start: rgba(255, 255, 255, 0.84);
-      --bubble-received-end: rgba(248, 250, 252, 0.72);
-      --bubble-received-border: rgba(255, 255, 255, 0.9);
+      --bubble-received-start: rgba(255,255,255,0.95);
+      --bubble-received-end: rgba(248,250,252,0.9);
       --bubble-received-text: #0f172a;
-      --bubble-received-shadow: rgba(15, 23, 42, 0.08);
     }
-
     body.dark {
       --bg-main: #0f172a;
       --bg-card: #1e293b;
-      --bg-card-80: rgba(30,41,59,0.85);
-      --bg-card-90: rgba(30,41,59,0.92);
-      --bg-card-95: rgba(30,41,59,0.96);
-      --bg-input: #1e293b;
-      --bg-input-90: rgba(30,41,59,0.92);
-      --bg-input-95: rgba(30,41,59,0.96);
       --text-primary: #f1f5f9;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
       --border-color: #334155;
-      --border-color-80: rgba(51,65,85,0.8);
-      --border-color-90: rgba(51,65,85,0.9);
-      --bg-slate-50: #1e293b;
-      --bg-slate-100: #1e293b;
-      --bg-slate-200: #334155;
-      --bg-grid-dot: rgba(148, 163, 184, 0.08);
-      --bubble-received-start: rgba(51, 65, 85, 0.8);
-      --bubble-received-end: rgba(30, 41, 59, 0.7);
-      --bubble-received-border: rgba(71, 85, 105, 0.6);
+      --bubble-received-start: rgba(51,65,85,0.9);
+      --bubble-received-end: rgba(30,41,59,0.8);
       --bubble-received-text: #f1f5f9;
-      --bubble-received-shadow: rgba(0, 0, 0, 0.3);
     }
-
     * { box-sizing: border-box; }
-    body { background-color: var(--bg-main); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background-color 0.3s, color 0.3s; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.55); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
-
+    body { background-color: var(--bg-main); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background-color .3s, color .3s; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(148,163,184,.5); border-radius: 9999px; }
     .bubble-sent {
-      border-radius: 22px 22px 4px 22px;
-      background: linear-gradient(135deg, var(--theme-sent-start) 0%, var(--theme-sent-end) 100%);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--theme-sent-border);
-      color: var(--theme-sent-text);
-      box-shadow: 0 8px 20px -6px var(--theme-glow), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      position: relative;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    }
-    .bubble-sent:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 24px -5px var(--theme-glow), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      border-radius: 20px 20px 4px 20px;
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+      color: #fff;
+      box-shadow: 0 4px 12px -4px rgba(79,70,229,.3);
     }
     .bubble-received {
-      border-radius: 22px 22px 22px 4px;
-      background: linear-gradient(145deg, var(--bubble-received-start) 0%, var(--bubble-received-end) 100%);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid var(--bubble-received-border);
+      border-radius: 20px 20px 20px 4px;
+      background: linear-gradient(145deg, var(--bubble-received-start), var(--bubble-received-end));
       color: var(--bubble-received-text);
-      box-shadow: 0 6px 18px -6px var(--bubble-received-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-      position: relative;
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-    .bubble-received:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 22px -6px var(--bubble-received-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px -4px rgba(0,0,0,.1);
     }
     .theme-gradient-bg {
       background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
-      color: var(--theme-btn-text);
-      box-shadow: 0 6px 16px -4px var(--theme-glow);
+      color: #fff;
     }
-    .theme-gradient-bg:hover { filter: brightness(1.04); }
-
-    @keyframes popIn {
-      0% { opacity: 0; transform: translateY(10px) scale(0.97); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .message-animate { animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-    @keyframes typingBounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-      30% { transform: translateY(-4px); opacity: 1; }
-    }
-    .typing-dot { animation: typingBounce 1.3s infinite ease-in-out; }
-    .typing-dot:nth-child(1) { animation-delay: 0s; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-    .bg-grid-pattern {
-      background-color: var(--bg-main);
-      background-image: radial-gradient(var(--bg-grid-dot) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-
-    .dark .bg-white\/80, .dark .bg-white\/75, .dark .bg-white\/90, .dark .bg-white\/95 { background-color: var(--bg-card-80) !important; }
-    .dark .bg-slate-100, .dark .bg-slate-50\/90, .dark .bg-slate-50\/60, .dark .bg-slate-100\/90 { background-color: var(--bg-slate-100) !important; }
-    .dark .border-slate-200, .dark .border-slate-200\/70, .dark .border-slate-200\/80, .dark .border-slate-200\/90, .dark .border-slate-100 { border-color: var(--border-color) !important; }
-    .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color: var(--text-primary) !important; }
-    .dark .text-slate-500, .dark .text-slate-600 { color: var(--text-secondary) !important; }
-    .dark .text-slate-400 { color: var(--text-muted) !important; }
-    .dark input, .dark select { background-color: var(--bg-input) !important; color: var(--text-primary) !important; border-color: var(--border-color) !important; }
-    .dark .shadow-xl, .dark .shadow-lg, .dark .shadow-2xs, .dark .shadow-xs, .dark .shadow-sm { box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+    .bg-grid { background-color: var(--bg-main); background-image: radial-gradient(rgba(100,116,139,.16) 1px, transparent 1px); background-size: 24px 24px; }
     .dark .bg-white { background-color: var(--bg-card) !important; }
-    .dark .hover\:bg-slate-100:hover { background-color: var(--bg-slate-200) !important; }
-    .dark .hover\:bg-white:hover { background-color: var(--bg-card) !important; }
-    .dark .hover\:bg-white\/70:hover { background-color: var(--bg-card-80) !important; }
-    .dark .bg-slate-100\/90 { background-color: var(--bg-slate-100) !important; }
-    .dark .text-slate-800 { color: var(--text-primary) !important; }
-
-    .dm-unread-badge {
-      min-width: 18px; height: 18px; padding: 0 5px;
-      border-radius: 9999px; background: #ef4444; color: #fff;
-      font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
-    }
-
-    .edit-profile-modal { animation: modalIn 0.25s ease-out; }
-    @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-    .dm-item-active { background: var(--bg-slate-100) !important; border-color: var(--border-color) !important; }
-
-    .msg-delete-btn { opacity: 0; transition: opacity 0.15s ease, background-color 0.15s ease; cursor: pointer; }
+    .dark .bg-white\/80, .dark .bg-white\/90 { background-color: rgba(30,41,59,.9) !important; }
+    .dark .border-slate-200 { border-color: var(--border-color) !important; }
+    .dark .text-slate-900, .dark .text-slate-800 { color: var(--text-primary) !important; }
+    .dark .text-slate-500, .dark .text-slate-600 { color: var(--text-secondary) !important; }
+    .dark .bg-slate-100, .dark .bg-slate-50 { background-color: var(--bg-slate-100, #1e293b) !important; }
+    .dark input { background-color: var(--bg-card) !important; color: var(--text-primary) !important; border-color: var(--border-color) !important; }
+    @keyframes pop { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+    .msg-anim { animation: pop .2s ease-out; }
+    .msg-delete-btn { opacity: 0; transition: opacity .15s; cursor: pointer; }
     .msg-wrapper:hover .msg-delete-btn { opacity: 1; }
-    @media (hover: none) { .msg-delete-btn { opacity: 0.7; } }
-
-    .msg-reply-btn { opacity: 0; transition: opacity 0.15s ease, background-color 0.15s ease; cursor: pointer; }
-    .msg-wrapper:hover .msg-reply-btn { opacity: 1; }
-    @media (hover: none) { .msg-reply-btn { opacity: 0.7; } }
-
-    .msg-deleted { font-style: italic; opacity: 0.65; font-size: 0.8em; }
-
-    .reply-quote {
-      border-left: 3px solid var(--theme-accent);
-      background: rgba(0,0,0,0.04);
-      border-radius: 6px;
-      padding: 4px 8px;
-      margin-bottom: 4px;
-      font-size: 0.75em;
-      opacity: 0.85;
-      word-break: break-word;
-    }
-    body.dark .reply-quote { background: rgba(255,255,255,0.06); }
-
-    #reply-bar { background: var(--bg-card-90); border-color: var(--border-color-80); }
-
-    .admin-badge {
-      display: inline-flex; align-items: center; gap: 2px;
-      padding: 1px 6px; border-radius: 9999px;
-      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-      background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
-      border: 1px solid rgba(255,255,255,0.4);
-      box-shadow: 0 2px 6px -1px rgba(245, 158, 11, 0.4);
-    }
+    @media (hover: none) { .msg-delete-btn { opacity: .7; } }
   </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-900 selection:bg-sky-200 selection:text-slate-900 transition-colors duration-300">
+<body class="min-h-screen flex flex-col text-slate-900 transition-colors duration-300">
 
-  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4"></div>
 
-  <!-- ==================== TELA 1: AUTH ==================== -->
-  <main id="auth-screen" class="flex-1 flex items-center justify-center p-4 sm:p-6 bg-grid-pattern relative overflow-y-auto">
-    <div class="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/90 rounded-3xl shadow-xl shadow-slate-300/50 overflow-hidden relative z-10 my-4" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
-
-      <div class="absolute top-4 right-4 z-20 flex items-center gap-2" id="auth-palette-wrapper">
-        <button type="button" id="auth-dark-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro"
-          class="w-8 h-8 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
-          <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
-        </button>
-        <button type="button" id="auth-palette-btn" title="Escolher cor do tema" aria-label="Escolher cor do tema"
-          class="w-8 h-8 rounded-xl bg-white/80 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
-          <span class="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
-        </button>
-        <div id="auth-palette-popover" class="hidden absolute right-0 mt-2 w-56 p-2.5 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50" style="background: var(--bg-card-95); border-color: var(--border-color-90);">
-          <div class="px-1 pb-2 mb-2 border-b border-slate-100" style="border-color: var(--border-color);">
-            <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5" style="color: var(--text-secondary);">
-              <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Paleta de Cores
-            </span>
-          </div>
-          <div id="auth-palette-options" class="grid grid-cols-4 gap-1.5"></div>
-        </div>
-      </div>
-
-      <div class="px-6 pt-7 pb-5 text-center border-b border-slate-200/70 bg-gradient-to-b from-white/70 to-transparent" style="border-color: var(--border-color-80);">
+  <!-- TELA AUTH -->
+  <main id="auth-screen" class="flex-1 flex items-center justify-center p-4 bg-grid relative overflow-y-auto">
+    <div class="w-full max-w-md bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl overflow-hidden relative my-4" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="px-6 pt-7 pb-5 text-center border-b border-slate-200" style="border-color: var(--border-color);">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl theme-gradient-bg mb-3">
           <i data-lucide="message-square-dashed" class="w-7 h-7"></i>
         </div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></h1>
-        <p class="text-xs sm:text-sm text-slate-500 mt-1" style="color: var(--text-secondary);">Conecte-se em tempo real com segurança e leveza</p>
+        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></h1>
+        <p class="text-xs text-slate-500 mt-1" style="color: var(--text-secondary);">Conecte-se em tempo real</p>
       </div>
 
       <div class="px-6 pt-5">
-        <div class="grid grid-cols-2 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80" style="background: var(--bg-slate-100); border-color: var(--border-color-80);">
-          <button type="button" id="tab-login" onclick="switchAuthTab('login')" class="py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 theme-gradient-bg shadow-sm">Entrar</button>
-          <button type="button" id="tab-register" onclick="switchAuthTab('register')" class="py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-800">Criar Conta</button>
+        <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-2xl border border-slate-200" style="background: var(--bg-slate-100, #f1f5f9); border-color: var(--border-color);">
+          <button type="button" id="tab-login" onclick="switchAuthTab('login')" class="py-2.5 text-sm font-semibold rounded-xl transition-all theme-gradient-bg shadow-sm">Entrar</button>
+          <button type="button" id="tab-register" onclick="switchAuthTab('register')" class="py-2.5 text-sm font-semibold rounded-xl transition-all text-slate-500">Criar Conta</button>
         </div>
       </div>
 
       <form id="auth-form" class="p-6 space-y-4" novalidate>
         <div>
-          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Nome de Usuário</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="user" class="w-4 h-4"></i></span>
-            <input type="text" id="username" required autocomplete="username" placeholder="Ex: LucasSilva"
-              class="w-full pl-10 pr-4 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Senha</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="lock" class="w-4 h-4"></i></span>
-            <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••"
-              class="w-full pl-10 pr-11 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
-            <button type="button" id="toggle-password" aria-label="Mostrar senha" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 transition-colors">
-              <i data-lucide="eye" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <div>
-            <label for="age" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Idade <span class="text-sky-600 font-normal">(13+)</span></label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="calendar" class="w-4 h-4"></i></span>
-              <input type="number" id="age" min="13" max="120" required placeholder="Ex: 24"
-                class="w-full pl-10 pr-3 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
-            </div>
-          </div>
-          <div>
-            <label for="gender" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Gênero</label>
-            <div class="relative">
-              <select id="gender" required class="w-full px-3.5 py-2.5 bg-white/90 border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all appearance-none cursor-pointer">
-                <option value="" disabled selected class="text-slate-400">Selecione...</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Feminino">Feminino</option>
-                <option value="Não-binário">Não-binário</option>
-                <option value="Outro">Outro</option>
-                <option value="Prefiro não informar">Prefiro não informar</option>
-              </select>
-              <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 pointer-events-none"><i data-lucide="chevron-down" class="w-4 h-4"></i></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-2.5" style="background: var(--bg-slate-50); border-color: var(--border-color-90);">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-slate-700 flex items-center gap-1.5" style="color: var(--text-primary);">
-              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i> Verificação Humana (Captcha)
-            </span>
-            <button type="button" id="refresh-captcha" title="Gerar novo cálculo"
-              class="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 transition-all cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color);">
-              <i data-lucide="refresh-cw" class="w-3 h-3"></i> Novo
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
-            <div id="captcha-question" class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-center font-mono text-sm sm:text-base font-bold text-slate-800 tracking-wide select-none shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">Quanto é 8 + 5?</div>
-            <input type="number" id="captcha-answer" required placeholder="Resposta"
-              class="w-28 px-3 py-2 bg-white border border-slate-200 rounded-xl text-center font-mono text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-          </div>
-        </div>
-
-        <button type="submit" id="auth-submit-btn"
-          class="w-full py-3 px-4 rounded-2xl font-semibold text-sm theme-gradient-bg active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer">
-          <span id="auth-submit-text">Entrar no Chat</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
-        </button>
-
-        <p class="text-[11px] text-center text-slate-500 pt-1" style="color: var(--text-secondary);">
-          Dica: o nome de usuário vira um e-mail interno (<span class="font-mono">usuario@chattop.local</span>) para o Firebase Auth.
-        </p>
-      </form>
-    </div>
-  </main>
-
-  <!-- ==================== TELA 2: CHAT ==================== -->
-  <div id="chat-screen" class="hidden h-screen w-full overflow-hidden flex relative" style="background: var(--bg-main);">
-
-    <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity"></div>
-
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-76 sm:w-80 bg-white/80 backdrop-blur-xl border-r border-slate-200/80 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out shadow-lg lg:shadow-none" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
-      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-200/70 shrink-0" style="border-color: var(--border-color-80);">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl theme-gradient-bg flex items-center justify-center">
-            <i data-lucide="message-square-dashed" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <span class="font-bold text-base tracking-tight text-slate-900" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></span>
-            <span class="block text-[10px] text-emerald-600 font-semibold leading-none">● Conectado</span>
-          </div>
-        </div>
-        <button type="button" onclick="toggleSidebar(false)" class="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="p-4 border-b border-slate-200/70 bg-slate-50/60 shrink-0" style="border-color: var(--border-color-80); background: var(--bg-slate-50);">
-        <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/90 border border-slate-200/80 shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-80);">
-          <div class="relative shrink-0">
-            <div id="user-avatar" class="w-11 h-11 rounded-2xl theme-gradient-bg flex items-center justify-center font-bold text-sm">US</div>
-            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white" title="Online" style="border-color: var(--bg-card);"></span>
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1.5">
-              <p id="profile-username" class="text-sm font-semibold text-slate-900 truncate" style="color: var(--text-primary);">Usuário</p>
-              <span id="profile-admin-badge" class="admin-badge hidden"><i data-lucide="crown" class="w-2.5 h-2.5"></i>Admin</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-1.5 mt-1">
-              <span id="profile-age-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200" style="background: var(--bg-slate-100); color: var(--text-secondary); border-color: var(--border-color);">20 anos</span>
-              <span id="profile-gender-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200/80 truncate max-w-[115px]">Gênero</span>
-            </div>
-          </div>
-          <button type="button" onclick="openEditProfile()" title="Editar perfil"
-            class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer">
-            <i data-lucide="pencil" class="w-4 h-4"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-4 space-y-6">
-        <div>
-          <div class="flex items-center justify-between px-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canais Disponíveis</span>
-            <div class="flex items-center gap-1">
-              <span id="channel-count-badge" class="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200 font-mono" style="background: var(--bg-slate-100); color: var(--text-secondary); border-color: var(--border-color);">4</span>
-              <button type="button" id="admin-create-channel-btn" onclick="openCreateChannelModal()" title="Criar nova sala (Admin)"
-                class="hidden p-1 rounded-lg text-amber-600 hover:text-amber-700 hover:bg-amber-50 border border-amber-200/60 transition-colors cursor-pointer">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              </button>
-            </div>
-          </div>
-          <nav id="channels-list" class="space-y-1"></nav>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between px-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Mensagens Privadas</span>
-            <button type="button" onclick="openNewDMPicker()" title="Nova conversa privada"
-              class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-          <ul id="dm-conversations-list" class="space-y-1"></ul>
-          <p id="dm-empty-hint" class="text-[11px] text-slate-400 px-2 py-2 italic hidden" style="color: var(--text-muted);">
-            Nenhuma conversa privada ainda. Clique no "+" ou em um usuário online.
-          </p>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between px-2 mb-2">
-            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Visitantes agora</span>
-            <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span id="online-count-sidebar">…</span>
-            </span>
-          </div>
-          <ul id="online-users-list" class="space-y-1.5"></ul>
-        </div>
-      </div>
-    </aside>
-
-    <section class="flex-1 flex flex-col min-w-0 bg-grid-pattern relative overflow-hidden">
-      <header class="h-16 px-4 sm:px-6 bg-white/75 backdrop-blur-xl border-b border-slate-200/80 flex items-center justify-between shrink-0 z-20" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
-        <div class="flex items-center gap-3 min-w-0">
-          <button type="button" onclick="toggleSidebar(true)" aria-label="Abrir menu"
-            class="lg:hidden p-2.5 rounded-xl bg-white/90 text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-200 transition-colors" style="background: var(--bg-card-90); border-color: var(--border-color);">
-            <i data-lucide="menu" class="w-5 h-5"></i>
-          </button>
-
-          <div class="w-10 h-10 rounded-2xl bg-white/90 border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0" style="color: var(--theme-accent); background: var(--bg-card-90); border-color: var(--border-color-90);">
-            <i id="current-channel-icon" data-lucide="hash" class="w-5 h-5"></i>
-          </div>
-
-          <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <h2 id="current-channel-name" class="text-base sm:text-lg font-bold text-slate-900 truncate" style="color: var(--text-primary);">Geral</h2>
-              <span id="header-online-badge" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span id="header-online-count">…</span>
-              </span>
-              <span id="dm-private-badge" class="hidden items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
-                <i data-lucide="lock" class="w-3 h-3"></i> Privado
-              </span>
-              <span id="header-blocked-badge" class="hidden items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200/80">
-                <i data-lucide="lock" class="w-3 h-3"></i> Sala Bloqueada
-              </span>
-            </div>
-            <p id="current-channel-desc" class="text-xs text-slate-500 truncate" style="color: var(--text-secondary);">Conversa aberta para toda a comunidade Chat Top</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-          <button type="button" id="admin-panel-btn" onclick="openAdminPanel()" title="Painel de Administrador"
-            class="hidden items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-colors cursor-pointer text-xs font-semibold">
-            <i data-lucide="crown" class="w-4 h-4"></i>
-            <span class="hidden sm:inline">Admin</span>
-          </button>
-
-          <button type="button" id="chat-dark-toggle" title="Alternar modo escuro" aria-label="Alternar modo escuro"
-            class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
-            <i data-lucide="moon" class="w-4 h-4 text-slate-600 dark-icon"></i>
-          </button>
-
-          <div class="relative" id="palette-wrapper">
-            <button type="button" id="palette-toggle-btn" title="Paleta de cores do chat" aria-label="Escolher paleta de cores"
-              class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
-              <span id="active-palette-dot" class="w-3.5 h-3.5 rounded-full border border-slate-300/80 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
-            </button>
-            <div id="palette-popover" class="hidden absolute right-0 mt-2 w-60 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50" style="background: var(--bg-card-95); border-color: var(--border-color-90);">
-              <div class="flex items-center justify-between px-1 pb-2 mb-2.5 border-b border-slate-100" style="border-color: var(--border-color);">
-                <span class="text-[11px] font-semibold text-slate-700 flex items-center gap-1.5" style="color: var(--text-primary);">
-                  <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Cor dos Balões
-                </span>
-              </div>
-              <div id="palette-options" class="grid grid-cols-4 gap-2"></div>
-            </div>
-          </div>
-
-          <button type="button" onclick="clearCurrentChannelHistory()" title="Apagar minhas mensagens desta sala"
-            class="p-2 rounded-xl bg-white/90 hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-200/90 transition-colors cursor-pointer" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>
-
-          <button type="button" onclick="logout()" title="Sair da conta"
-            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold" style="background: var(--bg-card-90); border-color: var(--border-color-90);">
-            <i data-lucide="log-out" class="w-4 h-4"></i>
-            <span class="hidden sm:inline">Sair</span>
-          </button>
-        </div>
-      </header>
-
-      <div id="messages-container" class="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-4 scroll-smooth z-10"></div>
-
-      <div id="typing-indicator" class="hidden px-5 py-2 text-xs text-slate-600 flex items-center gap-2 bg-white/70 backdrop-blur-md border-t border-slate-200/70 z-10" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
-        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
-          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
-          <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
-        </div>
-        <span id="typing-user-text" class="font-medium text-slate-600" style="color: var(--text-secondary);">Alguém está digitando...</span>
-      </div>
-
-      <div id="emoji-picker" class="hidden px-4 sm:px-6 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200/80 flex flex-wrap gap-2 z-10" style="background: var(--bg-card-90); border-color: var(--border-color-80);"></div>
-
-      <footer class="p-3 sm:p-4 bg-white/80 backdrop-blur-xl border-t border-slate-200/80 shrink-0 z-10" style="background: var(--bg-card-80); border-color: var(--border-color-80);">
-        <div id="reply-bar" class="hidden max-w-5xl mx-auto mb-2 flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-md" style="background: var(--bg-card-90); border-color: var(--border-color-80);">
-          <i data-lucide="corner-up-left" class="w-4 h-4 shrink-0" style="color: var(--theme-accent);"></i>
-          <div class="min-w-0 flex-1">
-            <p class="text-[10px] font-semibold truncate" style="color: var(--text-secondary);">Respondendo a <span id="reply-to-name" class="font-bold" style="color: var(--theme-accent);"></span></p>
-            <p id="reply-to-text" class="text-xs truncate italic" style="color: var(--text-muted);"></p>
-          </div>
-          <button type="button" onclick="cancelReply()" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors cursor-pointer" aria-label="Cancelar resposta">
-            <i data-lucide="x" class="w-4 h-4"></i>
-          </button>
-        </div>
-
-        <form id="message-form" class="max-w-5xl mx-auto flex items-center gap-2 sm:gap-3">
-          <button type="button" id="emoji-toggle-btn" aria-label="Emojis rápidos"
-            class="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color-90);">
-            <i data-lucide="smile" class="w-5 h-5"></i>
-          </button>
-          <div class="flex-1 relative">
-            <input type="text" id="message-input" autocomplete="off" placeholder="Digite sua mensagem aqui..."
-              class="w-full px-4 py-3 bg-white/95 border border-slate-200/90 rounded-2xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 shadow-2xs transition-all" />
-          </div>
-          <button type="submit" aria-label="Enviar mensagem"
-            class="px-4 sm:px-5 py-3 rounded-2xl font-semibold text-sm theme-gradient-bg active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer">
-            <span class="hidden sm:inline">Enviar</span>
-            <i data-lucide="send" class="w-4 h-4"></i>
-          </button>
-        </form>
-      </footer>
-    </section>
-  </div>
-
-  <!-- ===== MODAL: EDITAR PERFIL ===== -->
-  <div id="edit-profile-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="edit-profile-modal w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
-      <div class="px-6 pt-6 pb-4 border-b border-slate-200/70" style="border-color: var(--border-color);">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2" style="color: var(--text-primary);">
-            <i data-lucide="user-cog" class="w-5 h-5" style="color: var(--theme-accent);"></i> Editar Perfil
-          </h3>
-          <button type="button" onclick="closeEditProfile()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-      </div>
-      <form id="edit-profile-form" class="p-6 space-y-4">
-        <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Nome de Usuário</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="user" class="w-4 h-4"></i></span>
-            <input type="text" id="edit-username" required minlength="3" maxlength="30"
-              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
+            <input type="text" id="username" required placeholder="Ex: LucasSilva"
+              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" />
           </div>
-          <p class="text-[10px] text-slate-400 mt-1" style="color: var(--text-muted);">O nome exibido no chat será atualizado nas próximas mensagens.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Senha</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><i data-lucide="lock" class="w-4 h-4"></i></span>
+            <input type="password" id="password" required placeholder="••••••••"
+              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" />
+          </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Idade</label>
-            <input type="number" id="edit-age" min="13" max="120" required
-              class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all" />
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Idade (13+)</label>
+            <input type="number" id="age" min="13" max="120" required placeholder="Ex: 24"
+              class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" />
           </div>
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5" style="color: var(--text-secondary);">Gênero</label>
-            <select id="edit-gender" required class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 appearance-none cursor-pointer">
+            <select id="gender" required class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 cursor-pointer">
+              <option value="" disabled selected>Selecione...</option>
               <option value="Masculino">Masculino</option>
               <option value="Feminino">Feminino</option>
               <option value="Não-binário">Não-binário</option>
@@ -573,194 +133,115 @@
             </select>
           </div>
         </div>
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closeEditProfile()"
-            class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors cursor-pointer" style="background: var(--bg-slate-100); color: var(--text-secondary);">
-            Cancelar
-          </button>
-          <button type="submit" id="edit-profile-submit"
-            class="flex-1 py-2.5 rounded-2xl theme-gradient-bg font-semibold text-sm transition-all active:scale-[0.98] cursor-pointer">
-            Salvar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===== MODAL: NOVA DM ===== -->
-  <div id="new-dm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden edit-profile-modal" style="background: var(--bg-card); border-color: var(--border-color);">
-      <div class="px-6 pt-6 pb-4 border-b border-slate-200/70" style="border-color: var(--border-color);">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2" style="color: var(--text-primary);">
-            <i data-lucide="message-circle-plus" class="w-5 h-5" style="color: var(--theme-accent);"></i> Nova Conversa Privada
-          </h3>
-          <button type="button" onclick="closeNewDMPicker()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-        <p class="text-xs text-slate-500 mt-1" style="color: var(--text-secondary);">Selecione um usuário online para iniciar um chat privado.</p>
-      </div>
-      <div id="new-dm-user-list" class="p-4 max-h-80 overflow-y-auto space-y-1.5"></div>
-    </div>
-  </div>
-
-  <!-- ===== MODAL: LOGIN DE ADMIN ===== -->
-  <div id="admin-login-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-amber-200/80 overflow-hidden edit-profile-modal" style="background: var(--bg-card); border-color: var(--border-color);">
-      <div class="px-6 pt-6 pb-4 border-b border-amber-200/50 bg-gradient-to-br from-amber-50 to-orange-50" style="border-color: var(--border-color);">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2">
-            <i data-lucide="shield-check" class="w-5 h-5"></i> Acesso Administrador
-          </h3>
-          <button type="button" onclick="closeAdminLogin()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-        <p class="text-xs text-amber-700 mt-1">Digite o código de acesso para liberar o painel.</p>
-      </div>
-      <form id="admin-login-form" class="p-6 space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Código de Acesso</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-amber-500 pointer-events-none"><i data-lucide="key-round" class="w-4 h-4"></i></span>
-            <input type="password" id="admin-code-input" required placeholder="••••"
-              class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 tracking-widest text-center font-mono focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all" />
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200" style="background: var(--bg-slate-50, #f8fafc); border-color: var(--border-color);">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold" style="color: var(--text-primary);">Verificação Humana</span>
+            <button type="button" id="refresh-captcha" class="text-xs text-slate-600 hover:text-slate-900 px-2 py-1 rounded-lg border border-slate-200 bg-white" style="background: var(--bg-card); border-color: var(--border-color);">
+              <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i> Novo
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <div id="captcha-question" class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-center font-bold text-sm" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">Quanto é 8 + 5?</div>
+            <input type="number" id="captcha-answer" required placeholder="Resp."
+              class="w-24 px-3 py-2 bg-white border border-slate-200 rounded-xl text-center font-semibold text-sm focus:outline-none focus:border-emerald-500" />
           </div>
         </div>
-        <button type="submit"
-          class="w-full py-3 px-4 rounded-2xl font-semibold text-sm bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer">
-          <i data-lucide="unlock" class="w-4 h-4"></i> Desbloquear Painel
+        <button type="submit" id="auth-submit-btn" class="w-full py-3 rounded-2xl font-semibold text-sm theme-gradient-bg active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+          <span id="auth-submit-text">Entrar no Chat</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
-        <p class="text-[10px] text-center text-slate-400">Apenas administradores autorizados.</p>
       </form>
     </div>
-  </div>
+  </main>
 
-  <!-- ===== MODAL: PAINEL ADMIN ===== -->
-  <div id="admin-panel-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-amber-200/80 overflow-hidden edit-profile-modal max-h-[90vh] flex flex-col" style="background: var(--bg-card); border-color: var(--border-color);">
-      <div class="px-6 pt-5 pb-4 border-b border-amber-200/50 bg-gradient-to-br from-amber-50 to-orange-50 shrink-0" style="border-color: var(--border-color);">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2">
-            <i data-lucide="crown" class="w-5 h-5"></i> Painel de Administrador
-          </h3>
-          <div class="flex items-center gap-2">
-            <button type="button" onclick="adminLogout()" title="Sair do modo admin"
-              class="px-3 py-1.5 rounded-xl bg-white/70 hover:bg-red-50 text-amber-700 hover:text-red-600 border border-amber-200 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1">
-              <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair do Admin
-            </button>
-            <button type="button" onclick="closeAdminPanel()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-              <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+  <!-- TELA CHAT -->
+  <div id="chat-screen" class="hidden h-screen w-full overflow-hidden flex relative" style="background: var(--bg-main);">
+    <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-900/30 z-30 hidden lg:hidden"></div>
+
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-72 bg-white/90 backdrop-blur-xl border-r border-slate-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 shadow-lg lg:shadow-none" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-200 shrink-0" style="border-color: var(--border-color);">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl theme-gradient-bg flex items-center justify-center">
+            <i data-lucide="message-square-dashed" class="w-5 h-5"></i>
+          </div>
+          <span class="font-bold" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></span>
+        </div>
+        <button type="button" onclick="toggleSidebar(false)" class="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-3 border-b border-slate-200" style="border-color: var(--border-color);">
+        <div class="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200" style="background: var(--bg-slate-50, #f8fafc); border-color: var(--border-color);">
+          <div class="w-10 h-10 rounded-xl theme-gradient-bg flex items-center justify-center font-bold text-sm" id="user-avatar">US</div>
+          <div class="min-w-0 flex-1">
+            <p id="profile-username" class="text-sm font-semibold truncate" style="color: var(--text-primary);">Usuário</p>
+            <p id="profile-info" class="text-[10px] truncate" style="color: var(--text-secondary);">20 anos</p>
           </div>
         </div>
       </div>
 
-      <div class="px-4 pt-3 shrink-0 border-b border-slate-200/70" style="border-color: var(--border-color);">
-        <div class="flex gap-1">
-          <button type="button" class="admin-tab-btn px-3 py-2 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800" data-tab="channels">
-            <i data-lucide="hash" class="w-3.5 h-3.5 inline-block mr-1"></i> Salas
-          </button>
-          <button type="button" class="admin-tab-btn px-3 py-2 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800" data-tab="users">
-            <i data-lucide="users" class="w-3.5 h-3.5 inline-block mr-1"></i> Usuários
-          </button>
-          <button type="button" class="admin-tab-btn px-3 py-2 text-xs font-semibold rounded-t-xl border-b-2 border-transparent text-slate-500 hover:text-slate-800" data-tab="messages">
-            <i data-lucide="message-square" class="w-3.5 h-3.5 inline-block mr-1"></i> Mensagens
-          </button>
+      <div class="flex-1 overflow-y-auto p-3 space-y-4">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2">Salas</span>
+          <nav id="channels-list" class="space-y-1 mt-2"></nav>
         </div>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-4">
-        <div id="admin-tab-channels" class="admin-tab-content">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-xs text-slate-500">Gerencie as salas do chat. Bloqueie ou remova salas.</p>
-            <button type="button" onclick="openCreateChannelModal()" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nova Sala
-            </button>
+        <div>
+          <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Online</span>
+            <span class="text-[10px] text-emerald-600 font-semibold" id="online-count-sidebar">0</span>
           </div>
-          <ul id="admin-channels-list" class="space-y-2"></ul>
-        </div>
-
-        <div id="admin-tab-users" class="admin-tab-content hidden">
-          <p class="text-xs text-slate-500 mb-3">Usuários online agora. Você pode bani-los do chat.</p>
-          <ul id="admin-users-list" class="space-y-2"></ul>
-        </div>
-
-        <div id="admin-tab-messages" class="admin-tab-content hidden">
-          <p class="text-xs text-slate-500 mb-3">Todas as mensagens da sala atual. Remova qualquer uma.</p>
-          <ul id="admin-messages-list" class="space-y-2"></ul>
+          <ul id="online-users-list" class="space-y-1"></ul>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ===== MODAL: CRIAR SALA ===== -->
-  <div id="create-channel-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-emerald-200/80 overflow-hidden edit-profile-modal" style="background: var(--bg-card); border-color: var(--border-color);">
-      <div class="px-6 pt-6 pb-4 border-b border-emerald-200/50 bg-gradient-to-br from-emerald-50 to-teal-50" style="border-color: var(--border-color);">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-emerald-800 flex items-center gap-2">
-            <i data-lucide="plus-square" class="w-5 h-5"></i> Criar Nova Sala
-          </h3>
-          <button type="button" onclick="closeCreateChannelModal()" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
+      <div class="p-3 border-t border-slate-200" style="border-color: var(--border-color);">
+        <button type="button" onclick="toggleDarkMode()" class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 mb-2" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
+          <i data-lucide="moon" class="w-4 h-4 dark-icon"></i> Modo Escuro
+        </button>
+        <button type="button" onclick="logout()" class="w-full py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold flex items-center justify-center gap-2 border border-red-200">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+        </button>
       </div>
-      <form id="create-channel-form" class="p-6 space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Nome da Sala</label>
-          <input type="text" id="new-channel-name" required minlength="2" maxlength="30" placeholder="Ex: Filmes e Séries"
-            class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Descrição</label>
-          <input type="text" id="new-channel-desc" required maxlength="80" placeholder="Ex: Discussões sobre filmes e séries"
-            class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Ícone</label>
-          <select id="new-channel-icon" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 cursor-pointer">
-            <option value="hash"># Hash</option>
-            <option value="cpu">CPU / Tecnologia</option>
-            <option value="gamepad-2">Gamepad / Jogos</option>
-            <option value="coffee">Café / Bate-papo</option>
-            <option value="music">Música</option>
-            <option value="film">Filmes</option>
-            <option value="book-open">Livros</option>
-            <option value="heart">Coração</option>
-            <option value="star">Estrela</option>
-            <option value="zap">Raio</option>
-            <option value="globe">Globo</option>
-            <option value="flame">Fogo</option>
-          </select>
-        </div>
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closeCreateChannelModal()"
-            class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors cursor-pointer" style="background: var(--bg-slate-100); color: var(--text-secondary);">
-            Cancelar
+    </aside>
+
+    <section class="flex-1 flex flex-col min-w-0 bg-grid relative overflow-hidden">
+      <header class="h-16 px-4 bg-white/90 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between shrink-0 z-20" style="background: var(--bg-card); border-color: var(--border-color);">
+        <div class="flex items-center gap-3 min-w-0">
+          <button type="button" onclick="toggleSidebar(true)" class="lg:hidden p-2 rounded-xl bg-white border border-slate-200" style="background: var(--bg-card); border-color: var(--border-color);">
+            <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
-          <button type="submit"
-            class="flex-1 py-2.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-semibold text-sm shadow-lg shadow-emerald-500/30 hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer">
-            Criar Sala
-          </button>
+          <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center" style="color: var(--theme-accent); background: var(--bg-slate-50, #f8fafc); border-color: var(--border-color);">
+            <i id="current-channel-icon" data-lucide="hash" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <h2 id="current-channel-name" class="text-base font-bold truncate" style="color: var(--text-primary);">Geral</h2>
+            <p id="current-channel-desc" class="text-xs truncate" style="color: var(--text-secondary);">Conversa aberta</p>
+          </div>
         </div>
-      </form>
-    </div>
+        <button type="button" onclick="logout()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 text-xs font-semibold flex items-center gap-1.5" style="background: var(--bg-slate-100, #f1f5f9); color: var(--text-secondary);">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Sair
+        </button>
+      </header>
+
+      <div id="messages-container" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 z-10"></div>
+
+      <footer class="p-3 bg-white/90 backdrop-blur-xl border-t border-slate-200 shrink-0 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
+        <form id="message-form" class="max-w-4xl mx-auto flex items-center gap-2">
+          <input type="text" id="message-input" autocomplete="off" placeholder="Digite sua mensagem..."
+            class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);" />
+          <button type="submit" class="px-4 py-3 rounded-2xl theme-gradient-bg font-semibold text-sm flex items-center gap-1.5 active:scale-95 transition-all">
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </footer>
+    </section>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-      signOut, onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import {
-      getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc,
-      query, orderBy, limit, startAfter, onSnapshot, serverTimestamp,
-      getDocs, writeBatch, where, updateDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, orderBy, limit, onSnapshot, serverTimestamp, getDocs, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDTtGsSaqRHULKfzhkQU3UafoDSUP9wQ68",
@@ -776,1708 +257,332 @@
 
     lucide.createIcons();
 
-    const ADMIN_MASTER_CODE = '1986';
-
-    const STORAGE_KEYS = { THEME: 'chattop_theme_v1', DARK: 'chattop_dark_v1', SOUND: 'chattop_sound_v1', ADMIN: 'chattop_admin_v1' };
-
-    const COLOR_THEMES = [
-      { id:'indigo-cyan', name:'Índigo / Ciano', shortName:'Índigo', primary:'#4F46E5', secondary:'#0284C7', accent:'#0284C7', sentStart:'rgba(79,70,229,0.82)', sentEnd:'rgba(2,132,199,0.78)', sentBorder:'rgba(255,255,255,0.55)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(14,165,233,0.28)' },
-      { id:'soft-green', name:'Verde Fraco / Menta', shortName:'Verde Fraco', primary:'#86efac', secondary:'#bbf7d0', accent:'#15803d', sentStart:'rgba(134,239,172,0.78)', sentEnd:'rgba(187,247,208,0.72)', sentBorder:'rgba(255,255,255,0.85)', sentText:'#064e3b', btnText:'#064e3b', glow:'rgba(34,197,94,0.25)' },
-      { id:'soft-yellow', name:'Amarelo Solar / Suave', shortName:'Amarelo', primary:'#fde047', secondary:'#fef08a', accent:'#a16207', sentStart:'rgba(253,224,71,0.80)', sentEnd:'rgba(254,240,138,0.74)', sentBorder:'rgba(255,255,255,0.88)', sentText:'#422006', btnText:'#422006', glow:'rgba(234,179,8,0.26)' },
-      { id:'emerald-teal', name:'Esmeralda / Teal', shortName:'Esmeralda', primary:'#10b981', secondary:'#14b8a6', accent:'#0d9488', sentStart:'rgba(16,185,129,0.80)', sentEnd:'rgba(20,184,166,0.76)', sentBorder:'rgba(255,255,255,0.58)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(16,185,129,0.26)' },
-      { id:'sky-blue', name:'Azul Céu', shortName:'Azul Céu', primary:'#38bdf8', secondary:'#60a5fa', accent:'#0284c7', sentStart:'rgba(56,189,248,0.78)', sentEnd:'rgba(96,165,250,0.75)', sentBorder:'rgba(255,255,255,0.75)', sentText:'#0c4a6e', btnText:'#0c4a6e', glow:'rgba(56,189,248,0.28)' },
-      { id:'amber-orange', name:'Âmbar / Laranja', shortName:'Âmbar', primary:'#fb923c', secondary:'#f59e0b', accent:'#d97706', sentStart:'rgba(251,146,60,0.80)', sentEnd:'rgba(245,158,11,0.76)', sentBorder:'rgba(255,255,255,0.65)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(245,158,11,0.26)' },
-      { id:'lavender-purple', name:'Roxo Lavanda', shortName:'Lavanda', primary:'#8b5cf6', secondary:'#a78bfa', accent:'#7c3aed', sentStart:'rgba(139,92,246,0.80)', sentEnd:'rgba(167,139,250,0.76)', sentBorder:'rgba(255,255,255,0.58)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(139,92,246,0.26)' },
-      { id:'soft-graphite', name:'Grafite Suave', shortName:'Grafite', primary:'#475569', secondary:'#64748b', accent:'#334155', sentStart:'rgba(71,85,105,0.84)', sentEnd:'rgba(100,116,139,0.78)', sentBorder:'rgba(255,255,255,0.50)', sentText:'#FFFFFF', btnText:'#FFFFFF', glow:'rgba(71,85,105,0.22)' }
+    const CHANNELS = [
+      { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para todos' },
+      { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA e hardware' },
+      { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Playlists, games e e-sports' },
+      { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' }
     ];
 
-    let activeThemeId = localStorage.getItem(STORAGE_KEYS.THEME) || 'indigo-cyan';
-    let isDarkMode = localStorage.getItem(STORAGE_KEYS.DARK) === 'true';
-    let soundEnabled = localStorage.getItem(STORAGE_KEYS.SOUND) !== 'false';
+    let currentUser = null;
     let currentAuthMode = 'login';
     let currentCaptchaResult = 0;
-    let currentUser = null;
     let activeChannelId = 'geral';
-    let activeChatType = 'channel';
-    let activeDMUserId = null;
-    let activeDMUsername = null;
-
     let unsubscribeMessages = null;
     let unsubscribePresence = null;
-    let unsubscribeTyping = null;
-    let unsubscribeDMs = null;
-    let unsubscribeChannels = null;
-    let unreadListeners = {};
-
-    const PAGE_SIZE = 50;
-    let oldestLoadedMessage = null;
-    let hasMoreMessages = true;
-    let allCurrentMessages = [];
-
     let presenceHeartbeat = null;
-    let typingTimeout = null;
-    let isTypingFlag = false;
+    let isDarkMode = localStorage.getItem('chattop_dark') === 'true';
+    let onlineCache = [];
 
-    let onlineUsersCache = [];
-    let dmConversationsCache = [];
-    let dmUnreadCounts = {};
-    let dynamicChannels = [];
-    let channelsCache = [];
-
-    let replyTarget = null;
-
-    let isAdminMode = false;
-    let blockedUserUids = new Set();
-
-    let historyDepth = 0;
-
-    function pushChatHistoryState() {
-      historyDepth++;
-      history.pushState({ chattop: true, depth: historyDepth }, '');
-    }
-
-    function handleBackButton() {
-      const sidebar = document.getElementById('sidebar');
-      if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
-        toggleSidebar(false);
-        pushChatHistoryState();
-        return;
-      }
-      if (activeChatType === 'dm') {
-        selectChannel(activeChannelId || 'geral');
-        pushChatHistoryState();
-        return;
-      }
-      if (activeChatType === 'channel' && activeChannelId !== 'geral') {
-        selectChannel('geral');
-        pushChatHistoryState();
-        return;
-      }
-      historyDepth = Math.max(0, historyDepth - 1);
-    }
-
-    window.addEventListener('popstate', () => {
-      const chatScreen = document.getElementById('chat-screen');
-      if (chatScreen && !chatScreen.classList.contains('hidden')) {
-        handleBackButton();
-      }
-    });
-
-    const FIXED_CHANNELS = [
-      { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para toda a comunidade Chat Top' },
-      { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA, hardware e novidades digitais' },
-      { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Recomendações de playlists, games e e-sports' },
-      { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração, filmes, séries e ideias do dia' }
-    ];
-
-    const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
-
-    let audioCtx = null;
-    function getAudioContext() {
-      if (!audioCtx) {
-        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-      }
-      return audioCtx;
-    }
-    function playNotificationSound() {
-      if (!soundEnabled) return;
-      const ctx = getAudioContext();
-      if (!ctx) return;
-      if (ctx.state === 'suspended') { ctx.resume().catch(()=>{}); }
-      try {
-        const now = ctx.currentTime;
-        const beep = (freq, start, duration, vol) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0, start);
-          gain.gain.linearRampToValueAtTime(vol, start + 0.01);
-          gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(start);
-          osc.stop(start + duration + 0.02);
-        };
-        beep(880, now, 0.12, 0.18);
-        beep(1174.66, now + 0.13, 0.15, 0.16);
-      } catch(e) {}
-    }
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      localStorage.setItem(STORAGE_KEYS.SOUND, soundEnabled ? 'true' : 'false');
-      updateSoundButtonUI();
-      if (soundEnabled) playNotificationSound();
-      showToast(soundEnabled ? 'Som de notificação ativado 🔊' : 'Som de notificação desativado 🔇', 'info');
-    }
-    function updateSoundButtonUI() {
-      document.querySelectorAll('.sound-toggle-icon').forEach(el => {
-        el.setAttribute('data-lucide', soundEnabled ? 'volume-2' : 'volume-x');
-      });
-      lucide.createIcons();
-    }
-    window.toggleSound = toggleSound;
-
-    function showToast(message, type='info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      const styles = {
-        error:'bg-white/95 border-red-300 text-red-700 shadow-red-200/50',
-        success:'bg-white/95 border-emerald-300 text-emerald-700 shadow-emerald-200/50',
-        info:'bg-white/95 border-sky-300 text-slate-800 shadow-slate-300/50'
-      };
+    // ===== HELPERS =====
+    function showToast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      const styles = { error:'border-red-300 text-red-700', success:'border-emerald-300 text-emerald-700', info:'border-sky-300 text-slate-700' };
       const icons = { error:'alert-circle', success:'check-circle-2', info:'info' };
-      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-md shadow-lg text-xs sm:text-sm font-medium transition-all duration-300 transform translate-y-0 ${styles[type]||styles.info}`;
-      if (isDarkMode) toast.style.background = 'var(--bg-card-95)';
-      toast.innerHTML = `<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 shrink-0"></i><span class="flex-1">${escapeHTML(message)}</span>`;
-      container.appendChild(toast);
-      lucide.createIcons({ root: toast });
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-8px)';
-        setTimeout(() => toast.remove(), 300);
-      }, 3600);
+      t.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-2xl border bg-white backdrop-blur-md shadow-lg text-xs font-medium ${styles[type]||styles.info}`;
+      t.style.background = isDarkMode ? '#1e293b' : '#fff';
+      t.style.color = isDarkMode ? '#f1f5f9' : '#0f172a';
+      t.innerHTML = `<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 shrink-0"></i><span>${escapeHTML(msg)}</span>`;
+      c.appendChild(t);
+      lucide.createIcons({ root: t });
+      setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3500);
     }
-    function escapeHTML(str) {
-      const div = document.createElement('div');
-      div.textContent = str ?? '';
-      return div.innerHTML;
-    }
-    function getInitials(name) {
-      if (!name) return 'US';
-      const parts = name.trim().split(/\s+/);
-      if (parts.length === 1) return parts[0].substring(0,2).toUpperCase();
-      return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-    }
-    function getCurrentTime() {
-      return new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-    }
-    function usernameToEmail(username) {
-      return `${username.trim().toLowerCase()}@chattop.local`;
-    }
-    function dmConversationId(uid1, uid2) {
-      return [uid1, uid2].sort().join('_');
-    }
-    function getGenderIcon(gender) {
-      const g = (gender || '').toLowerCase();
-      if (g === 'masculino') return 'mars';
-      if (g === 'feminino') return 'venus';
-      if (g === 'não-binário' || g === 'nao-binario') return 'user';
-      return 'user';
-    }
-    function getGenderLabel(gender) {
-      return gender || 'Não informado';
-    }
+    function escapeHTML(s) { const d = document.createElement('div'); d.textContent = s ?? ''; return d.innerHTML; }
+    function getInitials(n) { if(!n) return 'US'; const p=n.trim().split(/\s+/); return p.length===1?p[0].substring(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase(); }
+    function getTime() { return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+    function userToEmail(u) { return `${u.trim().toLowerCase()}@chattop.local`; }
+    function getGenderIcon(g) { const x=(g||'').toLowerCase(); if(x==='masculino')return'mars'; if(x==='feminino')return'venus'; return'user'; }
 
-    function applyDarkMode(dark, notify=false) {
+    // ===== DARK MODE =====
+    function applyDark(dark) {
       isDarkMode = dark;
-      if (dark) document.body.classList.add('dark');
-      else document.body.classList.remove('dark');
-      localStorage.setItem(STORAGE_KEYS.DARK, dark ? 'true' : 'false');
-      document.querySelectorAll('.dark-icon').forEach(el => {
-        el.setAttribute('data-lucide', dark ? 'sun' : 'moon');
-      });
+      document.body.classList.toggle('dark', dark);
+      localStorage.setItem('chattop_dark', dark?'true':'false');
+      document.querySelectorAll('.dark-icon').forEach(el => el.setAttribute('data-lucide', dark?'sun':'moon'));
       lucide.createIcons();
-      if (notify) showToast(dark ? 'Modo escuro ativado 🌙' : 'Modo claro ativado ☀️', 'info');
     }
-    function toggleDarkMode() { applyDarkMode(!isDarkMode, true); }
+    function toggleDarkMode() { applyDark(!isDarkMode); showToast(isDarkMode?'Modo escuro 🌙':'Modo claro ☀️','info'); }
     window.toggleDarkMode = toggleDarkMode;
 
-    document.getElementById('auth-dark-toggle').addEventListener('click', toggleDarkMode);
-    document.getElementById('chat-dark-toggle').addEventListener('click', toggleDarkMode);
+    // ===== CAPTCHA =====
+    function genCaptcha() {
+      const ops=['+','-','×'], op=ops[Math.floor(Math.random()*3)];
+      let a,b,ans;
+      if(op==='+'){a=Math.floor(Math.random()*15)+2;b=Math.floor(Math.random()*15)+1;ans=a+b;}
+      else if(op==='-'){a=Math.floor(Math.random()*15)+8;b=Math.floor(Math.random()*(a-1))+1;ans=a-b;}
+      else{a=Math.floor(Math.random()*7)+2;b=Math.floor(Math.random()*6)+2;ans=a*b;}
+      currentCaptchaResult=ans;
+      document.getElementById('captcha-question').textContent = `Quanto é ${a} ${op} ${b}?`;
+      document.getElementById('captcha-answer').value='';
+    }
+    document.getElementById('refresh-captcha').addEventListener('click', genCaptcha);
 
-    function applyColorTheme(themeId, notify=false) {
-      const theme = COLOR_THEMES.find(t => t.id === themeId) || COLOR_THEMES[0];
-      activeThemeId = theme.id;
-      const root = document.documentElement;
-      root.style.setProperty('--theme-primary', theme.primary);
-      root.style.setProperty('--theme-secondary', theme.secondary);
-      root.style.setProperty('--theme-accent', theme.accent);
-      root.style.setProperty('--theme-sent-start', theme.sentStart);
-      root.style.setProperty('--theme-sent-end', theme.sentEnd);
-      root.style.setProperty('--theme-sent-border', theme.sentBorder);
-      root.style.setProperty('--theme-sent-text', theme.sentText);
-      root.style.setProperty('--theme-btn-text', theme.btnText);
-      root.style.setProperty('--theme-glow', theme.glow);
-      try { localStorage.setItem(STORAGE_KEYS.THEME, theme.id); } catch(e){}
-      renderPaletteOptions();
-      if (notify) showToast(`Tema "${theme.name}" aplicado!`, 'info');
-    }
-    function renderPaletteGridInto(container, closePopoverId) {
-      if (!container) return;
-      container.innerHTML = '';
-      COLOR_THEMES.forEach(theme => {
-        const isSelected = theme.id === activeThemeId;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.title = theme.name;
-        btn.ariaLabel = theme.name;
-        btn.className = `group flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all cursor-pointer ${
-          isSelected ? 'bg-slate-100 border-slate-400 scale-105 shadow-xs' : 'bg-white hover:bg-slate-50 border-slate-200/80 hover:border-slate-300'
-        }`;
-        if (isDarkMode) {
-          btn.style.background = isSelected ? 'var(--bg-slate-200)' : 'var(--bg-card)';
-          btn.style.borderColor = isSelected ? 'var(--theme-accent)' : 'var(--border-color)';
-        }
-        const checkColor = theme.btnText === '#FFFFFF' ? 'text-white' : 'text-slate-900';
-        btn.innerHTML = `
-          <span class="w-6 h-6 rounded-full border border-slate-300/80 shadow-inner flex items-center justify-center"
-                style="background: linear-gradient(135deg, ${theme.primary}, ${theme.secondary});">
-            ${isSelected ? `<i data-lucide="check" class="w-3.5 h-3.5 ${checkColor}"></i>` : ''}
-          </span>
-          <span class="text-[9px] font-medium text-slate-600 truncate w-full text-center leading-tight">${theme.shortName}</span>`;
-        btn.onclick = () => {
-          applyColorTheme(theme.id, true);
-          const pop = document.getElementById(closePopoverId);
-          if (pop) pop.classList.add('hidden');
-        };
-        container.appendChild(btn);
-      });
-      lucide.createIcons({ root: container });
-    }
-    function renderPaletteOptions() {
-      renderPaletteGridInto(document.getElementById('palette-options'), 'palette-popover');
-      renderPaletteGridInto(document.getElementById('auth-palette-options'), 'auth-palette-popover');
-    }
-    document.getElementById('palette-toggle-btn').addEventListener('click', e => {
-      e.stopPropagation();
-      document.getElementById('palette-popover').classList.toggle('hidden');
-    });
-    document.getElementById('auth-palette-btn').addEventListener('click', e => {
-      e.stopPropagation();
-      document.getElementById('auth-palette-popover').classList.toggle('hidden');
-    });
-    document.addEventListener('click', e => {
-      const w = document.getElementById('palette-wrapper');
-      const p = document.getElementById('palette-popover');
-      if (w && p && !w.contains(e.target)) p.classList.add('hidden');
-      const aw = document.getElementById('auth-palette-wrapper');
-      const ap = document.getElementById('auth-palette-popover');
-      if (aw && ap && !aw.contains(e.target)) ap.classList.add('hidden');
-    });
-
-    function generateMathCaptcha() {
-      const ops = ['+','-','×'];
-      const op = ops[Math.floor(Math.random()*ops.length)];
-      let a, b, answer;
-      if (op === '+') { a = Math.floor(Math.random()*15)+2; b = Math.floor(Math.random()*15)+1; answer = a+b; }
-      else if (op === '-') { a = Math.floor(Math.random()*15)+8; b = Math.floor(Math.random()*(a-1))+1; answer = a-b; }
-      else { a = Math.floor(Math.random()*7)+2; b = Math.floor(Math.random()*6)+2; answer = a*b; }
-      currentCaptchaResult = answer;
-      const qEl = document.getElementById('captcha-question');
-      const aEl = document.getElementById('captcha-answer');
-      if (qEl) qEl.textContent = `Quanto é ${a} ${op} ${b}?`;
-      if (aEl) aEl.value = '';
-    }
-    document.getElementById('refresh-captcha').addEventListener('click', () => {
-      generateMathCaptcha();
-      showToast('Novo desafio matemático gerado.', 'info');
-    });
-
+    // ===== AUTH TABS =====
     function switchAuthTab(mode) {
-      currentAuthMode = mode;
-      const tabLogin = document.getElementById('tab-login');
-      const tabRegister = document.getElementById('tab-register');
-      const submitText = document.getElementById('auth-submit-text');
-      if (mode === 'login') {
-        tabLogin.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 theme-gradient-bg shadow-sm';
-        tabRegister.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-800';
-        submitText.textContent = 'Entrar no Chat';
-      } else {
-        tabRegister.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 theme-gradient-bg shadow-sm';
-        tabLogin.className = 'py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-800';
-        submitText.textContent = 'Criar Conta e Entrar';
-      }
-      generateMathCaptcha();
+      currentAuthMode=mode;
+      const tl=document.getElementById('tab-login'), tr=document.getElementById('tab-register'), st=document.getElementById('auth-submit-text');
+      if(mode==='login'){ tl.className='py-2.5 text-sm font-semibold rounded-xl transition-all theme-gradient-bg shadow-sm'; tr.className='py-2.5 text-sm font-semibold rounded-xl transition-all text-slate-500'; st.textContent='Entrar no Chat'; }
+      else { tr.className='py-2.5 text-sm font-semibold rounded-xl transition-all theme-gradient-bg shadow-sm'; tl.className='py-2.5 text-sm font-semibold rounded-xl transition-all text-slate-500'; st.textContent='Criar Conta e Entrar'; }
+      genCaptcha();
     }
     window.switchAuthTab = switchAuthTab;
 
-    document.getElementById('toggle-password').addEventListener('click', function() {
-      const pwdInput = document.getElementById('password');
-      const isPassword = pwdInput.type === 'password';
-      pwdInput.type = isPassword ? 'text' : 'password';
-      this.innerHTML = `<i data-lucide="${isPassword ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>`;
-      lucide.createIcons({ root: this });
-    });
-
-    document.getElementById('auth-form').addEventListener('submit', async function(e) {
+    // ===== AUTH SUBMIT =====
+    document.getElementById('auth-form').addEventListener('submit', async e => {
       e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      const ageVal = document.getElementById('age').value.trim();
-      const gender = document.getElementById('gender').value;
-      const captchaVal = document.getElementById('captcha-answer').value.trim();
-      const submitBtn = document.getElementById('auth-submit-btn');
+      const u=document.getElementById('username').value.trim();
+      const p=document.getElementById('password').value;
+      const a=parseInt(document.getElementById('age').value,10);
+      const g=document.getElementById('gender').value;
+      const c=parseInt(document.getElementById('captcha-answer').value,10);
+      const btn=document.getElementById('auth-submit-btn');
 
-      if (username.length < 3) { showToast('O nome de usuário deve ter pelo menos 3 caracteres.', 'error'); return; }
-      if (!/^[a-zA-Z0-9_.]+$/.test(username)) { showToast('Use apenas letras, números, ponto e sublinhado no usuário.', 'error'); return; }
-      if (password.length < 6) { showToast('A senha deve ter pelo menos 6 caracteres.', 'error'); return; }
-      const age = parseInt(ageVal, 10);
-      if (isNaN(age) || age < 13 || age > 120) { showToast('Informe uma idade válida (mínimo 13 anos).', 'error'); return; }
-      if (!gender) { showToast('Por favor, selecione seu gênero.', 'error'); return; }
-      if (captchaVal === '' || parseInt(captchaVal, 10) !== currentCaptchaResult) {
-        showToast('Resposta do Captcha incorreta! Tente novamente.', 'error');
-        generateMathCaptcha();
-        return;
-      }
+      if(u.length<3||!/^[a-zA-Z0-9_.]+$/.test(u)){showToast('Usuário inválido (mín. 3, só letras/números/._)','error');return;}
+      if(p.length<6){showToast('Senha deve ter 6+ caracteres','error');return;}
+      if(isNaN(a)||a<13||a>120){showToast('Idade inválida (13+)','error');return;}
+      if(!g){showToast('Selecione o gênero','error');return;}
+      if(c!==currentCaptchaResult){showToast('Captcha incorreto','error');genCaptcha();return;}
 
-      const email = usernameToEmail(username);
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.7';
-
+      btn.disabled=true; btn.style.opacity='.7';
       try {
-        if (currentAuthMode === 'register') {
-          const cred = await createUserWithEmailAndPassword(auth, email, password);
-          await setDoc(doc(db, 'users', cred.user.uid), {
-            username, age, gender, createdAt: serverTimestamp()
-          });
-          showToast(`Conta criada com sucesso! Bem-vindo(a), ${username}!`, 'success');
+        const email=userToEmail(u);
+        if(currentAuthMode==='register'){
+          const cred=await createUserWithEmailAndPassword(auth,email,p);
+          await setDoc(doc(db,'users',cred.user.uid),{username:u,age:a,gender:g,createdAt:serverTimestamp()});
+          showToast(`Bem-vindo(a), ${u}!`,'success');
         } else {
-          const cred = await signInWithEmailAndPassword(auth, email, password);
-          await setDoc(doc(db, 'users', cred.user.uid), { username, age, gender }, { merge: true });
-          showToast(`Bem-vindo(a) de volta, ${username}!`, 'success');
+          const cred=await signInWithEmailAndPassword(auth,email,p);
+          await setDoc(doc(db,'users',cred.user.uid),{username:u,age:a,gender:g},{merge:true});
+          showToast(`Bem-vindo(a) de volta, ${u}!`,'success');
         }
-      } catch (err) {
+      } catch(err) {
         console.error(err);
-        let msg = 'Erro ao autenticar. Tente novamente.';
-        if (err.code === 'auth/email-already-in-use') msg = 'Este nome de usuário já está cadastrado. Faça login.';
-        else if (err.code === 'auth/user-not-found') msg = 'Usuário não encontrado. Crie uma conta.';
-        else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'Senha incorreta.';
-        else if (err.code === 'auth/invalid-email') msg = 'Nome de usuário inválido.';
-        else if (err.code === 'auth/weak-password') msg = 'Senha muito fraca (mínimo 6 caracteres).';
-        else if (err.code === 'auth/network-request-failed') msg = 'Falha de rede. Verifique sua conexão.';
-        showToast(msg, 'error');
-        generateMathCaptcha();
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = '1';
-      }
+        let m='Erro ao autenticar.';
+        if(err.code==='auth/email-already-in-use')m='Usuário já cadastrado.';
+        else if(err.code==='auth/user-not-found')m='Usuário não encontrado.';
+        else if(err.code==='auth/wrong-password'||err.code==='auth/invalid-credential')m='Senha incorreta.';
+        else if(err.code==='auth/weak-password')m='Senha fraca.';
+        showToast(m,'error');
+        genCaptcha();
+      } finally { btn.disabled=false; btn.style.opacity='1'; }
     });
 
+    // ===== LOGOUT =====
     async function logout() {
       try {
         stopPresence();
-        stopTyping();
-        if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
-        if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
-        if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
-        if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
-        if (unsubscribeChannels) { unsubscribeChannels(); unsubscribeChannels = null; }
-        Object.values(unreadListeners).forEach(unsub => { try { unsub(); } catch(e){} });
-        unreadListeners = {};
-        dmUnreadCounts = {};
-        dmConversationsCache = [];
-        isAdminMode = false;
-        localStorage.removeItem(STORAGE_KEYS.ADMIN);
-        while (historyDepth > 0) { history.back(); historyDepth--; }
+        if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
+        if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
         await signOut(auth);
-        showToast('Você saiu da sua conta com segurança.', 'info');
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao sair.', 'error');
-      }
+        showToast('Você saiu.','info');
+      } catch(e){ showToast('Erro ao sair.','error'); }
     }
     window.logout = logout;
 
-    function openEditProfile() {
-      if (!currentUser) return;
-      document.getElementById('edit-username').value = currentUser.username;
-      document.getElementById('edit-age').value = currentUser.age;
-      document.getElementById('edit-gender').value = currentUser.gender;
-      document.getElementById('edit-profile-modal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-    function closeEditProfile() {
-      document.getElementById('edit-profile-modal').classList.add('hidden');
-    }
-    window.openEditProfile = openEditProfile;
-    window.closeEditProfile = closeEditProfile;
-
-    document.getElementById('edit-profile-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      if (!currentUser) return;
-      const newUsername = document.getElementById('edit-username').value.trim();
-      const newAge = parseInt(document.getElementById('edit-age').value, 10);
-      const newGender = document.getElementById('edit-gender').value;
-      const btn = document.getElementById('edit-profile-submit');
-
-      if (newUsername.length < 3) { showToast('O nome deve ter pelo menos 3 caracteres.', 'error'); return; }
-      if (!/^[a-zA-Z0-9_.]+$/.test(newUsername)) { showToast('Use apenas letras, números, ponto e sublinhado.', 'error'); return; }
-      if (isNaN(newAge) || newAge < 13 || newAge > 120) { showToast('Idade inválida (mínimo 13 anos).', 'error'); return; }
-
-      btn.disabled = true;
-      btn.textContent = 'Salvando...';
-
-      try {
-        await setDoc(doc(db, 'users', currentUser.uid), {
-          username: newUsername, age: newAge, gender: newGender
-        }, { merge: true });
-
-        currentUser.username = newUsername;
-        currentUser.age = newAge;
-        currentUser.gender = newGender;
-
-        document.getElementById('profile-username').textContent = newUsername;
-        document.getElementById('profile-age-badge').textContent = `${newAge} anos`;
-        document.getElementById('profile-gender-badge').textContent = newGender;
-        document.getElementById('user-avatar').textContent = getInitials(newUsername);
-
-        await setDoc(doc(db, 'presence', currentUser.uid), { username: newUsername }, { merge: true });
-
-        const batch = writeBatch(db);
-        let count = 0;
-        for (const ch of channelsCache) {
-          try {
-            const snap = await getDocs(query(collection(db, 'channels', ch.id, 'messages'), where('uid', '==', currentUser.uid)));
-            snap.forEach(d => {
-              batch.update(d.ref, { sender: newUsername, age: newAge, gender: newGender });
-              count++;
-            });
-          } catch(e) {}
-        }
-        if (count > 0) await batch.commit().catch(()=>{});
-
-        closeEditProfile();
-        showToast('Perfil atualizado com sucesso!', 'success');
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao salvar perfil: ' + err.message, 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Salvar';
-      }
-    });
-
-    function openNewDMPicker() {
-      const modal = document.getElementById('new-dm-modal');
-      const list = document.getElementById('new-dm-user-list');
-      list.innerHTML = '';
-
-      const others = onlineUsersCache.filter(u => u.uid !== currentUser?.uid);
-      if (others.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6" style="color: var(--text-secondary);">Nenhum outro usuário online no momento.</p>`;
-      } else {
-        others.forEach(u => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-100 transition-colors text-left cursor-pointer';
-          btn.style.color = 'var(--text-primary)';
-          btn.innerHTML = `
-            <div class="relative shrink-0">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(u.username)}</div>
-              <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-semibold truncate">${escapeHTML(u.username)}</p>
-              <p class="text-[10px] text-emerald-600">● Online</p>
-            </div>
-            <i data-lucide="message-circle" class="w-4 h-4 text-slate-400"></i>`;
-          btn.onclick = () => {
-            closeNewDMPicker();
-            openDM(u.uid, u.username);
-          };
-          list.appendChild(btn);
-        });
-      }
-      modal.classList.remove('hidden');
-      lucide.createIcons({ root: list });
-    }
-    function closeNewDMPicker() {
-      document.getElementById('new-dm-modal').classList.add('hidden');
-    }
-    window.openNewDMPicker = openNewDMPicker;
-    window.closeNewDMPicker = closeNewDMPicker;
-
-    function openAdminLogin() {
-      document.getElementById('admin-login-modal').classList.remove('hidden');
-      document.getElementById('admin-code-input').value = '';
-      setTimeout(() => document.getElementById('admin-code-input').focus(), 100);
-      lucide.createIcons();
-    }
-    function closeAdminLogin() {
-      document.getElementById('admin-login-modal').classList.add('hidden');
-    }
-    function adminLogin() {
-      const code = document.getElementById('admin-code-input').value.trim();
-      if (code === ADMIN_MASTER_CODE) {
-        isAdminMode = true;
-        localStorage.setItem(STORAGE_KEYS.ADMIN, 'true');
-        closeAdminLogin();
-        updateAdminUI();
-        showToast('Acesso administrador concedido! 👑', 'success');
-      } else {
-        showToast('Código de acesso incorreto.', 'error');
-        document.getElementById('admin-code-input').value = '';
-        document.getElementById('admin-code-input').focus();
-      }
-    }
-    function adminLogout() {
-      isAdminMode = false;
-      localStorage.removeItem(STORAGE_KEYS.ADMIN);
-      updateAdminUI();
-      closeAdminPanel();
-      showToast('Modo administrador desativado.', 'info');
-    }
-    window.openAdminLogin = openAdminLogin;
-    window.closeAdminLogin = closeAdminLogin;
-    window.adminLogout = adminLogout;
-
-    document.getElementById('admin-login-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      adminLogin();
-    });
-
-    function updateAdminUI() {
-      const adminBtn = document.getElementById('admin-panel-btn');
-      const createChannelBtn = document.getElementById('admin-create-channel-btn');
-      const profileAdminBadge = document.getElementById('profile-admin-badge');
-      if (isAdminMode) {
-        adminBtn.classList.remove('hidden');
-        adminBtn.classList.add('flex');
-        createChannelBtn.classList.remove('hidden');
-        profileAdminBadge.classList.remove('hidden');
-      } else {
-        adminBtn.classList.add('hidden');
-        adminBtn.classList.remove('flex');
-        createChannelBtn.classList.add('hidden');
-        profileAdminBadge.classList.add('hidden');
-      }
-      if (allCurrentMessages.length > 0) renderMessagesPage(false);
-      lucide.createIcons();
-    }
-
-    function openAdminPanel() {
-      if (!isAdminMode) { openAdminLogin(); return; }
-      document.getElementById('admin-panel-modal').classList.remove('hidden');
-      renderAdminChannels();
-      renderAdminUsers();
-      renderAdminMessages();
-      setupAdminTabs();
-      lucide.createIcons();
-    }
-    function closeAdminPanel() {
-      document.getElementById('admin-panel-modal').classList.add('hidden');
-    }
-    window.openAdminPanel = openAdminPanel;
-    window.closeAdminPanel = closeAdminPanel;
-
-    function setupAdminTabs() {
-      const btns = document.querySelectorAll('.admin-tab-btn');
-      btns.forEach(btn => {
-        btn.onclick = () => {
-          const tab = btn.dataset.tab;
-          btns.forEach(b => {
-            b.classList.remove('border-amber-500', 'text-amber-700');
-            b.classList.add('border-transparent', 'text-slate-500');
-          });
-          btn.classList.remove('border-transparent', 'text-slate-500');
-          btn.classList.add('border-amber-500', 'text-amber-700');
-          document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.add('hidden'));
-          document.getElementById('admin-tab-' + tab).classList.remove('hidden');
-        };
-      });
-      if (btns.length > 0) btns[0].click();
-    }
-
-    function renderAdminChannels() {
-      const list = document.getElementById('admin-channels-list');
-      list.innerHTML = '';
-      channelsCache.forEach(ch => {
-        const isBlocked = !!ch.blocked;
-        const isFixed = FIXED_CHANNELS.some(f => f.id === ch.id);
-        const li = document.createElement('li');
-        li.className = 'flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80';
-        li.style.background = 'var(--bg-slate-50)';
-        li.style.borderColor = 'var(--border-color)';
-        li.innerHTML = `
-          <div class="w-9 h-9 rounded-xl theme-gradient-bg flex items-center justify-center shrink-0">
-            <i data-lucide="${ch.icon || 'hash'}" class="w-4 h-4"></i>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(ch.name)} ${isFixed ? '<span class="text-[9px] text-slate-400">(fixa)</span>' : ''}</p>
-            <p class="text-[10px] truncate" style="color: var(--text-muted);">${escapeHTML(ch.desc || '')}</p>
-          </div>
-          <div class="flex items-center gap-1 shrink-0">
-            <button type="button" class="admin-block-btn p-1.5 rounded-lg ${isBlocked ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200'}" title="${isBlocked ? 'Desbloquear sala' : 'Bloquear sala'}">
-              <i data-lucide="${isBlocked ? 'unlock' : 'lock'}" class="w-3.5 h-3.5"></i>
-            </button>
-            ${!isFixed ? `<button type="button" class="admin-delete-channel-btn p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200" title="Remover sala">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            </button>` : ''}
-          </div>`;
-        const blockBtn = li.querySelector('.admin-block-btn');
-        blockBtn.onclick = () => toggleChannelBlocked(ch.id);
-        const delBtn = li.querySelector('.admin-delete-channel-btn');
-        if (delBtn) delBtn.onclick = () => deleteChannel(ch.id);
-        list.appendChild(li);
-      });
-      lucide.createIcons({ root: list });
-    }
-
-    function renderAdminUsers() {
-      const list = document.getElementById('admin-users-list');
-      list.innerHTML = '';
-      const others = onlineUsersCache.filter(u => u.uid !== currentUser?.uid);
-      if (others.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhum outro usuário online.</p>`;
-        return;
-      }
-      others.forEach(u => {
-        const isBlocked = blockedUserUids.has(u.uid);
-        const li = document.createElement('li');
-        li.className = 'flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80';
-        li.style.background = 'var(--bg-slate-50)';
-        li.style.borderColor = 'var(--border-color)';
-        li.innerHTML = `
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">${getInitials(u.username)}</div>
-          <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(u.username)}</p>
-            <p class="text-[10px] ${isBlocked ? 'text-red-600' : 'text-emerald-600'}">${isBlocked ? '● Banido' : '● Online'}</p>
-          </div>
-          <button type="button" class="admin-ban-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold ${isBlocked ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200' : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'}" title="${isBlocked ? 'Desbanir' : 'Banir'}">
-            <i data-lucide="${isBlocked ? 'user-check' : 'user-x'}" class="w-3.5 h-3.5 inline-block mr-1"></i>${isBlocked ? 'Desbanir' : 'Banir'}
-          </button>`;
-        const banBtn = li.querySelector('.admin-ban-btn');
-        banBtn.onclick = () => toggleUserBan(u.uid, u.username);
-        list.appendChild(li);
-      });
-      lucide.createIcons({ root: list });
-    }
-
-    function renderAdminMessages() {
-      const list = document.getElementById('admin-messages-list');
-      list.innerHTML = '';
-      if (allCurrentMessages.length === 0) {
-        list.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Nenhuma mensagem na sala atual.</p>`;
-        return;
-      }
-      allCurrentMessages.forEach(msg => {
-        if (msg.deleted) return;
-        const li = document.createElement('li');
-        li.className = 'flex items-start gap-2 px-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80';
-        li.style.background = 'var(--bg-slate-50)';
-        li.style.borderColor = 'var(--border-color)';
-        li.innerHTML = `
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center text-[10px] font-bold text-white shrink-0">${getInitials(msg.sender)}</div>
-          <div class="min-w-0 flex-1">
-            <p class="text-[11px] font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(msg.sender)} <span class="text-slate-400 font-normal">${escapeHTML(msg.time || '')}</span></p>
-            <p class="text-xs break-words" style="color: var(--text-secondary);">${escapeHTML((msg.text || '').substring(0, 150))}</p>
-          </div>
-          <button type="button" class="admin-del-msg-btn p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shrink-0" title="Remover mensagem">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-          </button>`;
-        const delBtn = li.querySelector('.admin-del-msg-btn');
-        delBtn.onclick = () => adminDeleteMessage(msg.id);
-        list.appendChild(li);
-      });
-      lucide.createIcons({ root: list });
-    }
-
-    async function toggleChannelBlocked(channelId) {
-      try {
-        const ch = channelsCache.find(c => c.id === channelId);
-        if (!ch) return;
-        const newBlocked = !ch.blocked;
-        await setDoc(doc(db, 'channels', channelId), { blocked: newBlocked }, { merge: true });
-        ch.blocked = newBlocked;
-        if (activeChannelId === channelId) updateChannelBlockedUI();
-        renderAdminChannels();
-        renderChannels();
-        showToast(newBlocked ? 'Sala bloqueada para novas mensagens.' : 'Sala desbloqueada.', 'info');
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao alterar bloqueio: ' + err.message, 'error');
-      }
-    }
-
-    async function deleteChannel(channelId) {
-      if (!confirm('Tem certeza que deseja remover esta sala? Todas as mensagens serão apagadas.')) return;
-      try {
-        const msgsSnap = await getDocs(collection(db, 'channels', channelId, 'messages'));
-        const batch = writeBatch(db);
-        msgsSnap.forEach(d => batch.delete(d.ref));
-        batch.delete(doc(db, 'channels', channelId));
-        await batch.commit();
-        if (activeChannelId === channelId) selectChannel('geral');
-        renderAdminChannels();
-        showToast('Sala removida.', 'info');
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao remover sala: ' + err.message, 'error');
-      }
-    }
-
-    async function toggleUserBan(uid, username) {
-      try {
-        const userRef = doc(db, 'users', uid);
-        const snap = await getDoc(userRef);
-        const currentBanned = snap.exists() && snap.data().banned === true;
-        const newBanned = !currentBanned;
-        await setDoc(userRef, { banned: newBanned }, { merge: true });
-        if (newBanned) blockedUserUids.add(uid);
-        else blockedUserUids.delete(uid);
-        if (newBanned) await deleteDoc(doc(db, 'presence', uid)).catch(()=>{});
-        renderAdminUsers();
-        updatePresenceUI(onlineUsersCache);
-        showToast(newBanned ? `${username} foi banido do chat.` : `${username} foi desbanido.`, 'info');
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao banir/desbanir: ' + err.message, 'error');
-      }
-    }
-
-    async function adminDeleteMessage(msgId) {
-      if (!confirm('Remover esta mensagem para todos?')) return;
-      try {
-        let msgRef;
-        if (activeChatType === 'dm') {
-          msgRef = doc(db, 'dmConversations', dmConversationId(currentUser.uid, activeDMUserId), 'messages', msgId);
-        } else {
-          msgRef = doc(db, 'channels', activeChannelId, 'messages', msgId);
-        }
-        await updateDoc(msgRef, {
-          deleted: true, text: '',
-          deletedAt: serverTimestamp(),
-          deletedBy: currentUser.uid
-        });
-        const idx = allCurrentMessages.findIndex(m => m.id === msgId);
-        if (idx !== -1) { allCurrentMessages[idx].deleted = true; allCurrentMessages[idx].text = ''; }
-        renderMessagesPage(false);
-        renderAdminMessages();
-        showToast('Mensagem removida.', 'info');
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao remover: ' + err.message, 'error');
-      }
-    }
-
-    function openCreateChannelModal() {
-      if (!isAdminMode) { openAdminLogin(); return; }
-      document.getElementById('create-channel-modal').classList.remove('hidden');
-      document.getElementById('new-channel-name').value = '';
-      document.getElementById('new-channel-desc').value = '';
-      document.getElementById('new-channel-icon').value = 'hash';
-      setTimeout(() => document.getElementById('new-channel-name').focus(), 100);
-      lucide.createIcons();
-    }
-    function closeCreateChannelModal() {
-      document.getElementById('create-channel-modal').classList.add('hidden');
-    }
-    window.openCreateChannelModal = openCreateChannelModal;
-    window.closeCreateChannelModal = closeCreateChannelModal;
-
-    document.getElementById('create-channel-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      if (!isAdminMode) { showToast('Apenas administradores podem criar salas.', 'error'); return; }
-      const name = document.getElementById('new-channel-name').value.trim();
-      const desc = document.getElementById('new-channel-desc').value.trim();
-      const icon = document.getElementById('new-channel-icon').value;
-      if (name.length < 2) { showToast('Nome muito curto.', 'error'); return; }
-      const id = name.toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      if (!id) { showToast('Nome inválido.', 'error'); return; }
-      if (channelsCache.find(c => c.id === id)) { showToast('Já existe uma sala com esse nome.', 'error'); return; }
-      try {
-        await setDoc(doc(db, 'channels', id), {
-          name, desc, icon, blocked: false,
-          createdAt: serverTimestamp(),
-          createdBy: currentUser.uid
-        });
-        closeCreateChannelModal();
-        closeAdminPanel();
-        showToast(`Sala "${name}" criada com sucesso!`, 'success');
-      } catch (err) {
-        console.error(err);
-        showToast('Erro ao criar sala: ' + err.message, 'error');
-      }
-    });
-
-    onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        let profile = { username: firebaseUser.email.split('@')[0], age: 18, gender: 'Prefiro não informar', banned: false, isAdmin: false };
-        try {
-          const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (snap.exists()) profile = { ...profile, ...snap.data() };
-        } catch (e) { console.warn('Perfil não carregado:', e); }
-        if (profile.banned === true) {
-          showToast('Sua conta foi banida por um administrador.', 'error');
-          await signOut(auth);
-          return;
-        }
-        currentUser = { uid: firebaseUser.uid, ...profile };
-        // *** LIBERAÇÃO AUTOMÁTICA DO MODO ADMIN PELO FIRESTORE ***
-        if (profile.isAdmin === true || localStorage.getItem(STORAGE_KEYS.ADMIN) === 'true') {
-          isAdminMode = true;
-        } else {
-          isAdminMode = false;
-        }
-        enterChatInterface();
+    // ===== AUTH STATE =====
+    onAuthStateChanged(auth, async user => {
+      if(user){
+        let profile={username:user.email.split('@')[0],age:18,gender:'Prefiro não informar'};
+        try{ const s=await getDoc(doc(db,'users',user.uid)); if(s.exists()) profile={...profile,...s.data()}; }catch(e){}
+        currentUser={uid:user.uid,...profile};
+        enterChat();
         startPresence();
-        startDMListener();
-        startChannelsListener();
-        updateAdminUI();
-        updateSoundButtonUI();
       } else {
-        currentUser = null;
-        activeChatType = 'channel';
-        activeDMUserId = null;
-        activeDMUsername = null;
-        replyTarget = null;
-        hideReplyBar();
-        isAdminMode = false;
+        currentUser=null;
         stopPresence();
-        if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
-        if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
-        if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
-        if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
-        if (unsubscribeChannels) { unsubscribeChannels(); unsubscribeChannels = null; }
-        Object.values(unreadListeners).forEach(unsub => { try { unsub(); } catch(e){} });
-        unreadListeners = {};
-        dmUnreadCounts = {};
-        dmConversationsCache = [];
+        if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
+        if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
         document.getElementById('chat-screen').classList.add('hidden');
         document.getElementById('auth-screen').classList.remove('hidden');
-        document.getElementById('password').value = '';
-        generateMathCaptcha();
-        toggleSidebar(false);
+        document.getElementById('password').value='';
+        genCaptcha();
       }
     });
 
-    function startChannelsListener() {
-      if (!currentUser) return;
-      if (unsubscribeChannels) { unsubscribeChannels(); unsubscribeChannels = null; }
-      unsubscribeChannels = onSnapshot(collection(db, 'channels'), (snapshot) => {
-        dynamicChannels = [];
-        snapshot.forEach(d => {
-          const data = d.data();
-          const isFixed = FIXED_CHANNELS.some(f => f.id === d.id);
-          if (!isFixed) dynamicChannels.push({ id: d.id, ...data });
-        });
-        rebuildChannelsCache();
-        renderChannels();
-        if (document.getElementById('admin-panel-modal') && !document.getElementById('admin-panel-modal').classList.contains('hidden')) {
-          renderAdminChannels();
-        }
-      }, (err) => console.warn('Channels listener error:', err));
-    }
-
-    function rebuildChannelsCache() {
-      channelsCache = [...FIXED_CHANNELS];
-      dynamicChannels.forEach(dc => {
-        if (!channelsCache.find(c => c.id === dc.id)) {
-          channelsCache.push({
-            id: dc.id,
-            name: dc.name || dc.id,
-            icon: dc.icon || 'hash',
-            desc: dc.desc || '',
-            blocked: !!dc.blocked,
-            dynamic: true
-          });
-        }
-      });
-      const badge = document.getElementById('channel-count-badge');
-      if (badge) badge.textContent = channelsCache.length;
-      if (activeChatType === 'channel' && !channelsCache.find(c => c.id === activeChannelId)) {
-        selectChannel('geral');
-      }
-    }
-
-    function startPresence() {
-      if (!currentUser) return;
-      stopPresence();
-      const ref = doc(db, 'presence', currentUser.uid);
-      const writePresence = () => setDoc(ref, {
-        uid: currentUser.uid, username: currentUser.username, lastSeen: serverTimestamp()
-      }, { merge: true }).catch(err => console.warn('Presence write failed:', err));
-      writePresence();
-      presenceHeartbeat = setInterval(writePresence, 25000);
-      const q = collection(db, 'presence');
-      unsubscribePresence = onSnapshot(q, (snapshot) => {
-        const now = Date.now();
-        const alive = [];
-        snapshot.forEach(d => {
-          const data = d.data();
-          let lastMs = 0;
-          if (data.lastSeen && typeof data.lastSeen.toMillis === 'function') lastMs = data.lastSeen.toMillis();
-          if (now - lastMs < 90000) alive.push({ uid: d.id, username: data.username || 'Usuário' });
-        });
-        onlineUsersCache = alive;
-        updatePresenceUI(alive);
-        if (document.getElementById('admin-panel-modal') && !document.getElementById('admin-panel-modal').classList.contains('hidden')) {
-          renderAdminUsers();
-        }
-      }, (err) => console.warn('Presence listener error:', err));
-    }
-    function stopPresence() {
-      if (presenceHeartbeat) { clearInterval(presenceHeartbeat); presenceHeartbeat = null; }
-      if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
-      if (currentUser) deleteDoc(doc(db, 'presence', currentUser.uid)).catch(()=>{});
-    }
-    function updatePresenceUI(aliveUsers) {
-      const total = aliveUsers.length;
-      document.getElementById('online-count-sidebar').textContent = total;
-      document.getElementById('header-online-count').textContent = `${total} online`;
-      const list = document.getElementById('online-users-list');
-      list.innerHTML = '';
-      const sorted = [...aliveUsers].sort((a, b) => {
-        if (a.uid === currentUser.uid) return -1;
-        if (b.uid === currentUser.uid) return 1;
-        return a.username.localeCompare(b.username);
-      });
-      sorted.forEach(u => {
-        const isMe = u.uid === currentUser.uid;
-        const li = document.createElement('li');
-        li.className = 'flex items-center gap-2.5 px-2.5 py-2 rounded-2xl hover:bg-white/70 transition-colors';
-        li.style.cursor = isMe ? 'default' : 'pointer';
-        li.innerHTML = `
-          <div class="relative shrink-0">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(u.username)}</div>
-            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-semibold text-slate-800 truncate" style="color: var(--text-primary);">${escapeHTML(u.username)}${isMe ? ' (Você)' : ''}</p>
-            <p class="text-[10px] text-emerald-600 truncate">● Online</p>
-          </div>
-          ${!isMe ? `<i data-lucide="message-circle" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>` : ''}`;
-        if (!isMe) li.onclick = () => openDM(u.uid, u.username);
-        list.appendChild(li);
-      });
-      lucide.createIcons({ root: list });
-    }
-
-    function typingDocId() {
-      if (activeChatType === 'dm') return `dm_${dmConversationId(currentUser.uid, activeDMUserId)}_${currentUser.uid}`;
-      return `${activeChannelId}_${currentUser.uid}`;
-    }
-    async function setTyping(isTyping) {
-      if (!currentUser) return;
-      const ref = doc(db, 'typing', typingDocId());
-      try {
-        if (isTyping) {
-          await setDoc(ref, {
-            uid: currentUser.uid, username: currentUser.username,
-            channelId: activeChatType === 'dm' ? `dm_${dmConversationId(currentUser.uid, activeDMUserId)}` : activeChannelId,
-            updatedAt: serverTimestamp()
-          }, { merge: true });
-        } else {
-          await deleteDoc(ref);
-        }
-      } catch (e) {}
-    }
-    function stopTyping() {
-      if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
-      if (isTypingFlag) { isTypingFlag = false; setTyping(false); }
-    }
-    function handleTypingInput() {
-      if (!currentUser) return;
-      if (!isTypingFlag) { isTypingFlag = true; setTyping(true); }
-      if (typingTimeout) clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => { isTypingFlag = false; setTyping(false); }, 3000);
-    }
-    function attachTypingListener(contextId) {
-      if (unsubscribeTyping) { unsubscribeTyping(); unsubscribeTyping = null; }
-      const q = query(collection(db, 'typing'), where('channelId', '==', contextId));
-      unsubscribeTyping = onSnapshot(q, (snapshot) => {
-        const now = Date.now();
-        const names = [];
-        snapshot.forEach(d => {
-          const data = d.data();
-          if (!data.uid || data.uid === currentUser.uid) return;
-          let updatedMs = 0;
-          if (data.updatedAt && typeof data.updatedAt.toMillis === 'function') updatedMs = data.updatedAt.toMillis();
-          if (now - updatedMs < 5000) names.push(data.username || 'Alguém');
-        });
-        const typingEl = document.getElementById('typing-indicator');
-        const typingText = document.getElementById('typing-user-text');
-        if (names.length === 0) typingEl.classList.add('hidden');
-        else {
-          typingText.textContent = names.length === 1
-            ? `${names[0]} está digitando...`
-            : `${names.slice(0,2).join(', ')}${names.length > 2 ? ` e mais ${names.length - 2}` : ''} estão digitando...`;
-          typingEl.classList.remove('hidden');
-        }
-      }, (err) => console.warn('Typing listener error:', err));
-    }
-
-    function startDMListener() {
-      if (!currentUser) return;
-      if (unsubscribeDMs) { unsubscribeDMs(); unsubscribeDMs = null; }
-      const q = query(collection(db, 'dmConversations'), where('participants', 'array-contains', currentUser.uid));
-      unsubscribeDMs = onSnapshot(q, (snapshot) => {
-        dmConversationsCache = [];
-        snapshot.forEach(d => dmConversationsCache.push({ id: d.id, ...d.data() }));
-        dmConversationsCache.sort((a, b) => {
-          const aT = a.lastMessageAt?.toMillis?.() || 0;
-          const bT = b.lastMessageAt?.toMillis?.() || 0;
-          return bT - aT;
-        });
-        renderDMConversations();
-        if (activeChatType === 'dm' && activeDMUserId) {
-          const conv = dmConversationsCache.find(c =>
-            c.participants.includes(currentUser.uid) && c.participants.includes(activeDMUserId)
-          );
-          if (conv) {
-            const otherId = conv.participants.find(p => p !== currentUser.uid);
-            const otherName = conv.participantNames?.[otherId] || activeDMUsername || 'Usuário';
-            activeDMUsername = otherName;
-            document.getElementById('current-channel-name').textContent = otherName;
-            document.getElementById('current-channel-desc').textContent = 'Conversa privada';
-          }
-        }
-        startUnreadListener();
-      }, (err) => console.warn('DM listener error:', err));
-    }
-
-    function renderDMConversations() {
-      const list = document.getElementById('dm-conversations-list');
-      const emptyHint = document.getElementById('dm-empty-hint');
-      if (!list) return;
-      list.innerHTML = '';
-      const convs = dmConversationsCache;
-      if (convs.length === 0) { if (emptyHint) emptyHint.classList.remove('hidden'); return; }
-      if (emptyHint) emptyHint.classList.add('hidden');
-
-      convs.forEach(conv => {
-        const otherId = conv.participants.find(p => p !== currentUser.uid);
-        if (!otherId) return;
-        const otherName = conv.participantNames?.[otherId] || 'Usuário';
-        const unread = dmUnreadCounts[conv.id] || 0;
-        const isActive = activeChatType === 'dm' && activeDMUserId === otherId;
-        const li = document.createElement('li');
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-2xl transition-all text-left cursor-pointer border ${
-          isActive ? 'bg-white border-slate-200/90 shadow-xs' : 'border-transparent hover:bg-white/60'
-        }`;
-        if (isActive) { btn.style.background = 'var(--bg-card)'; btn.style.borderColor = 'var(--border-color)'; }
-        btn.innerHTML = `
-          <div class="relative shrink-0">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white shadow-2xs">${getInitials(otherName)}</div>
-            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-semibold truncate" style="color: var(--text-primary);">${escapeHTML(otherName)}</p>
-            <p class="text-[10px] truncate" style="color: var(--text-muted);">${conv.lastMessage ? escapeHTML(conv.lastMessage).substring(0,30) : 'Conversa privada'}</p>
-          </div>
-          ${unread > 0 ? `<span class="dm-unread-badge">${unread > 9 ? '9+' : unread}</span>` : `<i data-lucide="lock" class="w-3 h-3 text-slate-400 shrink-0"></i>`}`;
-        btn.onclick = () => { openDM(otherId, otherName); toggleSidebar(false); };
-        li.appendChild(btn);
-        list.appendChild(li);
-      });
-      lucide.createIcons({ root: list });
-    }
-
-    function startUnreadListener() {
-      if (!currentUser) return;
-      Object.keys(unreadListeners).forEach(convId => {
-        if (!dmConversationsCache.find(c => c.id === convId)) {
-          try { unreadListeners[convId](); } catch(e){}
-          delete unreadListeners[convId];
-          delete dmUnreadCounts[convId];
-        }
-      });
-      dmConversationsCache.forEach(conv => {
-        if (unreadListeners[conv.id]) return;
-        const q = query(collection(db, 'dmConversations', conv.id, 'messages'), orderBy('createdAt', 'asc'));
-        unreadListeners[conv.id] = onSnapshot(q, (snapshot) => {
-          if (!currentUser) return;
-          const isActiveDM = activeChatType === 'dm' && dmConversationId(currentUser.uid, activeDMUserId) === conv.id;
-          if (isActiveDM) {
-            dmUnreadCounts[conv.id] = 0;
-            setDoc(doc(db, 'dmConversations', conv.id), {
-              lastRead: { [currentUser.uid]: serverTimestamp() }
-            }, { merge: true }).catch(()=>{});
-            renderDMConversations();
-            return;
-          }
-          const convData = dmConversationsCache.find(c => c.id === conv.id);
-          const currentLastRead = convData?.lastRead?.[currentUser.uid]?.toMillis?.() || 0;
-          let count = 0;
-          snapshot.forEach(d => {
-            const data = d.data();
-            if (data.senderId === currentUser.uid) return;
-            const ts = data.createdAt?.toMillis?.() || 0;
-            if (ts > currentLastRead) count++;
-          });
-          const prev = dmUnreadCounts[conv.id] || 0;
-          dmUnreadCounts[conv.id] = count;
-          if (count > prev) playNotificationSound();
-          renderDMConversations();
-        }, (err) => console.warn('Unread listener error:', err));
-      });
-    }
-
-    async function openDM(otherUid, otherUsername) {
-      if (!currentUser || otherUid === currentUser.uid) return;
-      activeChatType = 'dm';
-      activeDMUserId = otherUid;
-      activeDMUsername = otherUsername;
-      replyTarget = null;
-      hideReplyBar();
-      document.getElementById('current-channel-name').textContent = otherUsername;
-      document.getElementById('current-channel-desc').textContent = 'Conversa privada';
-      document.getElementById('current-channel-icon').setAttribute('data-lucide', 'lock');
-      document.getElementById('header-online-badge').classList.add('hidden');
-      document.getElementById('dm-private-badge').classList.remove('hidden');
-      document.getElementById('dm-private-badge').classList.add('inline-flex');
-      document.getElementById('header-blocked-badge').classList.add('hidden');
-      lucide.createIcons();
-      const convId = dmConversationId(currentUser.uid, otherUid);
-      dmUnreadCounts[convId] = 0;
-      renderDMConversations();
-      try {
-        await setDoc(doc(db, 'dmConversations', convId), {
-          participants: [currentUser.uid, otherUid],
-          participantNames: { [currentUser.uid]: currentUser.username, [otherUid]: otherUsername },
-          lastRead: { [currentUser.uid]: serverTimestamp() },
-          updatedAt: serverTimestamp()
-        }, { merge: true });
-      } catch(e) { console.warn('openDM setDoc:', e); }
-      try {
-        const convRef = doc(db, 'dmConversations', convId);
-        const snap = await getDoc(convRef);
-        if (!snap.exists()) {
-          await setDoc(convRef, {
-            participants: [currentUser.uid, otherUid],
-            participantNames: { [currentUser.uid]: currentUser.username, [otherUid]: otherUsername },
-            lastMessage: '', lastMessageAt: serverTimestamp(),
-            lastRead: { [currentUser.uid]: serverTimestamp() },
-            updatedAt: serverTimestamp()
-          });
-        }
-      } catch(e) { console.warn('openDM ensure:', e); }
-      attachDMMessageListener(convId, otherUid, otherUsername);
-      renderDMConversations();
-      toggleSidebar(false);
-    }
-    window.openDM = openDM;
-
-    function attachDMMessageListener(convId, otherUid, otherName) {
-      if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
-      const container = document.getElementById('messages-container');
-      container.innerHTML = `<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando mensagens...</div>`;
-      oldestLoadedMessage = null;
-      hasMoreMessages = true;
-      allCurrentMessages = [];
-      const initialQ = query(
-        collection(db, 'dmConversations', convId, 'messages'),
-        orderBy('createdAt', 'desc'), limit(PAGE_SIZE)
-      );
-      getDocs(initialQ).then((snap) => {
-        const arr = [];
-        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-        arr.reverse();
-        allCurrentMessages = arr;
-        if (snap.docs.length === PAGE_SIZE) {
-          oldestLoadedMessage = snap.docs[snap.docs.length - 1];
-          hasMoreMessages = true;
-        } else { oldestLoadedMessage = null; hasMoreMessages = false; }
-        renderMessagesPage(true);
-        unsubscribeMessages = onSnapshot(
-          query(collection(db, 'dmConversations', convId, 'messages'), orderBy('createdAt', 'asc')),
-          (snapshot) => { handleLiveSnapshot(snapshot); },
-          (err) => console.warn('Live DM listener:', err)
-        );
-      }).catch((err) => {
-        console.error('Erro ao carregar DMs:', err);
-        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
-          <p class="text-sm font-semibold">Erro ao carregar mensagens</p>
-          <p class="text-xs mt-1">${escapeHTML(err.message)}</p>
-        </div>`;
-      });
-      attachTypingListener(`dm_${convId}`);
-    }
-
-    function enterChatInterface() {
+    // ===== CHAT UI =====
+    function enterChat() {
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('chat-screen').classList.remove('hidden');
-      document.getElementById('user-avatar').textContent = getInitials(currentUser.username);
-      document.getElementById('profile-username').textContent = currentUser.username;
-      document.getElementById('profile-age-badge').textContent = `${currentUser.age} anos`;
-      document.getElementById('profile-gender-badge').textContent = currentUser.gender;
-      renderEmojiPicker();
-      activeChatType = 'channel';
-      selectChannel(activeChannelId);
-      renderDMConversations();
+      document.getElementById('user-avatar').textContent=getInitials(currentUser.username);
+      document.getElementById('profile-username').textContent=currentUser.username;
+      document.getElementById('profile-info').textContent=`${currentUser.age} anos • ${currentUser.gender}`;
+      renderChannels();
+      selectChannel('geral');
       lucide.createIcons();
-      pushChatHistoryState();
     }
-    function toggleSidebar(open) {
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('sidebar-backdrop');
-      if (open) { sidebar.classList.remove('-translate-x-full'); backdrop.classList.remove('hidden'); }
-      else { sidebar.classList.add('-translate-x-full'); backdrop.classList.add('hidden'); }
+    function toggleSidebar(open){
+      const s=document.getElementById('sidebar'), b=document.getElementById('sidebar-backdrop');
+      if(open){s.classList.remove('-translate-x-full');b.classList.remove('hidden');}
+      else{s.classList.add('-translate-x-full');b.classList.add('hidden');}
     }
     window.toggleSidebar = toggleSidebar;
 
     function renderChannels() {
-      const list = document.getElementById('channels-list');
-      list.innerHTML = '';
-      channelsCache.forEach(channel => {
-        const isActive = activeChatType === 'channel' && channel.id === activeChannelId;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.onclick = () => { selectChannel(channel.id); toggleSidebar(false); };
-        btn.className = isActive
-          ? 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold bg-white text-slate-900 border border-slate-200/90 shadow-xs transition-all cursor-pointer'
-          : 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-transparent transition-all cursor-pointer';
-        if (isActive) { btn.style.background = 'var(--bg-card)'; btn.style.borderColor = 'var(--border-color-90)'; btn.style.color = 'var(--text-primary)'; }
-        const blockedIcon = channel.blocked ? `<i data-lucide="lock" class="w-3 h-3 text-red-500 shrink-0" title="Sala bloqueada"></i>` : '';
-        btn.innerHTML = `<i data-lucide="${channel.icon || 'hash'}" class="w-4 h-4 shrink-0" style="${isActive ? 'color: var(--theme-accent);' : 'color: #94a3b8;'}"></i><span class="truncate flex-1 text-left">${escapeHTML(channel.name)}</span>${blockedIcon}`;
+      const list=document.getElementById('channels-list');
+      list.innerHTML='';
+      CHANNELS.forEach(ch=>{
+        const active=ch.id===activeChannelId;
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.onclick=()=>{selectChannel(ch.id);toggleSidebar(false);};
+        btn.className=`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all ${active?'font-semibold bg-white border border-slate-200':'text-slate-600 hover:bg-white/60 border border-transparent'}`;
+        if(active){btn.style.background='var(--bg-card)';btn.style.borderColor='var(--border-color)';btn.style.color='var(--text-primary)';}
+        btn.innerHTML=`<i data-lucide="${ch.icon}" class="w-4 h-4" style="${active?'color:var(--theme-accent)':'color:#94a3b8'}"></i><span class="truncate">${ch.name}</span>`;
         list.appendChild(btn);
       });
-      lucide.createIcons({ root: list });
+      lucide.createIcons({root:list});
     }
 
-    function selectChannel(channelId) {
-      if (activeChatType !== 'channel' || activeChannelId !== channelId) stopTyping();
-      activeChatType = 'channel';
-      activeDMUserId = null;
-      activeDMUsername = null;
-      replyTarget = null;
-      hideReplyBar();
-      activeChannelId = channelId;
-      const channel = channelsCache.find(c => c.id === channelId) || channelsCache[0] || FIXED_CHANNELS[0];
-      document.getElementById('current-channel-name').textContent = channel.name;
-      document.getElementById('current-channel-desc').textContent = channel.desc || '';
-      document.getElementById('current-channel-icon').setAttribute('data-lucide', channel.icon || 'hash');
-      document.getElementById('dm-private-badge').classList.add('hidden');
-      document.getElementById('dm-private-badge').classList.remove('inline-flex');
-      document.getElementById('header-online-badge').classList.remove('hidden');
-      updateChannelBlockedUI();
-      lucide.createIcons();
+    function selectChannel(id) {
+      activeChannelId=id;
+      const ch=CHANNELS.find(c=>c.id===id)||CHANNELS[0];
+      document.getElementById('current-channel-name').textContent=ch.name;
+      document.getElementById('current-channel-desc').textContent=ch.desc;
+      document.getElementById('current-channel-icon').setAttribute('data-lucide',ch.icon);
       renderChannels();
-      attachMessageListener(channelId);
-      attachTypingListener(channelId);
-      renderDMConversations();
-    }
-
-    function updateChannelBlockedUI() {
-      const channel = channelsCache.find(c => c.id === activeChannelId);
-      const blockedBadge = document.getElementById('header-blocked-badge');
-      const input = document.getElementById('message-input');
-      const sendBtn = document.querySelector('#message-form button[type="submit"]');
-      if (channel && channel.blocked) {
-        blockedBadge.classList.remove('hidden');
-        blockedBadge.classList.add('inline-flex');
-        if (input) { input.disabled = true; input.placeholder = 'Sala bloqueada pelo administrador.'; }
-        if (sendBtn) { sendBtn.disabled = true; sendBtn.style.opacity = '0.5'; }
-      } else {
-        blockedBadge.classList.add('hidden');
-        blockedBadge.classList.remove('inline-flex');
-        if (input) { input.disabled = false; input.placeholder = 'Digite sua mensagem aqui...'; }
-        if (sendBtn) { sendBtn.disabled = false; sendBtn.style.opacity = '1'; }
-      }
-    }
-
-    function attachMessageListener(channelId) {
-      if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
-      const container = document.getElementById('messages-container');
-      container.innerHTML = `<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando mensagens...</div>`;
-      oldestLoadedMessage = null;
-      hasMoreMessages = true;
-      allCurrentMessages = [];
-      const initialQ = query(collection(db, 'channels', channelId, 'messages'), orderBy('createdAt', 'desc'), limit(PAGE_SIZE));
-      getDocs(initialQ).then((snap) => {
-        const arr = [];
-        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-        arr.reverse();
-        allCurrentMessages = arr;
-        if (snap.docs.length === PAGE_SIZE) {
-          oldestLoadedMessage = snap.docs[snap.docs.length - 1];
-          hasMoreMessages = true;
-        } else { oldestLoadedMessage = null; hasMoreMessages = false; }
-        renderMessagesPage(true);
-        unsubscribeMessages = onSnapshot(
-          query(collection(db, 'channels', channelId, 'messages'), orderBy('createdAt', 'asc')),
-          (snapshot) => {
-            handleLiveSnapshot(snapshot);
-            snapshot.docChanges().forEach(ch => {
-              if (ch.type === 'added') {
-                const data = ch.doc.data();
-                if (data.senderId !== currentUser.uid && activeChatType === 'channel' && activeChannelId === channelId) {
-                  playNotificationSound();
-                }
-              }
-            });
-          },
-          (err) => console.warn('Live messages listener:', err)
-        );
-      }).catch((err) => {
-        console.error('Erro ao carregar mensagens:', err);
-        container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center p-6 text-red-500">
-          <p class="text-sm font-semibold">Erro ao carregar mensagens</p>
-          <p class="text-xs mt-1">${escapeHTML(err.message)}</p>
-        </div>`;
-      });
-    }
-
-    function handleLiveSnapshot(snapshot) {
-      if (!snapshot) return;
-      let changed = false;
-      snapshot.docChanges().forEach(ch => {
-        const data = ch.doc.data();
-        const id = ch.doc.id;
-        if (ch.type === 'added') {
-          if (!allCurrentMessages.find(m => m.id === id)) {
-            allCurrentMessages.push({ id, ...data });
-            changed = true;
-          }
-        } else if (ch.type === 'modified') {
-          const idx = allCurrentMessages.findIndex(m => m.id === id);
-          if (idx !== -1) {
-            allCurrentMessages[idx] = { id, ...data };
-            changed = true;
-          }
-        } else if (ch.type === 'removed') {
-          const idx = allCurrentMessages.findIndex(m => m.id === id);
-          if (idx !== -1) {
-            allCurrentMessages.splice(idx, 1);
-            changed = true;
-          }
-        }
-      });
-      if (changed) {
-        allCurrentMessages.sort((a, b) => {
-          const aT = a.createdAt?.toMillis?.() || 0;
-          const bT = b.createdAt?.toMillis?.() || 0;
-          return aT - bT;
-        });
-        renderMessagesPage(false);
-        if (document.getElementById('admin-panel-modal') && !document.getElementById('admin-panel-modal').classList.contains('hidden')) {
-          renderAdminMessages();
-        }
-      }
-    }
-
-    async function loadOlderMessages() {
-      if (!oldestLoadedMessage || !hasMoreMessages) return;
-      const btn = document.getElementById('load-more-btn');
-      if (btn) { btn.disabled = true; btn.textContent = 'Carregando...'; }
-      try {
-        let olderQ;
-        if (activeChatType === 'dm') {
-          const convId = dmConversationId(currentUser.uid, activeDMUserId);
-          olderQ = query(collection(db, 'dmConversations', convId, 'messages'), orderBy('createdAt', 'desc'), startAfter(oldestLoadedMessage), limit(PAGE_SIZE));
-        } else {
-          olderQ = query(collection(db, 'channels', activeChannelId, 'messages'), orderBy('createdAt', 'desc'), startAfter(oldestLoadedMessage), limit(PAGE_SIZE));
-        }
-        const snap = await getDocs(olderQ);
-        const arr = [];
-        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-        arr.reverse();
-        if (arr.length === 0) hasMoreMessages = false;
-        else {
-          allCurrentMessages = arr.concat(allCurrentMessages);
-          if (snap.docs.length === PAGE_SIZE) oldestLoadedMessage = snap.docs[snap.docs.length - 1];
-          else { oldestLoadedMessage = null; hasMoreMessages = false; }
-        }
-        renderMessagesPage(false, true);
-      } catch (err) {
-        console.error(err);
-        showToast('Falha ao carregar mensagens antigas: ' + err.message, 'error');
-      } finally {
-        if (btn) { btn.disabled = false; btn.textContent = 'Carregar mensagens antigas'; }
-      }
-    }
-    window.loadOlderMessages = loadOlderMessages;
-
-    function startReply(msgId, sender, text) {
-      replyTarget = { id: msgId, sender, text: (text || '').substring(0, 120) };
-      document.getElementById('reply-to-name').textContent = sender;
-      document.getElementById('reply-to-text').textContent = (text || '').substring(0, 100);
-      document.getElementById('reply-bar').classList.remove('hidden');
-      document.getElementById('message-input').focus();
       lucide.createIcons();
+      attachMessages(id);
     }
-    function cancelReply() {
-      replyTarget = null;
-      hideReplyBar();
+
+    // ===== MENSAGENS =====
+    function attachMessages(channelId) {
+      if(unsubscribeMessages){unsubscribeMessages();unsubscribeMessages=null;}
+      const container=document.getElementById('messages-container');
+      container.innerHTML='<div class="h-full flex items-center justify-center text-slate-400 text-sm">Carregando...</div>';
+      const q=query(collection(db,'channels',channelId,'messages'),orderBy('createdAt','asc'),limit(200));
+      unsubscribeMessages=onSnapshot(q, snap=>{
+        const msgs=[];
+        snap.forEach(d=>msgs.push({id:d.id,...d.data()}));
+        renderMessages(msgs, container);
+      }, err=>{
+        console.error('Erro ao carregar mensagens:',err);
+        container.innerHTML=`<div class="h-full flex flex-col items-center justify-center text-red-500 text-sm"><p>Erro ao carregar</p><p class="text-xs mt-1">${escapeHTML(err.message)}</p></div>`;
+      });
     }
-    function hideReplyBar() {
-      const bar = document.getElementById('reply-bar');
-      if (bar) bar.classList.add('hidden');
-    }
-    window.startReply = startReply;
-    window.cancelReply = cancelReply;
 
-    function renderMessagesPage(isInitial, preserveScroll=false) {
-      const container = document.getElementById('messages-container');
-      const prevScrollHeight = container.scrollHeight;
-      const prevScrollTop = container.scrollTop;
-      container.innerHTML = '';
-
-      if (hasMoreMessages && allCurrentMessages.length > 0) {
-        const moreWrap = document.createElement('div');
-        moreWrap.className = 'flex justify-center pb-3';
-        moreWrap.innerHTML = `
-          <button type="button" id="load-more-btn" onclick="loadOlderMessages()"
-            class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs transition-all cursor-pointer"
-            style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-secondary);">
-            Carregar mensagens antigas
-          </button>`;
-        container.appendChild(moreWrap);
-      }
-
-      if (allCurrentMessages.length === 0) {
-        container.innerHTML = `
-          <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
-            <div class="w-14 h-14 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 flex items-center justify-center mb-3 shadow-xs" style="color: var(--theme-accent); background: var(--bg-card-80); border-color: var(--border-color);">
-              <i data-lucide="${activeChatType === 'dm' ? 'lock' : 'message-circle'}" class="w-7 h-7"></i>
-            </div>
-            <p class="text-sm font-semibold text-slate-700" style="color: var(--text-primary);">Nenhuma mensagem aqui ainda</p>
-            <p class="text-xs text-slate-500 mt-1" style="color: var(--text-secondary);">Envie a primeira mensagem para iniciar a conversa!</p>
-          </div>`;
-        lucide.createIcons({ root: container });
+    function renderMessages(msgs, container) {
+      if(msgs.length===0){
+        container.innerHTML=`<div class="h-full flex flex-col items-center justify-center text-slate-400 text-sm"><i data-lucide="message-circle" class="w-10 h-10 mb-2 opacity-50"></i><p>Nenhuma mensagem ainda</p><p class="text-xs mt-1">Seja o primeiro a enviar!</p></div>`;
+        lucide.createIcons({root:container});
         return;
       }
+      container.innerHTML='';
+      msgs.forEach(msg=>{
+        const own = currentUser && (msg.senderId===currentUser.uid||msg.uid===currentUser.uid);
+        const deleted = msg.deleted===true;
+        const wrapper=document.createElement('div');
+        wrapper.className=`msg-wrapper flex items-end gap-2 msg-anim ${own?'justify-end':'justify-start'}`;
+        const bubbleClass = deleted?'bubble-received':(own?'bubble-sent':'bubble-received');
+        const bubbleContent = deleted
+          ? `<div class="${bubbleClass} px-4 py-2.5 text-sm italic opacity-60"><i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i>Mensagem removida</div>`
+          : `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words">${escapeHTML(msg.text)}</div>`;
 
-      allCurrentMessages.forEach(msg => {
-        const isOwn = currentUser && (msg.senderId === currentUser.uid || msg.uid === currentUser.uid || (msg.sender || '').toLowerCase() === currentUser.username.toLowerCase());
-        const wrapper = document.createElement('div');
-        wrapper.className = `msg-wrapper flex items-end gap-2.5 message-animate ${isOwn ? 'justify-end' : 'justify-start'}`;
-        const time = msg.time || (msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '');
-        const isDeleted = msg.deleted === true;
-
-        const bubbleClasses = isDeleted ? 'bubble-received msg-deleted' : (isOwn ? 'bubble-sent' : 'bubble-received');
-        const replyQuote = (!isDeleted && msg.replyTo)
-          ? `<div class="reply-quote"><span class="font-semibold">${escapeHTML(msg.replyTo.sender || 'Alguém')}</span>: ${escapeHTML((msg.replyTo.text || '').substring(0,80))}</div>`
+        const deleteBtn = (own && !deleted)
+          ? `<button type="button" class="msg-delete-btn mt-1 p-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-200" title="Remover" onclick="deleteMsg('${msg.id}')"><i data-lucide="trash-2" class="w-3 h-3"></i></button>`
           : '';
 
-        let bubbleContent;
-        if (isDeleted) {
-          bubbleContent = `<div class="${bubbleClasses} px-4 py-2.5 text-sm leading-relaxed break-words"><i data-lucide="trash-2" class="w-3 h-3 inline-block mr-1 opacity-60"></i>Mensagem removida</div>`;
-        } else {
-          bubbleContent = `<div class="${bubbleClasses} px-4 py-2.5 text-sm leading-relaxed break-words">${replyQuote}${escapeHTML(msg.text)}</div>`;
-        }
-
-        const canDelete = !isDeleted && (isOwn || isAdminMode);
-        const actionButtons = !isDeleted ? `
-          <div class="flex items-center gap-1 mt-1">
-            <button type="button" class="msg-reply-btn p-1.5 rounded-lg bg-slate-50 hover:bg-sky-50 text-slate-400 hover:text-sky-600 border border-slate-200/70 hover:border-sky-200 flex items-center justify-center transition-all"
-              title="Responder" aria-label="Responder mensagem"
-              onclick="startReply('${msg.id}', '${escapeHTML(msg.sender || '').replace(/'/g, "\\'")}', '${escapeHTML((msg.text || '').substring(0,100)).replace(/'/g, "\\'")}')">
-              <i data-lucide="corner-up-left" class="w-3.5 h-3.5"></i>
-            </button>
-            ${canDelete ? `<button type="button" class="msg-delete-btn p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 border border-red-200/70 flex items-center justify-center transition-all"
-              title="${isOwn ? 'Remover mensagem' : 'Remover (Admin)'}" aria-label="Remover mensagem"
-              onclick="deleteMessage('${msg.id}', ${activeChatType === 'dm' ? "'dm'" : "'channel'"}, '${activeChatType === 'dm' ? dmConversationId(currentUser.uid, activeDMUserId) : activeChannelId}')">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            </button>` : ''}
-          </div>` : '';
-
-        const genderIcon = getGenderIcon(msg.gender);
-
-        if (isOwn) {
-          wrapper.innerHTML = `
-            <div class="flex flex-col items-end max-w-[82%] sm:max-w-[70%]">
-              <div class="flex items-center gap-2 mb-1 px-1">
-                <span class="text-[10px] text-slate-400">${escapeHTML(time)}</span>
-                <span class="text-xs font-semibold" style="color: var(--theme-accent);">Você</span>
+        if(own){
+          wrapper.innerHTML=`
+            <div class="flex flex-col items-end max-w-[80%]">
+              <div class="flex items-center gap-1.5 mb-1 px-1">
+                <span class="text-[10px] text-slate-400">${escapeHTML(msg.time||'')}</span>
+                <span class="text-xs font-semibold" style="color:var(--theme-accent)">Você</span>
               </div>
               ${bubbleContent}
-              ${actionButtons}
+              ${deleteBtn}
             </div>
-            <div class="w-8 h-8 rounded-2xl theme-gradient-bg flex items-center justify-center text-xs font-bold shrink-0">${getInitials(msg.sender)}</div>`;
+            <div class="w-8 h-8 rounded-xl theme-gradient-bg flex items-center justify-center text-xs font-bold shrink-0">${getInitials(msg.sender)}</div>`;
         } else {
-          wrapper.innerHTML = `
-            <div class="w-8 h-8 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-xs font-bold text-slate-700 shrink-0" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">${getInitials(msg.sender)}</div>
-            <div class="flex flex-col items-start max-w-[82%] sm:max-w-[70%]">
+          wrapper.innerHTML=`
+            <div class="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-xs font-bold shrink-0" style="background:var(--bg-card);border-color:var(--border-color);color:var(--text-primary)">${getInitials(msg.sender)}</div>
+            <div class="flex flex-col items-start max-w-[80%]">
               <div class="flex flex-wrap items-center gap-1.5 mb-1 px-1">
-                <span class="text-xs font-semibold text-slate-800" style="color: var(--text-primary);">${escapeHTML(msg.sender)}</span>
-                <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded-full bg-white/80 text-slate-500 border border-slate-200/80" style="background: var(--bg-card-80); color: var(--text-muted); border-color: var(--border-color-80);" title="${escapeHTML(getGenderLabel(msg.gender))}">
-                  <i data-lucide="${genderIcon}" class="w-2.5 h-2.5"></i>
-                  ${msg.age ? `<span>${msg.age}</span>` : ''}
+                <span class="text-xs font-semibold" style="color:var(--text-primary)">${escapeHTML(msg.sender)}</span>
+                <span class="inline-flex items-center gap-1 text-[10px] px-1.5 rounded-full bg-slate-100 border border-slate-200" style="background:var(--bg-slate-100,#f1f5f9);border-color:var(--border-color);color:var(--text-muted)" title="${escapeHTML(msg.gender||'')}">
+                  <i data-lucide="${getGenderIcon(msg.gender)}" class="w-2.5 h-2.5"></i>${msg.age||''}
                 </span>
-                <span class="text-[10px] text-slate-400">${escapeHTML(time)}</span>
+                <span class="text-[10px] text-slate-400">${escapeHTML(msg.time||'')}</span>
               </div>
               ${bubbleContent}
-              ${actionButtons}
             </div>`;
         }
         container.appendChild(wrapper);
       });
-
-      lucide.createIcons({ root: container });
-
-      if (isInitial) container.scrollTop = container.scrollHeight;
-      else if (preserveScroll) {
-        const added = container.scrollHeight - prevScrollHeight;
-        container.scrollTop = prevScrollTop + added;
-      } else container.scrollTop = container.scrollHeight;
+      lucide.createIcons({root:container});
+      container.scrollTop=container.scrollHeight;
     }
 
-    async function deleteMessage(msgId, type, contextId) {
-      if (!currentUser) return;
-      const msg = allCurrentMessages.find(m => m.id === msgId);
-      const isOwn = msg && (msg.senderId === currentUser.uid || msg.uid === currentUser.uid);
-      if (!isOwn && !isAdminMode) {
-        showToast('Você só pode remover suas próprias mensagens.', 'error');
-        return;
-      }
-      if (!confirm('Deseja remover esta mensagem para todos os participantes?')) return;
-      try {
-        let msgRef;
-        if (type === 'dm') msgRef = doc(db, 'dmConversations', contextId, 'messages', msgId);
-        else msgRef = doc(db, 'channels', contextId, 'messages', msgId);
-        await updateDoc(msgRef, {
-          deleted: true, text: '',
-          deletedAt: serverTimestamp(),
-          deletedBy: currentUser.uid
-        });
-        const idx = allCurrentMessages.findIndex(m => m.id === msgId);
-        if (idx !== -1) { allCurrentMessages[idx].deleted = true; allCurrentMessages[idx].text = ''; }
-        renderMessagesPage(false);
-        showToast('Mensagem removida para todos.', 'info');
-      } catch (err) {
-        console.error(err);
-        showToast('Falha ao remover mensagem: ' + err.message, 'error');
-      }
+    // ===== DELETAR =====
+    async function deleteMsg(id) {
+      if(!confirm('Remover esta mensagem?'))return;
+      try{
+        await updateDoc(doc(db,'channels',activeChannelId,'messages',id),{deleted:true,text:'',deletedAt:serverTimestamp()});
+        showToast('Mensagem removida.','info');
+      }catch(e){ showToast('Erro: '+e.message,'error'); }
     }
-    window.deleteMessage = deleteMessage;
+    window.deleteMsg = deleteMsg;
 
-    document.getElementById('message-form').addEventListener('submit', async function(e) {
+    // ===== ENVIAR =====
+    document.getElementById('message-form').addEventListener('submit', async e=>{
       e.preventDefault();
-      const input = document.getElementById('message-input');
-      const text = input.value.trim();
-      if (!text || !currentUser) return;
-
-      if (activeChatType === 'channel') {
-        const ch = channelsCache.find(c => c.id === activeChannelId);
-        if (ch && ch.blocked && !isAdminMode) {
-          showToast('Esta sala está bloqueada para novas mensagens.', 'error');
-          return;
-        }
-      }
-
-      if (currentUser.banned === true) {
-        showToast('Sua conta está banida. Você não pode enviar mensagens.', 'error');
-        return;
-      }
-
-      input.value = '';
-      stopTyping();
-      try {
-        const msgData = {
-          uid: currentUser.uid, senderId: currentUser.uid,
-          sender: currentUser.username, age: currentUser.age, gender: currentUser.gender,
-          text, time: getCurrentTime(), createdAt: serverTimestamp(),
-          deleted: false
-        };
-        if (replyTarget) {
-          msgData.replyTo = {
-            id: replyTarget.id,
-            sender: replyTarget.sender,
-            text: replyTarget.text
-          };
-        }
-        if (activeChatType === 'dm' && activeDMUserId) {
-          const convId = dmConversationId(currentUser.uid, activeDMUserId);
-          const convRef = doc(db, 'dmConversations', convId);
-          const convSnap = await getDoc(convRef);
-          if (!convSnap.exists()) {
-            await setDoc(convRef, {
-              participants: [currentUser.uid, activeDMUserId],
-              participantNames: { [currentUser.uid]: currentUser.username, [activeDMUserId]: activeDMUsername || 'Usuário' },
-              lastMessage: text, lastMessageAt: serverTimestamp(), updatedAt: serverTimestamp()
-            });
-          } else {
-            await setDoc(convRef, {
-              lastMessage: text, lastMessageAt: serverTimestamp(), updatedAt: serverTimestamp(),
-              participantNames: { [currentUser.uid]: currentUser.username, [activeDMUserId]: activeDMUsername || 'Usuário' },
-              lastRead: { [currentUser.uid]: serverTimestamp() }
-            }, { merge: true });
-          }
-          await addDoc(collection(db, 'dmConversations', convId, 'messages'), msgData);
-        } else {
-          await addDoc(collection(db, 'channels', activeChannelId, 'messages'), msgData);
-        }
-        cancelReply();
-        document.getElementById('emoji-picker').classList.add('hidden');
-      } catch (err) {
-        console.error(err);
-        showToast('Falha ao enviar mensagem: ' + err.message, 'error');
-      }
+      const input=document.getElementById('message-input');
+      const text=input.value.trim();
+      if(!text||!currentUser)return;
+      input.value='';
+      try{
+        await addDoc(collection(db,'channels',activeChannelId,'messages'),{
+          uid:currentUser.uid, senderId:currentUser.uid,
+          sender:currentUser.username, age:currentUser.age, gender:currentUser.gender,
+          text, time:getTime(), createdAt:serverTimestamp(), deleted:false
+        });
+      }catch(err){ console.error(err); showToast('Falha ao enviar: '+err.message,'error'); }
     });
 
-    async function clearCurrentChannelHistory() {
-      if (!currentUser) return;
-      const target = activeChatType === 'dm' ? 'esta conversa privada' : 'esta sala';
-      if (!confirm(`Tem certeza que deseja apagar TODAS as SUAS mensagens ${target}?`)) return;
-      try {
-        let colRef;
-        if (activeChatType === 'dm' && activeDMUserId) {
-          colRef = collection(db, 'dmConversations', dmConversationId(currentUser.uid, activeDMUserId), 'messages');
-        } else {
-          colRef = collection(db, 'channels', activeChannelId, 'messages');
-        }
-        const snap = await getDocs(colRef);
-        const batch = writeBatch(db);
-        snap.forEach(d => {
-          const data = d.data();
-          if (data.uid === currentUser.uid || data.senderId === currentUser.uid) batch.delete(d.ref);
+    // ===== PRESENÇA =====
+    function startPresence() {
+      if(!currentUser)return;
+      stopPresence();
+      const ref=doc(db,'presence',currentUser.uid);
+      const write=()=>setDoc(ref,{uid:currentUser.uid,username:currentUser.username,lastSeen:serverTimestamp()},{merge:true}).catch(()=>{});
+      write();
+      presenceHeartbeat=setInterval(write,25000);
+      unsubscribePresence=onSnapshot(collection(db,'presence'),snap=>{
+        const now=Date.now(); const alive=[];
+        snap.forEach(d=>{
+          const data=d.data();
+          let ms=0; if(data.lastSeen&&typeof data.lastSeen.toMillis==='function') ms=data.lastSeen.toMillis();
+          if(now-ms<90000) alive.push({uid:d.id,username:data.username||'Usuário'});
         });
-        await batch.commit();
-        showToast('Suas mensagens foram removidas.', 'info');
-      } catch (err) {
-        console.error(err);
-        showToast('Falha ao limpar: ' + err.message, 'error');
-      }
-    }
-    window.clearCurrentChannelHistory = clearCurrentChannelHistory;
-
-    function renderEmojiPicker() {
-      const picker = document.getElementById('emoji-picker');
-      picker.innerHTML = '';
-      QUICK_EMOJIS.forEach(emoji => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = emoji;
-        btn.className = 'w-9 h-9 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 shadow-2xs flex items-center justify-center text-base transition-transform hover:scale-110 cursor-pointer';
-        btn.style.background = 'var(--bg-card)';
-        btn.style.borderColor = 'var(--border-color)';
-        btn.onclick = () => {
-          const input = document.getElementById('message-input');
-          input.value += emoji;
-          input.focus();
-        };
-        picker.appendChild(btn);
+        onlineCache=alive;
+        renderOnline(alive);
       });
     }
-    document.getElementById('emoji-toggle-btn').addEventListener('click', () => {
-      document.getElementById('emoji-picker').classList.toggle('hidden');
-    });
+    function stopPresence() {
+      if(presenceHeartbeat){clearInterval(presenceHeartbeat);presenceHeartbeat=null;}
+      if(unsubscribePresence){unsubscribePresence();unsubscribePresence=null;}
+      if(currentUser) deleteDoc(doc(db,'presence',currentUser.uid)).catch(()=>{});
+    }
+    function renderOnline(users) {
+      document.getElementById('online-count-sidebar').textContent=users.length;
+      const list=document.getElementById('online-users-list');
+      list.innerHTML='';
+      const sorted=[...users].sort((a,b)=>{if(a.uid===currentUser.uid)return-1;if(b.uid===currentUser.uid)return 1;return a.username.localeCompare(b.username);});
+      sorted.forEach(u=>{
+        const me=u.uid===currentUser.uid;
+        const li=document.createElement('li');
+        li.className='flex items-center gap-2 px-2 py-1.5 rounded-xl';
+        li.innerHTML=`<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">${getInitials(u.username)}</div><p class="text-xs truncate flex-1" style="color:var(--text-primary)">${escapeHTML(u.username)}${me?' (Você)':''}</p><span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>`;
+        list.appendChild(li);
+      });
+    }
 
-    let logoClickCount = 0;
-    let logoClickTimer = null;
-    document.addEventListener('DOMContentLoaded', () => {
-      const logo = document.querySelector('aside .theme-gradient-bg');
-      if (logo) {
-        logo.style.cursor = 'pointer';
-        logo.title = 'Chat Top';
-        logo.addEventListener('click', () => {
-          logoClickCount++;
-          if (logoClickTimer) clearTimeout(logoClickTimer);
-          logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1500);
-          if (logoClickCount >= 5) {
-            logoClickCount = 0;
-            if (!isAdminMode) openAdminLogin();
-            else openAdminPanel();
-          }
-        });
-      }
-    });
-
-    window.addEventListener('DOMContentLoaded', () => {
-      applyColorTheme(activeThemeId, false);
-      applyDarkMode(isDarkMode, false);
-      generateMathCaptcha();
+    // ===== INIT =====
+    window.addEventListener('DOMContentLoaded',()=>{
+      applyDark(isDarkMode);
+      genCaptcha();
       lucide.createIcons();
     });
-
-    document.getElementById('message-input').addEventListener('input', handleTypingInput);
   </script>
 </body>
 </html>
