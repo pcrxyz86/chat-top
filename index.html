@@ -188,6 +188,114 @@
       background: rgba(30, 41, 59, 0.8) !important;
       color: #f1f5f9 !important;
     }
+
+    /* ===== ANIMAÇÃO DO ÍCONE CHAT TOP (AUTH) ===== */
+    @keyframes chatIconFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-6px) rotate(-5deg); }
+      75% { transform: translateY(-3px) rotate(5deg); }
+    }
+    @keyframes chatIconPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.5), 0 0 20px rgba(2, 132, 199, 0.3); }
+      50% { box-shadow: 0 0 0 12px rgba(79, 70, 229, 0), 0 0 35px rgba(2, 132, 199, 0.5); }
+    }
+    @keyframes chatIconShimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .chat-icon-animated {
+      animation: chatIconFloat 3s ease-in-out infinite, chatIconPulse 2s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    .chat-icon-animated::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      background-size: 200% 100%;
+      animation: chatIconShimmer 2.5s ease-in-out infinite;
+      border-radius: inherit;
+    }
+
+    /* ===== ANIMAÇÃO DO CAPTCHA ===== */
+    @keyframes captchaGlow {
+      0%, 100% { box-shadow: 0 0 5px rgba(79, 70, 229, 0.3), 0 0 10px rgba(2, 132, 199, 0.2); border-color: rgba(79, 70, 229, 0.4); }
+      50% { box-shadow: 0 0 15px rgba(79, 70, 229, 0.6), 0 0 25px rgba(2, 132, 199, 0.4); border-color: rgba(2, 132, 199, 0.7); }
+    }
+    @keyframes captchaNumberPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes captchaShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+    #captcha-question.captcha-animated {
+      animation: captchaGlow 2s ease-in-out infinite;
+      transition: all 0.3s;
+      position: relative;
+    }
+    #captcha-question.captcha-animated span.captcha-num {
+      display: inline-block;
+      animation: captchaNumberPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #captcha-question.captcha-shake {
+      animation: captchaShake 0.4s ease-in-out;
+    }
+
+    /* ===== CONTADOR DE ONLINE ANIMADO ===== */
+    @keyframes countPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    @keyframes countGlow {
+      0%, 100% { text-shadow: 0 0 4px rgba(16, 185, 129, 0.4); }
+      50% { text-shadow: 0 0 12px rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.4); }
+    }
+    .online-counter-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .online-counter-badge .counter-num {
+      font-weight: 700;
+      color: #10b981;
+      display: inline-block;
+      animation: countPulse 2s ease-in-out infinite, countGlow 2s ease-in-out infinite;
+      min-width: 1.2em;
+      text-align: center;
+    }
+    .online-counter-badge .counter-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: countPulse 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    .online-counter-badge .counter-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #10b981;
+      letter-spacing: 0.02em;
+    }
+    @media (max-width: 480px) {
+      .online-counter-badge .counter-label { display: none; }
+      .online-counter-badge { padding: 3px 7px; gap: 3px; }
+      .online-counter-badge .counter-num { font-size: 11px; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-900 transition-colors duration-300">
@@ -198,7 +306,7 @@
   <main id="auth-screen" class="flex-1 flex items-center justify-center p-4 relative overflow-y-auto">
     <div class="w-full max-w-md bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl overflow-hidden relative my-4" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="px-6 pt-7 pb-5 text-center border-b border-slate-200" style="border-color: var(--border-color);">
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl theme-gradient-bg mb-3">
+        <div class="chat-icon-animated inline-flex items-center justify-center w-14 h-14 rounded-2xl theme-gradient-bg mb-3">
           <i data-lucide="message-square-dashed" class="w-7 h-7"></i>
         </div>
         <h1 class="text-2xl font-bold" style="color: var(--text-primary);">Chat <span style="color: var(--theme-accent);">Top</span></h1>
@@ -255,7 +363,7 @@
             </button>
           </div>
           <div class="flex items-center gap-3">
-            <div id="captcha-question" class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-center font-bold text-sm" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">Quanto é 8 + 5?</div>
+            <div id="captcha-question" class="captcha-animated flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-center font-bold text-sm" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-primary);">Quanto é 8 + 5?</div>
             <input type="number" id="captcha-answer" required placeholder="Resp."
               class="w-24 px-3 py-2 bg-white border border-slate-200 rounded-xl text-center font-semibold text-sm focus:outline-none focus:border-emerald-500" />
           </div>
@@ -305,7 +413,7 @@
 
       <div class="flex-1 overflow-y-auto p-3 space-y-4">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2">Salas</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2">Sala</span>
           <nav id="channels-list" class="space-y-1 mt-2"></nav>
         </div>
         <div>
@@ -352,6 +460,13 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
+          <!-- CONTADOR DE ONLINE ANIMADO -->
+          <div class="online-counter-badge" id="online-counter-top" title="Usuários online">
+            <span class="counter-dot"></span>
+            <span class="counter-num" id="online-counter-top-num">0</span>
+            <span class="counter-label">online</span>
+          </div>
+
           <div class="relative" id="palette-wrapper">
             <button type="button" id="palette-toggle-btn" title="Paleta de cores"
               class="w-8 h-8 rounded-xl bg-white/90 hover:bg-white border border-slate-200/90 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs" style="background: var(--bg-card); border-color: var(--border-color);">
@@ -543,12 +658,9 @@
 
     lucide.createIcons();
 
+    // Apenas um canal: Bate-papo Livre
     const CHANNELS = [
-      { id:'geral', name:'Geral', icon:'hash', desc:'Conversa aberta para todos' },
-      { id:'tecnologia', name:'Tecnologia', icon:'cpu', desc:'Programação, IA e hardware' },
-      { id:'musica-jogos', name:'Música & Jogos', icon:'gamepad-2', desc:'Playlists, games e e-sports' },
-      { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' },
-      { id:'cantinho-amizade', name:'Cantinho da Amizade', icon:'heart', desc:'Um espaço acolhedor para fazer amigos' }
+      { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' }
     ];
 
     const COLOR_THEMES = [
@@ -570,7 +682,7 @@
     let currentUser = null;
     let currentAuthMode = 'login';
     let currentCaptchaResult = 0;
-    let activeChannelId = 'geral';
+    let activeChannelId = 'bate-papo';
     let activeChatType = 'channel';
     let activeDMUserId = null;
     let activeDMUsername = null;
@@ -618,12 +730,12 @@
         return;
       }
       if (activeChatType === 'dm') {
-        selectChannel(activeChannelId || 'geral');
+        selectChannel(activeChannelId || 'bate-papo');
         pushChatHistoryState();
         return;
       }
-      if (activeChatType === 'channel' && activeChannelId !== 'geral') {
-        selectChannel('geral');
+      if (activeChatType === 'channel' && activeChannelId !== 'bate-papo') {
+        selectChannel('bate-papo');
         pushChatHistoryState();
         return;
       }
@@ -769,7 +881,11 @@
       else if(op==='-'){a=Math.floor(Math.random()*15)+8;b=Math.floor(Math.random()*(a-1))+1;ans=a-b;}
       else{a=Math.floor(Math.random()*7)+2;b=Math.floor(Math.random()*6)+2;ans=a*b;}
       currentCaptchaResult=ans;
-      document.getElementById('captcha-question').textContent = `Quanto é ${a} ${op} ${b}?`;
+      const qEl = document.getElementById('captcha-question');
+      qEl.innerHTML = `Quanto é <span class="captcha-num">${a}</span> ${op} <span class="captcha-num">${b}</span>?`;
+      // Reinicia animação
+      qEl.classList.remove('captcha-shake');
+      void qEl.offsetWidth;
       document.getElementById('captcha-answer').value='';
     }
     document.getElementById('refresh-captcha').addEventListener('click', genCaptcha);
@@ -796,7 +912,14 @@
       if(p.length<6){showToast('Senha deve ter 6+ caracteres','error');return;}
       if(isNaN(a)||a<13||a>120){showToast('Idade inválida (13+)','error');return;}
       if(!g){showToast('Selecione o gênero','error');return;}
-      if(c!==currentCaptchaResult){showToast('Captcha incorreto','error');genCaptcha();return;}
+      if(c!==currentCaptchaResult){
+        showToast('Captcha incorreto','error');
+        const qEl = document.getElementById('captcha-question');
+        qEl.classList.add('captcha-shake');
+        setTimeout(()=>qEl.classList.remove('captcha-shake'), 450);
+        genCaptcha();
+        return;
+      }
 
       btn.disabled=true; btn.style.opacity='.7';
       try {
@@ -914,7 +1037,7 @@
       renderChannels();
       renderDMConversations();
       renderEmojis();
-      selectChannel('geral');
+      selectChannel('bate-papo');
       lucide.createIcons();
       historyDepth = 0;
       pushChatHistoryState();
@@ -1517,6 +1640,7 @@
         });
         onlineCache=alive;
         renderOnline(alive);
+        updateOnlineCounter(alive.length);
       });
     }
     function stopPresence() {
@@ -1546,12 +1670,27 @@
       lucide.createIcons({root:list});
     }
 
+    function updateOnlineCounter(count) {
+      const el = document.getElementById('online-counter-top-num');
+      if(!el) return;
+      const prev = parseInt(el.textContent, 10) || 0;
+      if(prev === count) return;
+      // Animação de contagem
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = 'countPulse 0.5s ease-in-out';
+      el.textContent = count;
+      setTimeout(() => { el.style.animation = 'countPulse 2s ease-in-out infinite, countGlow 2s ease-in-out infinite'; }, 500);
+    }
+
     window.addEventListener('DOMContentLoaded',()=>{
       applyDark(isDarkMode);
       applyTheme(activeThemeId);
       genCaptcha();
       document.querySelectorAll('.sound-toggle-icon').forEach(el=>el.setAttribute('data-lucide', soundEnabled?'volume-2':'volume-x'));
       lucide.createIcons();
+      // Inicializa contador
+      updateOnlineCounter(0);
     });
 
     document.getElementById('message-input').addEventListener('input', handleTypingInput);
