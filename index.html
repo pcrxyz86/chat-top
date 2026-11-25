@@ -20,6 +20,9 @@
       --theme-primary: #4F46E5;
       --theme-secondary: #0284C7;
       --theme-accent: #0284C7;
+      --theme-rgb-h: 239;
+      --theme-rgb-s: 84%;
+      --theme-rgb-l: 60%;
       --bg-main: #f1f5f9;
       --bg-card: #ffffff;
       --text-primary: #0f172a;
@@ -296,7 +299,7 @@
       .online-counter-badge .counter-num { font-size: 11px; }
     }
 
-    /* ===== NOVO SELETOR DE PALETA QUADRADO ===== */
+    /* ===== SELETOR DE PALETA QUADRADO (mantido como fallback) ===== */
     .palette-square-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -342,7 +345,7 @@
       filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
     }
 
-    /* ===== BOTÕES DE CONFIGURAÇÃO (LINHA EXTRA) ===== */
+    /* ===== BOTÕES DE CONFIGURAÇÃO ===== */
     .settings-toolbar {
       display: flex;
       align-items: center;
@@ -377,7 +380,7 @@
       border-color: var(--theme-primary);
     }
 
-    /* ===== BADGE PRIVADO EMBAIXO DO NOME ===== */
+    /* ===== BADGE PRIVADO EMPILHADO ===== */
     .channel-title-block {
       display: flex;
       flex-direction: column;
@@ -404,6 +407,200 @@
       background: rgba(180, 83, 9, .25);
       color: #fbbf24;
       border-color: rgba(251, 191, 36, .35);
+    }
+
+    /* ===== NOVA PALETA RGB AVANÇADA ===== */
+    .rgb-palette-popover {
+      width: 300px;
+      padding: 14px;
+      border-radius: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 50px -12px rgba(0,0,0,.35);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .rgb-preview-bar {
+      height: 48px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 10px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+    }
+    .rgb-preview-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.15) 50%, transparent 100%);
+      pointer-events: none;
+    }
+    .rgb-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .rgb-slider-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      width: 16px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .rgb-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 14px;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+    }
+    .rgb-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--text-primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+      cursor: grab;
+    }
+    .rgb-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--text-primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+      cursor: grab;
+    }
+    .rgb-slider-value {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-primary);
+      width: 36px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .rgb-hex-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .rgb-hex-input {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-family: 'Inter', monospace;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      outline: none;
+    }
+    .rgb-hex-input:focus {
+      border-color: var(--theme-primary);
+      box-shadow: 0 0 0 2px rgba(79,70,229,.2);
+    }
+    .rgb-swatches-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 6px;
+      margin-top: 4px;
+    }
+    .rgb-swatches {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .rgb-swatch {
+      aspect-ratio: 1/1;
+      border-radius: 6px;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: transform .12s, border-color .12s;
+      outline: none;
+    }
+    .rgb-swatch:hover {
+      transform: scale(1.15);
+      border-color: var(--text-primary);
+      z-index: 2;
+    }
+    .rgb-swatch.active {
+      border-color: var(--text-primary);
+      box-shadow: 0 0 0 1.5px var(--bg-card), 0 0 0 3px var(--text-primary);
+    }
+    .rgb-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .rgb-action-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background: var(--bg-slate-100, #f1f5f9);
+      color: var(--text-primary);
+      transition: background .15s, transform .1s;
+    }
+    .rgb-action-btn:hover { background: var(--bg-card); }
+    .rgb-action-btn:active { transform: scale(.97); }
+    .rgb-action-btn.primary {
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+      color: #fff;
+      border-color: transparent;
+    }
+    .rgb-toggle-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .rgb-mode-toggle {
+      display: inline-flex;
+      background: var(--bg-slate-100, #f1f5f9);
+      border-radius: 999px;
+      padding: 2px;
+      border: 1px solid var(--border-color);
+    }
+    .rgb-mode-toggle button {
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-secondary);
+      transition: background .15s, color .15s;
+    }
+    .rgb-mode-toggle button.active {
+      background: var(--theme-primary);
+      color: #fff;
     }
   </style>
 </head>
@@ -549,7 +746,7 @@
     </aside>
 
     <section class="flex-1 flex flex-col min-w-0 bg-grid relative overflow-hidden">
-      <!-- CABEÇALHO PRINCIPAL: canal + contador -->
+      <!-- CABEÇALHO PRINCIPAL -->
       <header class="h-16 px-4 bg-white/90 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between shrink-0 z-20" style="background: var(--bg-card); border-color: var(--border-color);">
         <div class="flex items-center gap-3 min-w-0">
           <button type="button" onclick="toggleSidebar(true)" class="lg:hidden p-2 rounded-xl bg-white border border-slate-200" style="background: var(--bg-card); border-color: var(--border-color);">
@@ -570,7 +767,6 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-          <!-- CONTADOR DE ONLINE ANIMADO -->
           <div class="online-counter-badge" id="online-counter-top" title="Usuários online">
             <span class="counter-dot"></span>
             <span class="counter-num" id="online-counter-top-num">0</span>
@@ -579,20 +775,61 @@
         </div>
       </header>
 
-      <!-- BARRA DE CONFIGURAÇÃO (LINHA EXTRA) -->
+      <!-- BARRA DE CONFIGURAÇÃO -->
       <div class="settings-toolbar">
         <div class="relative" id="palette-wrapper">
-          <button type="button" id="palette-toggle-btn" title="Paleta de cores"
+          <button type="button" id="palette-toggle-btn" title="Paleta RGB"
             class="settings-btn" style="background: var(--bg-card); border-color: var(--border-color);">
             <span id="active-palette-dot" class="w-3.5 h-3.5 rounded-full border border-slate-300/80 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
           </button>
-          <div id="palette-popover" class="hidden absolute right-0 mt-2 w-64 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50" style="background: var(--bg-card); border-color: var(--border-color);">
-            <div class="flex items-center justify-between px-1 pb-2 mb-2.5 border-b border-slate-100" style="border-color: var(--border-color);">
-              <span class="text-[11px] font-semibold flex items-center gap-1.5" style="color: var(--text-primary);">
-                <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Cor dos Balões
+          <div id="palette-popover" class="hidden absolute right-0 mt-2 rgb-palette-popover z-50">
+            <div class="rgb-toggle-label">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="palette" class="w-3.5 h-3.5"></i> Paleta RGB
               </span>
+              <div class="rgb-mode-toggle">
+                <button type="button" data-mode="light" onclick="setRGBMode('light')">Claro</button>
+                <button type="button" data-mode="dark" onclick="setRGBMode('dark')">Escuro</button>
+              </div>
             </div>
-            <div id="palette-options" class="palette-square-grid"></div>
+
+            <div class="rgb-preview-bar" id="rgb-preview-bar"></div>
+
+            <!-- Hue slider -->
+            <div class="rgb-slider-row">
+              <span class="rgb-slider-label">H</span>
+              <input type="range" id="rgb-hue" class="rgb-slider" min="0" max="360" value="239"
+                style="background: linear-gradient(90deg, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);" />
+              <span class="rgb-slider-value" id="rgb-hue-value">239°</span>
+            </div>
+
+            <!-- Saturation slider -->
+            <div class="rgb-slider-row">
+              <span class="rgb-slider-label">S</span>
+              <input type="range" id="rgb-sat" class="rgb-slider" min="0" max="100" value="84" />
+              <span class="rgb-slider-value" id="rgb-sat-value">84%</span>
+            </div>
+
+            <!-- Lightness slider -->
+            <div class="rgb-slider-row">
+              <span class="rgb-slider-label">L</span>
+              <input type="range" id="rgb-light" class="rgb-slider" min="0" max="100" value="60" />
+              <span class="rgb-slider-value" id="rgb-light-value">60%</span>
+            </div>
+
+            <!-- Hex input -->
+            <div class="rgb-hex-row">
+              <input type="text" id="rgb-hex" class="rgb-hex-input" maxlength="7" placeholder="#4F46E5" />
+              <button type="button" class="rgb-action-btn primary" style="flex:0 0 auto;padding:7px 12px;" onclick="applyHexInput()">OK</button>
+            </div>
+
+            <div class="rgb-swatches-title">Cores rápidas</div>
+            <div id="rgb-swatches" class="rgb-swatches"></div>
+
+            <div class="rgb-actions">
+              <button type="button" class="rgb-action-btn" onclick="resetRGBTheme()">Redefinir</button>
+              <button type="button" class="rgb-action-btn primary" onclick="applyRGBTheme()">Aplicar</button>
+            </div>
           </div>
         </div>
 
@@ -730,7 +967,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO (MODERNO) -->
+  <!-- MODAL DE CONFIRMAÇÃO -->
   <div id="confirm-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
     <div class="confirm-modal w-full max-w-[280px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="p-5 text-center">
@@ -774,21 +1011,22 @@
       { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' }
     ];
 
-    const COLOR_THEMES = [
-      { id:'indigo-cyan', name:'Índigo', primary:'#4F46E5', secondary:'#0284C7' },
-      { id:'soft-green', name:'Menta', primary:'#86efac', secondary:'#bbf7d0' },
-      { id:'soft-yellow', name:'Amarelo', primary:'#fde047', secondary:'#fef08a' },
-      { id:'emerald-teal', name:'Esmeralda', primary:'#10b981', secondary:'#14b8a6' },
-      { id:'sky-blue', name:'Azul Céu', primary:'#38bdf8', secondary:'#60a5fa' },
-      { id:'amber-orange', name:'Âmbar', primary:'#fb923c', secondary:'#f59e0b' },
-      { id:'lavender-purple', name:'Lavanda', primary:'#8b5cf6', secondary:'#a78bfa' },
-      { id:'soft-graphite', name:'Grafite', primary:'#475569', secondary:'#64748b' }
-    ];
-
     const QUICK_EMOJIS = ['👋','😄','🚀','🔥','👏','💡','🎮','🎧','☕','✨','👍','💚'];
 
     const PAGE_SIZE = 30;
     const TOAST_DURATION = 1800;
+
+    // ---- Estado do tema RGB ----
+    let rgbH = 239, rgbS = 84, rgbL = 60;
+    let rgbMode = 'light'; // 'light' | 'dark'
+    let pendingRGB = { h: 239, s: 84, l: 60 };
+
+    const QUICK_SWATCHES = [
+      '#4F46E5','#0284C7','#10b981','#f59e0b','#ef4444',
+      '#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b',
+      '#0ea5e9','#22c55e','#eab308','#e11d48','#a855f7',
+      '#06b6d4','#84cc16','#f43f5e','#6366f1','#78716c'
+    ];
 
     let currentUser = null;
     let currentAuthMode = 'login';
@@ -815,7 +1053,6 @@
 
     let isDarkMode = localStorage.getItem('chattop_dark') === 'true';
     let soundEnabled = localStorage.getItem('chattop_sound') !== 'false';
-    let activeThemeId = localStorage.getItem('chattop_theme') || 'indigo-cyan';
 
     let oldestLoadedDoc = null;
     let hasMoreMessages = true;
@@ -828,6 +1065,278 @@
     let pendingDeleteMsgId = null;
     let pendingDeleteAction = null;
 
+    // ===== UTILITÁRIOS DE COR =====
+    function hslToHex(h, s, l) {
+      s /= 100; l /= 100;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    }
+    function hexToHsl(hex) {
+      let r = 0, g = 0, b = 0;
+      if (hex.length === 4) {
+        r = parseInt(hex[1]+hex[1],16); g = parseInt(hex[2]+hex[2],16); b = parseInt(hex[3]+hex[3],16);
+      } else if (hex.length === 7) {
+        r = parseInt(hex[1]+hex[3],16); g = parseInt(hex[3]+hex[5],16); b = parseInt(hex[5]+hex[7],16);
+      }
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r,g,b), min = Math.min(r,g,b);
+      let h = 0, s = 0;
+      const l = (max+min)/2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+    }
+    function hexToRgb(hex) {
+      const p = hex.replace('#','');
+      return {
+        r: parseInt(p.substring(0,2),16),
+        g: parseInt(p.substring(2,4),16),
+        b: parseInt(p.substring(4,6),16)
+      };
+    }
+    function isLight(hex) {
+      const {r,g,b} = hexToRgb(hex);
+      return (0.299*r + 0.587*g + 0.114*b) > 150;
+    }
+
+    // ===== APLICAÇÃO DO TEMA RGB =====
+    function applyRGBTheme(h, s, l, mode, silent=false) {
+      rgbH = h; rgbS = s; rgbL = l; rgbMode = mode;
+
+      const primary = hslToHex(h, s, l);
+      const secondary = hslToHex((h + 30) % 360, s, Math.max(10, Math.min(90, l + 8)));
+      const accent = secondary;
+
+      const root = document.documentElement;
+      root.style.setProperty('--theme-primary', primary);
+      root.style.setProperty('--theme-secondary', secondary);
+      root.style.setProperty('--theme-accent', accent);
+      root.style.setProperty('--theme-rgb-h', h);
+      root.style.setProperty('--theme-rgb-s', s + '%');
+      root.style.setProperty('--theme-rgb-l', l + '%');
+
+      // Atualiza fundos baseados no tema escolhido
+      applyBackgrounds(primary, h, s, l, mode);
+
+      // Salva no localStorage
+      localStorage.setItem('chattop_rgb_h', h);
+      localStorage.setItem('chattop_rgb_s', s);
+      localStorage.setItem('chattop_rgb_l', l);
+      localStorage.setItem('chattop_rgb_mode', mode);
+
+      // Atualiza preview
+      const dot = document.getElementById('active-palette-dot');
+      if (dot) dot.style.background = `linear-gradient(135deg, ${primary}, ${secondary})`;
+      const preview = document.getElementById('rgb-preview-bar');
+      if (preview) preview.style.background = `linear-gradient(135deg, ${primary}, ${secondary})`;
+
+      if (!silent) {
+        document.getElementById('rgb-hue-value').textContent = h + '°';
+        document.getElementById('rgb-sat-value').textContent = s + '%';
+        document.getElementById('rgb-light-value').textContent = l + '%';
+        document.getElementById('rgb-hue').value = h;
+        document.getElementById('rgb-sat').value = s;
+        document.getElementById('rgb-light').value = l;
+        document.getElementById('rgb-hex').value = primary.toUpperCase();
+        updateSaturationSliderBG(h, s, l);
+        updateLightnessSliderBG(h, s, l);
+        highlightActiveSwatch(primary);
+        updateModeButtons();
+      }
+    }
+
+    function applyBackgrounds(primary, h, s, l, mode) {
+      const root = document.documentElement;
+      if (mode === 'dark') {
+        // Fundo escuro tingido com a cor escolhida
+        const bgMain = hslToHex(h, Math.min(s, 30), 8);
+        const bgCard = hslToHex(h, Math.min(s, 25), 14);
+        const bgInput = hslToHex(h, Math.min(s, 25), 11);
+        const border = hslToHex(h, Math.min(s, 20), 26);
+        const textPrimary = hslToHex(h, 15, 96);
+        const textSecondary = hslToHex(h, 15, 72);
+        const textMuted = hslToHex(h, 12, 52);
+        const bubbleRecvStart = hslToHex(h, Math.min(s, 22), 20);
+        const bubbleRecvEnd = hslToHex(h, Math.min(s, 22), 15);
+
+        root.style.setProperty('--bg-main', bgMain);
+        root.style.setProperty('--bg-card', bgCard);
+        root.style.setProperty('--bg-slate-100', bgInput);
+        root.style.setProperty('--bg-slate-50', bgInput);
+        root.style.setProperty('--border-color', border);
+        root.style.setProperty('--text-primary', textPrimary);
+        root.style.setProperty('--text-secondary', textSecondary);
+        root.style.setProperty('--text-muted', textMuted);
+        root.style.setProperty('--bubble-received-start', bubbleRecvStart);
+        root.style.setProperty('--bubble-received-end', bubbleRecvEnd);
+        root.style.setProperty('--bubble-received-text', textPrimary);
+        document.body.classList.add('dark');
+        isDarkMode = true;
+        localStorage.setItem('chattop_dark', 'true');
+      } else {
+        // Fundo claro tingido com a cor escolhida
+        const bgMain = hslToHex(h, Math.min(s, 35), 96);
+        const bgCard = hslToHex(h, Math.min(s, 20), 100);
+        const bgSoft = hslToHex(h, Math.min(s, 35), 94);
+        const border = hslToHex(h, Math.min(s, 25), 86);
+        const textPrimary = hslToHex(h, 25, 12);
+        const textSecondary = hslToHex(h, 15, 42);
+        const textMuted = hslToHex(h, 12, 62);
+        const bubbleRecvStart = hslToHex(h, 15, 100);
+        const bubbleRecvEnd = hslToHex(h, 10, 98);
+
+        root.style.setProperty('--bg-main', bgMain);
+        root.style.setProperty('--bg-card', bgCard);
+        root.style.setProperty('--bg-slate-100', bgSoft);
+        root.style.setProperty('--bg-slate-50', bgSoft);
+        root.style.setProperty('--border-color', border);
+        root.style.setProperty('--text-primary', textPrimary);
+        root.style.setProperty('--text-secondary', textSecondary);
+        root.style.setProperty('--text-muted', textMuted);
+        root.style.setProperty('--bubble-received-start', bubbleRecvStart);
+        root.style.setProperty('--bubble-received-end', bubbleRecvEnd);
+        root.style.setProperty('--bubble-received-text', textPrimary);
+        document.body.classList.remove('dark');
+        isDarkMode = false;
+        localStorage.setItem('chattop_dark', 'false');
+      }
+    }
+
+    function updateSaturationSliderBG(h, s, l) {
+      const el = document.getElementById('rgb-sat');
+      if (!el) return;
+      el.style.background = `linear-gradient(90deg, hsl(${h},0%,${l}%), hsl(${h},100%,${l}%))`;
+    }
+    function updateLightnessSliderBG(h, s, l) {
+      const el = document.getElementById('rgb-light');
+      if (!el) return;
+      el.style.background = `linear-gradient(90deg, #000 0%, hsl(${h},${s}%,50%) 50%, #fff 100%)`;
+    }
+    function highlightActiveSwatch(primary) {
+      document.querySelectorAll('.rgb-swatch').forEach(sw => {
+        const active = sw.dataset.color?.toLowerCase() === primary.toLowerCase();
+        sw.classList.toggle('active', active);
+      });
+    }
+    function updateModeButtons() {
+      document.querySelectorAll('.rgb-mode-toggle button').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === rgbMode);
+      });
+    }
+
+    function setRGBMode(mode) {
+      pendingRGB.mode = mode;
+      applyRGBTheme(pendingRGB.h, pendingRGB.s, pendingRGB.l, mode);
+      showToast(mode === 'dark' ? 'Tema escuro RGB 🌙' : 'Tema claro RGB ☀️', 'info');
+    }
+    window.setRGBMode = setRGBMode;
+
+    function renderRGBSwatches() {
+      const container = document.getElementById('rgb-swatches');
+      if (!container) return;
+      container.innerHTML = '';
+      QUICK_SWATCHES.forEach(hex => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'rgb-swatch';
+        b.dataset.color = hex;
+        b.style.background = hex;
+        b.title = hex;
+        b.onclick = () => {
+          const hsl = hexToHsl(hex);
+          pendingRGB = { h: hsl.h, s: hsl.s, l: hsl.l, mode: rgbMode };
+          applyRGBTheme(hsl.h, hsl.s, hsl.l, rgbMode);
+        };
+        container.appendChild(b);
+      });
+    }
+
+    function applyHexInput() {
+      const input = document.getElementById('rgb-hex');
+      let v = input.value.trim();
+      if (!v.startsWith('#')) v = '#' + v;
+      if (!/^#[0-9a-fA-F]{3,6}$/.test(v)) { showToast('Hex inválido','error'); return; }
+      if (v.length === 4) v = '#' + v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
+      const hsl = hexToHsl(v);
+      pendingRGB = { h: hsl.h, s: hsl.s, l: hsl.l, mode: rgbMode };
+      applyRGBTheme(hsl.h, hsl.s, hsl.l, rgbMode);
+    }
+    window.applyHexInput = applyHexInput;
+
+    function applyRGBThemeFromUI() {
+      const h = parseInt(document.getElementById('rgb-hue').value, 10);
+      const s = parseInt(document.getElementById('rgb-sat').value, 10);
+      const l = parseInt(document.getElementById('rgb-light').value, 10);
+      pendingRGB = { h, s, l, mode: rgbMode };
+      applyRGBTheme(h, s, l, rgbMode);
+    }
+    window.applyRGBTheme = applyRGBThemeFromUI;
+
+    function resetRGBTheme() {
+      pendingRGB = { h: 239, s: 84, l: 60, mode: 'light' };
+      applyRGBTheme(239, 84, 60, 'light');
+      showToast('Tema redefinido','info');
+    }
+    window.resetRGBTheme = resetRGBTheme;
+
+    function initRGBPalette() {
+      renderRGBSwatches();
+
+      const savedH = parseInt(localStorage.getItem('chattop_rgb_h') || '239', 10);
+      const savedS = parseInt(localStorage.getItem('chattop_rgb_s') || '84', 10);
+      const savedL = parseInt(localStorage.getItem('chattop_rgb_l') || '60', 10);
+      const savedMode = localStorage.getItem('chattop_rgb_mode') || (isDarkMode ? 'dark' : 'light');
+
+      pendingRGB = { h: savedH, s: savedS, l: savedL, mode: savedMode };
+      applyRGBTheme(savedH, savedS, savedL, savedMode, true);
+
+      // Bind sliders
+      const hueEl = document.getElementById('rgb-hue');
+      const satEl = document.getElementById('rgb-sat');
+      const lightEl = document.getElementById('rgb-light');
+      const hexEl = document.getElementById('rgb-hex');
+
+      hueEl.addEventListener('input', () => {
+        const h = parseInt(hueEl.value,10);
+        document.getElementById('rgb-hue-value').textContent = h + '°';
+        applyRGBTheme(h, parseInt(satEl.value,10), parseInt(lightEl.value,10), rgbMode);
+      });
+      satEl.addEventListener('input', () => {
+        const s = parseInt(satEl.value,10);
+        document.getElementById('rgb-sat-value').textContent = s + '%';
+        applyRGBTheme(parseInt(hueEl.value,10), s, parseInt(lightEl.value,10), rgbMode);
+      });
+      lightEl.addEventListener('input', () => {
+        const l = parseInt(lightEl.value,10);
+        document.getElementById('rgb-light-value').textContent = l + '%';
+        applyRGBTheme(parseInt(hueEl.value,10), parseInt(satEl.value,10), l, rgbMode);
+      });
+      hexEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyHexInput(); } });
+    }
+
+    // ===== MODO ESCURO/CLARO TOGGLE =====
+    function toggleDarkMode() {
+      const newMode = isDarkMode ? 'light' : 'dark';
+      applyRGBTheme(rgbH, rgbS, rgbL, newMode);
+      showToast(newMode === 'dark' ? 'Modo escuro 🌙' : 'Modo claro ☀️', 'info');
+      updateModeButtons();
+    }
+    window.toggleDarkMode = toggleDarkMode;
+
+    // ===== RESTO DO SCRIPT (inalterado) =====
     function pushChatHistoryState() {
       historyDepth++;
       history.pushState({ chattop: true, depth: historyDepth }, '');
@@ -915,56 +1424,7 @@
     }
     window.toggleSound = toggleSound;
 
-    function applyDark(dark) {
-      isDarkMode = dark;
-      document.body.classList.toggle('dark', dark);
-      localStorage.setItem('chattop_dark', dark?'true':'false');
-      document.querySelectorAll('.dark-icon').forEach(el => el.setAttribute('data-lucide', dark?'sun':'moon'));
-      lucide.createIcons();
-    }
-    function toggleDarkMode() { applyDark(!isDarkMode); showToast(isDarkMode?'Modo escuro 🌙':'Modo claro ☀️','info'); }
-    window.toggleDarkMode = toggleDarkMode;
-
-    function applyTheme(themeId) {
-      const theme = COLOR_THEMES.find(t=>t.id===themeId) || COLOR_THEMES[0];
-      activeThemeId = theme.id;
-      const root = document.documentElement;
-      root.style.setProperty('--theme-primary', theme.primary);
-      root.style.setProperty('--theme-secondary', theme.secondary);
-      root.style.setProperty('--theme-accent', theme.secondary);
-      localStorage.setItem('chattop_theme', theme.id);
-      renderPalette();
-    }
-    function renderPalette() {
-      const container = document.getElementById('palette-options');
-      if(!container) return;
-      container.innerHTML='';
-      COLOR_THEMES.forEach(theme=>{
-        const isSelected = theme.id===activeThemeId;
-        const btn = document.createElement('button');
-        btn.type='button';
-        btn.title=theme.name;
-        btn.className='palette-square-btn' + (isSelected ? ' active' : '');
-        btn.style.background = `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`;
-        btn.innerHTML = `
-          <span class="palette-check">
-            <i data-lucide="check" class="w-4 h-4"></i>
-          </span>`;
-        btn.onclick=()=>{ applyTheme(theme.id); document.getElementById('palette-popover').classList.add('hidden'); showToast(`Tema "${theme.name}" aplicado!`,'info'); };
-        container.appendChild(btn);
-      });
-      lucide.createIcons({root:container});
-    }
-    document.getElementById('palette-toggle-btn').addEventListener('click', e=>{
-      e.stopPropagation();
-      document.getElementById('palette-popover').classList.toggle('hidden');
-    });
-    document.addEventListener('click', e=>{
-      const w = document.getElementById('palette-wrapper');
-      const p = document.getElementById('palette-popover');
-      if(w && p && !w.contains(e.target)) p.classList.add('hidden');
-    });
-
+    // Renderização dos emojis
     function renderEmojis() {
       const picker = document.getElementById('emoji-picker');
       picker.innerHTML='';
@@ -1469,7 +1929,7 @@
           renderMessages(false);
           showToast('Mensagem apagada para todos.','info');
         } else if (action === 'me') {
-          await updateDoc(ref,{ hiddenFor: arrayUnion(currentUser.uid) });
+          await updateDoc(ref, { hiddenFor: arrayUnion(currentUser.uid) });
           allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
           renderMessages(false);
           showToast('Mensagem oculta só para você.','info');
@@ -1790,8 +2250,7 @@
     }
 
     window.addEventListener('DOMContentLoaded',()=>{
-      applyDark(isDarkMode);
-      applyTheme(activeThemeId);
+      initRGBPalette();
       genCaptcha();
       document.querySelectorAll('.sound-toggle-icon').forEach(el=>el.setAttribute('data-lucide', soundEnabled?'volume-2':'volume-x'));
       lucide.createIcons();
@@ -1802,4 +2261,3 @@
   </script>
 </body>
 </html>
-[file content end]
