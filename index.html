@@ -405,7 +405,7 @@
         right: 0;
       }
       #palette-options {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: 3, 1fr;
       }
     }
 
@@ -763,7 +763,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, orderBy, limit, startAfter, onSnapshot, serverTimestamp, getDocs, where, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, orderBy, limit, startAfter, onSnapshot, serverTimestamp, getDocs, where, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDTtGsSaqRHULKfzhkQU3UafoDSUP9wQ68",
@@ -1481,7 +1481,6 @@
     }
     window.closeConfirmModal = closeConfirmModal;
 
-    // NOVO: apagar conversa inteira (só para mim)
     function openDeleteConversation(convId, convName) {
       pendingDeleteConvId = convId;
       pendingDeleteConvName = convName;
@@ -1679,7 +1678,6 @@
       const emptyHint=document.getElementById('dm-empty-hint');
       if(!list)return;
       list.innerHTML='';
-      // NOVO: filtra conversas ocultas para mim
       const convs=dmConversationsCache.filter(c => !isConvHiddenForMe(c));
       if(convs.length===0){ if(emptyHint)emptyHint.classList.remove('hidden'); return; }
       if(emptyHint)emptyHint.classList.add('hidden');
@@ -1732,22 +1730,34 @@
         unreadListeners[conv.id]=onSnapshot(q, snap=>{
           if(!currentUser)return;
           const isActiveDM=activeChatType==='dm'&&dmConvId(currentUser.uid,activeDMUserId)===conv.id;
-          if(isActiveDM){
-            dmUnreadCounts[conv.id]=0;
-            renderDMConversations();
-            return;
-          }
+
           const convData=dmConversationsCache.find(c=>c.id===conv.id);
           const lastRead=convData?.lastRead?.[currentUser.uid]?.toMillis?.()||0;
           let count=0;
+          let hasNewIncoming=false;
           snap.forEach(d=>{
             const data=d.data();
             if(data.senderId===currentUser.uid)return;
             if(data.deleted===true)return;
             if(isHiddenForMe(data))return;
             const ts=data.createdAt?.toMillis?.()||0;
-            if(ts>lastRead)count++;
+            if(ts>lastRead){ count++; hasNewIncoming=true; }
           });
+
+          if(isActiveDM){
+            dmUnreadCounts[conv.id]=0;
+            renderDMConversations();
+            return;
+          }
+
+          // CORREÇÃO: se a conversa está oculta para mim e chegou mensagem nova, desocultar automaticamente
+          const isHidden = isConvHiddenForMe(convData || conv);
+          if (hasNewIncoming && isHidden) {
+            updateDoc(doc(db,'dmConversations',conv.id), {
+              hiddenFor: arrayRemove(currentUser.uid)
+            }).catch(err => console.warn('Erro ao desocultar conversa:', err));
+          }
+
           const prev=dmUnreadCounts[conv.id]||0;
           dmUnreadCounts[conv.id]=count;
           if(count>prev) playSound();
@@ -1772,12 +1782,16 @@
       dmUnreadCounts[convId]=0;
       renderDMConversations();
       try{
+        // Ao abrir a conversa, também remove do hiddenFor (garante que ela reapareça)
         await setDoc(doc(db,'dmConversations',convId),{
           participants:[currentUser.uid,otherUid],
           participantNames:{[currentUser.uid]:currentUser.username,[otherUid]:otherUsername},
           lastRead:{[currentUser.uid]:serverTimestamp()},
           updatedAt:serverTimestamp()
         },{merge:true});
+        await updateDoc(doc(db,'dmConversations',convId), {
+          hiddenFor: arrayRemove(currentUser.uid)
+        }).catch(()=>{});
       }catch(e){}
       loadMessages(true);
       attachTypingListener(`dm_${convId}`);
