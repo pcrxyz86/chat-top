@@ -25,8 +25,8 @@
       --text-secondary: #64748b;
       --text-muted: #94a3b8;
       --border-color: #e2e8f0;
-      --bubble-received-start: rgba(255,255,255,0.95);
-      --bubble-received-end: rgba(248,250,252,0.9);
+      --bubble-received-start: #ffffff;
+      --bubble-received-end: #f8fafc;
       --bubble-received-text: #0f172a;
     }
     body.dark {
@@ -36,8 +36,8 @@
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
       --border-color: #334155;
-      --bubble-received-start: rgba(51,65,85,0.9);
-      --bubble-received-end: rgba(30,41,59,0.8);
+      --bubble-received-start: #334155;
+      --bubble-received-end: #1e293b;
       --bubble-received-text: #f1f5f9;
     }
     * { box-sizing: border-box; }
@@ -67,9 +67,15 @@
       box-shadow: 0 2px 8px -4px rgba(0,0,0,.1);
       word-break: break-word;
       overflow-wrap: anywhere;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .bubble-received:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px -4px rgba(0,0,0,.15);
     }
     @media (hover: none) {
-      .bubble-sent { -webkit-user-select: none; user-select: none; }
+      .bubble-sent, .bubble-received { -webkit-user-select: none; user-select: none; }
     }
     .theme-gradient-bg {
       background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
@@ -77,7 +83,7 @@
     }
     .bg-grid { background-color: var(--bg-main); background-image: radial-gradient(rgba(100,116,139,.16) 1px, transparent 1px); background-size: 24px 24px; }
     .dark .bg-white { background-color: var(--bg-card) !important; }
-    .dark .bg-white\/80, .dark .bg-white\/90 { background-color: rgba(30,41,59,.9) !important; }
+    .dark .bg-white\/80, .dark .bg-white\/90 { background-color: var(--bg-card) !important; }
     .dark .border-slate-200 { border-color: var(--border-color) !important; }
     .dark .text-slate-900, .dark .text-slate-800 { color: var(--text-primary) !important; }
     .dark .text-slate-500, .dark .text-slate-600 { color: var(--text-secondary) !important; }
@@ -98,7 +104,6 @@
     .online-msg-icon { transition: transform .15s, color .15s; }
     .online-item:hover .online-msg-icon { transform: scale(1.15); color: var(--theme-accent); }
     
-    /* Animação para o novo modal de confirmação */
     .confirm-modal { animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
 
     /* ===== FUNDO GALÁXIA (AUTH) ===== */
@@ -154,12 +159,10 @@
       position: relative;
       z-index: 2;
     }
-    /* Ajuste do card no fundo galáxia */
     #auth-screen .bg-white\/90 {
-      background: rgba(15, 23, 42, 0.75) !important;
+      background: rgba(15, 23, 42, 0.95) !important;
       border-color: rgba(148, 163, 184, 0.25) !important;
       box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.05) inset;
-      backdrop-filter: blur(20px);
     }
     #auth-screen .bg-white\/90 h1,
     #auth-screen .bg-white\/90 p,
@@ -169,7 +172,7 @@
     }
     #auth-screen .bg-white\/90 input,
     #auth-screen .bg-white\/90 select {
-      background: rgba(30, 41, 59, 0.8) !important;
+      background: rgba(30, 41, 59, 0.95) !important;
       color: #f1f5f9 !important;
       border-color: rgba(148, 163, 184, 0.3) !important;
     }
@@ -177,15 +180,15 @@
       color: #64748b;
     }
     #auth-screen .bg-slate-100 {
-      background: rgba(30, 41, 59, 0.6) !important;
+      background: rgba(30, 41, 59, 0.9) !important;
       border-color: rgba(148, 163, 184, 0.2) !important;
     }
     #auth-screen .bg-slate-50 {
-      background: rgba(30, 41, 59, 0.5) !important;
+      background: rgba(30, 41, 59, 0.9) !important;
       border-color: rgba(148, 163, 184, 0.2) !important;
     }
     #auth-screen #captcha-question {
-      background: rgba(30, 41, 59, 0.8) !important;
+      background: rgba(30, 41, 59, 0.95) !important;
       color: #f1f5f9 !important;
     }
 
@@ -369,10 +372,41 @@
         radial-gradient(1px 1px at 92% 82%, rgba(56, 189, 248, 0.45), transparent);
     }
 
-    /* Garante que o conteúdo fique acima do fundo */
     #messages-container, #typing-indicator, #emoji-picker, footer, header {
       position: relative;
       z-index: 1;
+    }
+
+    /* ===== PALETA CORRIGIDA ===== */
+    #palette-popover {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 8px;
+      width: 240px;
+      max-height: 320px;
+      overflow-y: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3);
+      z-index: 100;
+      padding: 12px;
+    }
+    #palette-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 640px) {
+      #palette-popover {
+        width: 200px;
+        left: auto;
+        right: 0;
+      }
+      #palette-options {
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
   </style>
 </head>
@@ -382,7 +416,7 @@
 
   <!-- TELA AUTH -->
   <main id="auth-screen" class="flex-1 flex items-center justify-center p-4 relative overflow-y-auto">
-    <div class="w-full max-w-md bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl shadow-xl overflow-hidden relative my-4" style="background: var(--bg-card); border-color: var(--border-color);">
+    <div class="w-full max-w-md bg-white/90 border border-slate-200 rounded-3xl shadow-xl overflow-hidden relative my-4" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="px-6 pt-7 pb-5 text-center border-b border-slate-200" style="border-color: var(--border-color);">
         <div class="chat-icon-animated inline-flex items-center justify-center w-14 h-14 rounded-2xl theme-gradient-bg mb-3">
           <i data-lucide="message-square-dashed" class="w-7 h-7"></i>
@@ -458,7 +492,7 @@
   <div id="chat-screen" class="hidden h-screen w-full overflow-hidden flex relative" style="background: var(--bg-main);">
     <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-900/30 z-30 hidden lg:hidden"></div>
 
-    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-72 bg-white/90 backdrop-blur-xl border-r border-slate-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 shadow-lg lg:shadow-none" style="background: var(--bg-card); border-color: var(--border-color);">
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-72 bg-white border-r border-slate-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 shadow-lg lg:shadow-none" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="h-16 px-5 flex items-center justify-between border-b border-slate-200 shrink-0" style="border-color: var(--border-color);">
         <div class="flex items-center gap-2.5">
           <div class="w-9 h-9 rounded-xl theme-gradient-bg flex items-center justify-center">
@@ -469,19 +503,18 @@
             class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer" style="background: var(--bg-slate-100, #f1f5f9); border-color: var(--border-color);">
             <i data-lucide="volume-2" class="w-3.5 h-3.5 text-slate-600 sound-toggle-icon"></i>
           </button>
-          <!-- Botões de paleta e modo escuro movidos para cá -->
           <div class="relative" id="palette-wrapper">
             <button type="button" id="palette-toggle-btn" title="Paleta de cores"
               class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer" style="background: var(--bg-slate-100, #f1f5f9); border-color: var(--border-color);">
               <span id="active-palette-dot" class="w-3 h-3 rounded-full border border-slate-300/80 shadow-inner" style="background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));"></span>
             </button>
-            <div id="palette-popover" class="hidden absolute left-0 mt-2 w-60 p-3 rounded-2xl bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl z-50" style="background: var(--bg-card); border-color: var(--border-color);">
+            <div id="palette-popover" class="hidden">
               <div class="flex items-center justify-between px-1 pb-2 mb-2.5 border-b border-slate-100" style="border-color: var(--border-color);">
                 <span class="text-[11px] font-semibold flex items-center gap-1.5" style="color: var(--text-primary);">
                   <i data-lucide="palette" class="w-3.5 h-3.5 text-slate-500"></i> Cor dos Balões
                 </span>
               </div>
-              <div id="palette-options" class="grid grid-cols-4 gap-2"></div>
+              <div id="palette-options"></div>
             </div>
           </div>
           <button type="button" onclick="toggleDarkMode()" title="Modo escuro"
@@ -537,7 +570,7 @@
     </aside>
 
     <section class="flex-1 flex flex-col min-w-0 chat-futuristic-bg relative overflow-hidden">
-      <header class="h-16 px-4 bg-white/90 backdrop-blur-xl border-b border-slate-200 flex items-center justify-between shrink-0 z-20" style="background: var(--bg-card); border-color: var(--border-color);">
+      <header class="h-16 px-4 bg-white border-b border-slate-200 flex items-center justify-between shrink-0 z-20" style="background: var(--bg-card); border-color: var(--border-color);">
         <div class="flex items-center gap-3 min-w-0">
           <button type="button" onclick="toggleSidebar(true)" class="lg:hidden p-2 rounded-xl bg-white border border-slate-200" style="background: var(--bg-card); border-color: var(--border-color);">
             <i data-lucide="menu" class="w-5 h-5"></i>
@@ -557,7 +590,6 @@
         </div>
 
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0 relative">
-          <!-- CONTADOR DE ONLINE ANIMADO -->
           <div class="online-counter-badge" id="online-counter-top" title="Usuários online">
             <span class="counter-dot"></span>
             <span class="counter-num" id="online-counter-top-num">0</span>
@@ -565,7 +597,7 @@
           </div>
 
           <button type="button" onclick="logout()" title="Sair da conta"
-            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/90 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold" style="background: var(--bg-card); border-color: var(--border-color);">
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200/90 hover:border-red-200 transition-colors cursor-pointer text-xs font-semibold" style="background: var(--bg-card); border-color: var(--border-color);">
             <i data-lucide="log-out" class="w-4 h-4"></i>
             <span class="hidden sm:inline">Sair</span>
           </button>
@@ -574,7 +606,7 @@
 
       <div id="messages-container" class="flex-1 overflow-y-auto overflow-x-hidden px-4 py-5 space-y-4 z-10"></div>
 
-      <div id="typing-indicator" class="hidden px-5 py-2 text-xs flex items-center gap-2 bg-white/70 backdrop-blur-md border-t border-slate-200 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
+      <div id="typing-indicator" class="hidden px-5 py-2 text-xs flex items-center gap-2 bg-white border-t border-slate-200 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
         <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200" style="background: var(--bg-card); border-color: var(--border-color);">
           <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
           <span class="w-1.5 h-1.5 rounded-full bg-slate-500 typing-dot"></span>
@@ -583,9 +615,9 @@
         <span id="typing-user-text" class="font-medium" style="color: var(--text-secondary);">Alguém está digitando...</span>
       </div>
 
-      <div id="emoji-picker" class="hidden px-4 py-2.5 bg-white/90 backdrop-blur-md border-t border-slate-200 flex flex-wrap gap-2 z-10" style="background: var(--bg-card); border-color: var(--border-color);"></div>
+      <div id="emoji-picker" class="hidden px-4 py-2.5 bg-white border-t border-slate-200 flex flex-wrap gap-2 z-10" style="background: var(--bg-card); border-color: var(--border-color);"></div>
 
-      <footer class="p-3 bg-white/90 backdrop-blur-xl border-t border-slate-200 shrink-0 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
+      <footer class="p-3 bg-white border-t border-slate-200 shrink-0 z-10" style="background: var(--bg-card); border-color: var(--border-color);">
         <form id="message-form" class="max-w-4xl mx-auto flex items-center gap-2">
           <button type="button" id="emoji-toggle-btn" aria-label="Emojis"
             class="p-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/90 shadow-2xs transition-all shrink-0 cursor-pointer" style="background: var(--bg-card); border-color: var(--border-color);">
@@ -602,7 +634,7 @@
   </div>
 
   <!-- MODAL NOVA DM -->
-  <div id="new-dm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div id="new-dm-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50">
     <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="px-6 pt-6 pb-4 border-b border-slate-200" style="border-color: var(--border-color);">
         <div class="flex items-center justify-between">
@@ -620,7 +652,7 @@
   </div>
 
   <!-- MODAL EDITAR PERFIL -->
-  <div id="edit-profile-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div id="edit-profile-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50">
     <div class="edit-profile-modal w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="px-6 pt-6 pb-4 border-b border-slate-200" style="border-color: var(--border-color);">
         <div class="flex items-center justify-between">
@@ -670,7 +702,7 @@
   </div>
 
   <!-- MODAL DE OPÇÕES DE EXCLUSÃO -->
-  <div id="delete-options-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <div id="delete-options-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/50">
     <div class="w-full max-w-xs bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="p-4 space-y-2">
         <div class="flex items-center justify-between mb-2">
@@ -695,8 +727,8 @@
     </div>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO (MODERNO) -->
-  <div id="confirm-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+  <!-- MODAL DE CONFIRMAÇÃO -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/40">
     <div class="confirm-modal w-full max-w-[280px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" style="background: var(--bg-card); border-color: var(--border-color);">
       <div class="p-5 text-center">
         <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
@@ -735,7 +767,6 @@
 
     lucide.createIcons();
 
-    // Apenas um canal: Bate-papo Livre
     const CHANNELS = [
       { id:'bate-papo', name:'Bate-papo Livre', icon:'coffee', desc:'Descontração e ideias do dia' }
     ];
@@ -792,6 +823,7 @@
     let isLoggingOut = false;
 
     let pendingDeleteMsgId = null;
+    let pendingDeleteIsOwn = null;
     let pendingDeleteAction = null;
 
     function pushChatHistoryState() {
@@ -832,7 +864,7 @@
       const t = document.createElement('div');
       const styles = { error:'border-red-300 text-red-700', success:'border-emerald-300 text-emerald-700', info:'border-sky-300 text-slate-700' };
       const icons = { error:'alert-circle', success:'check-circle-2', info:'info' };
-      t.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-2xl border bg-white backdrop-blur-md shadow-lg text-xs font-medium ${styles[type]||styles.info}`;
+      t.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-2xl border bg-white shadow-lg text-xs font-medium ${styles[type]||styles.info}`;
       t.style.background = isDarkMode ? '#1e293b' : '#fff';
       t.style.color = isDarkMode ? '#f1f5f9' : '#0f172a';
       t.innerHTML = `<i data-lucide="${icons[type]||'info'}" class="w-4 h-4 shrink-0"></i><span>${escapeHTML(msg)}</span>`;
@@ -960,7 +992,6 @@
       currentCaptchaResult=ans;
       const qEl = document.getElementById('captcha-question');
       qEl.innerHTML = `Quanto é <span class="captcha-num">${a}</span> ${op} <span class="captcha-num">${b}</span>?`;
-      // Reinicia animação
       qEl.classList.remove('captcha-shake');
       void qEl.offsetWidth;
       document.getElementById('captcha-answer').value='';
@@ -1348,8 +1379,9 @@
         wrapper.className=`msg-wrapper flex items-end gap-2 msg-anim w-full min-w-0 max-w-full ${own?'justify-end':'justify-start'}`;
         const bubbleClass = own?'bubble-sent':'bubble-received';
         
-        const clickAttr = own ? `onclick="openDeleteOptions('${msg.id}')"` : '';
-        const titleAttr = own ? 'title="Clique para apagar"' : '';
+        // NOVO: qualquer mensagem (própria ou recebida) abre o modal de exclusão
+        const clickAttr = `onclick="openDeleteOptions('${msg.id}', ${own})"`;
+        const titleAttr = 'title="Clique para apagar"';
         
         const bubbleContent = `<div class="${bubbleClass} px-4 py-2.5 text-sm break-words min-w-0 max-w-full" ${clickAttr} ${titleAttr}>${escapeHTML(msg.text)}</div>`;
 
@@ -1391,13 +1423,29 @@
       }
     }
 
-    function openDeleteOptions(msgId) {
+    // NOVO: modal adaptado para mensagens recebidas
+    function openDeleteOptions(msgId, isOwn) {
       pendingDeleteMsgId = msgId;
-      document.getElementById('delete-options-modal').classList.remove('hidden');
+      pendingDeleteIsOwn = isOwn;
+
+      const modal = document.getElementById('delete-options-modal');
+      const deleteAllBtn = document.getElementById('delete-for-all-btn');
+      const title = modal.querySelector('.text-sm.font-semibold');
+
+      if (!isOwn) {
+        title.textContent = 'Apagar mensagem recebida?';
+        deleteAllBtn.classList.add('hidden');
+      } else {
+        title.textContent = 'Apagar mensagem';
+        deleteAllBtn.classList.remove('hidden');
+      }
+
+      modal.classList.remove('hidden');
       lucide.createIcons();
     }
     function closeDeleteOptions() {
       pendingDeleteMsgId = null;
+      pendingDeleteIsOwn = null;
       document.getElementById('delete-options-modal').classList.add('hidden');
     }
     window.openDeleteOptions = openDeleteOptions;
@@ -1435,7 +1483,6 @@
 
         if (action === 'all') {
           await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
-          // Remove imediatamente do cache local para evitar duplicata
           allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
           renderMessages(false);
           showToast('Mensagem apagada para todos.','info');
@@ -1445,7 +1492,10 @@
           renderMessages(false);
           showToast('Mensagem oculta só para você.','info');
         }
-      }catch(e){ showToast('Erro: '+e.message,'error'); }
+      }catch(e){ 
+        console.error('Erro ao apagar:', e);
+        showToast('Erro: '+e.message,'error'); 
+      }
     });
 
     document.getElementById('delete-for-all-btn').addEventListener('click', () => {
@@ -1456,6 +1506,11 @@
     document.getElementById('delete-for-me-btn').addEventListener('click', () => {
       if (!pendingDeleteMsgId) return;
       openConfirmModal('Apagar só para mim?', 'A mensagem sumirá apenas na sua tela.', 'me');
+    });
+
+    // NOVO: fecha o modal de opções ao clicar fora
+    document.getElementById('delete-options-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'delete-options-modal') closeDeleteOptions();
     });
 
     document.getElementById('message-form').addEventListener('submit', async e=>{
@@ -1753,7 +1808,6 @@
       if(!el) return;
       const prev = parseInt(el.textContent, 10) || 0;
       if(prev === count) return;
-      // Animação de contagem
       el.style.animation = 'none';
       void el.offsetWidth;
       el.style.animation = 'countPulse 0.5s ease-in-out';
@@ -1767,7 +1821,6 @@
       genCaptcha();
       document.querySelectorAll('.sound-toggle-icon').forEach(el=>el.setAttribute('data-lucide', soundEnabled?'volume-2':'volume-x'));
       lucide.createIcons();
-      // Inicializa contador
       updateOnlineCounter(0);
     });
 
