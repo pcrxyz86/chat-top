@@ -28,6 +28,13 @@
       --bubble-received-start: rgba(255,255,255,0.95);
       --bubble-received-end: rgba(248,250,252,0.9);
       --bubble-received-text: #0f172a;
+      /* Glassmorphism variables */
+      --glass-bg: rgba(255, 255, 255, 0.55);
+      --glass-bg-strong: rgba(255, 255, 255, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+      --glass-blur: 18px;
+      --glass-radius: 28px;
     }
     body.dark {
       --bg-main: #0f172a;
@@ -39,6 +46,10 @@
       --bubble-received-start: rgba(51,65,85,0.9);
       --bubble-received-end: rgba(30,41,59,0.8);
       --bubble-received-text: #f1f5f9;
+      --glass-bg: rgba(30, 41, 59, 0.55);
+      --glass-bg-strong: rgba(30, 41, 59, 0.78);
+      --glass-border: rgba(148, 163, 184, 0.18);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
     }
     * { box-sizing: border-box; }
     body { background-color: var(--bg-main); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background-color .3s, color .3s; }
@@ -373,6 +384,167 @@
     #messages-container, #typing-indicator, #emoji-picker, footer, header {
       position: relative;
       z-index: 1;
+    }
+
+    /* ============================================================
+       ===== GLASSMORPHISM — BORDAS ARREDONDADAS + MARGENS =====
+       ============================================================ */
+
+    /* Container do app do chat com margem e borda arredondada */
+    #chat-screen {
+      padding: 12px;
+      gap: 12px;
+      background: var(--bg-main);
+    }
+    @media (min-width: 1024px) {
+      #chat-screen { padding: 16px; gap: 16px; }
+    }
+
+    /* Sidebar em vidro transparente */
+    #sidebar {
+      border-radius: var(--glass-radius) !important;
+      background: var(--glass-bg) !important;
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: var(--glass-shadow) !important;
+      backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+      overflow: hidden;
+    }
+    @media (min-width: 1024px) {
+      #sidebar {
+        position: relative !important;
+        height: 100% !important;
+      }
+    }
+    @media (max-width: 1023px) {
+      #sidebar {
+        border-radius: 0 var(--glass-radius) var(--glass-radius) 0 !important;
+        margin: 0;
+        inset-y: 0;
+      }
+    }
+
+    /* Seção principal do chat em vidro transparente */
+    #chat-screen > section {
+      border-radius: var(--glass-radius) !important;
+      background: var(--glass-bg-strong) !important;
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: var(--glass-shadow) !important;
+      backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+      overflow: hidden;
+    }
+
+    /* Header em vidro */
+    #chat-screen > section > header {
+      background: var(--glass-bg) !important;
+      border-bottom: 1px solid var(--glass-border) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Footer em vidro */
+    #chat-screen > section > footer {
+      background: var(--glass-bg) !important;
+      border-top: 1px solid var(--glass-border) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Input de mensagem em vidro */
+    #message-input {
+      background: var(--glass-bg) !important;
+      border: 1px solid var(--glass-border) !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Cards internos da sidebar em vidro */
+    #sidebar .bg-slate-50,
+    #sidebar .bg-white,
+    #sidebar .bg-white\/90,
+    #sidebar .bg-white\/60 {
+      background: var(--glass-bg) !important;
+      border-color: var(--glass-border) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Popover da paleta em vidro */
+    #palette-popover {
+      background: var(--glass-bg-strong) !important;
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: var(--glass-shadow) !important;
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border-radius: 20px !important;
+    }
+
+    /* Modais em vidro */
+    #new-dm-modal > div,
+    #edit-profile-modal > div,
+    #delete-options-modal > div,
+    #confirm-modal > div {
+      background: var(--glass-bg-strong) !important;
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: var(--glass-shadow) !important;
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border-radius: 24px !important;
+    }
+
+    /* Toast em vidro */
+    #toast-container > div {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 16px !important;
+    }
+
+    /* Bolha recebida em vidro */
+    .bubble-received {
+      background: var(--glass-bg) !important;
+      border: 1px solid var(--glass-border) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Emoji picker em vidro */
+    #emoji-picker {
+      background: var(--glass-bg) !important;
+      border-top: 1px solid var(--glass-border) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Indicador de digitação em vidro */
+    #typing-indicator {
+      background: var(--glass-bg) !important;
+      border-top: 1px solid var(--glass-border) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Scrollbar mais suave dentro dos painéis de vidro */
+    #sidebar::-webkit-scrollbar,
+    #messages-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    #sidebar::-webkit-scrollbar-thumb,
+    #messages-container::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.35);
+      border-radius: 9999px;
+    }
+
+    /* Ajuste do backdrop do sidebar no mobile */
+    #sidebar-backdrop {
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    /* Botões redondos dentro do header/footer */
+    #chat-screen > section > header button,
+    #chat-screen > section > footer button {
+      border-radius: 14px;
     }
   </style>
 </head>
