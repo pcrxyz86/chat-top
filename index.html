@@ -408,6 +408,18 @@
         grid-template-columns: repeat(3, 1fr);
       }
     }
+
+    /* ===== BOTÃO LIXEIRA NA LISTA DE DMs ===== */
+    .dm-delete-btn {
+      opacity: 0;
+      transition: opacity .15s, background-color .15s, color .15s;
+    }
+    .dm-conv-item:hover .dm-delete-btn {
+      opacity: 1;
+    }
+    @media (hover: none) {
+      .dm-delete-btn { opacity: 1; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-900 transition-colors duration-300">
@@ -825,6 +837,8 @@
     let pendingDeleteMsgId = null;
     let pendingDeleteIsOwn = null;
     let pendingDeleteAction = null;
+    let pendingDeleteConvId = null;
+    let pendingDeleteConvName = null;
 
     function pushChatHistoryState() {
       historyDepth++;
@@ -1200,6 +1214,10 @@
       if (!msg.hiddenFor || !Array.isArray(msg.hiddenFor)) return false;
       return msg.hiddenFor.includes(currentUser?.uid);
     }
+    function isConvHiddenForMe(conv) {
+      if (!conv.hiddenFor || !Array.isArray(conv.hiddenFor)) return false;
+      return conv.hiddenFor.includes(currentUser?.uid);
+    }
 
     async function loadMessages(reset = false) {
       if (reset) {
@@ -1379,7 +1397,6 @@
         wrapper.className=`msg-wrapper flex items-end gap-2 msg-anim w-full min-w-0 max-w-full ${own?'justify-end':'justify-start'}`;
         const bubbleClass = own?'bubble-sent':'bubble-received';
         
-        // NOVO: qualquer mensagem (própria ou recebida) abre o modal de exclusão
         const clickAttr = `onclick="openDeleteOptions('${msg.id}', ${own})"`;
         const titleAttr = 'title="Clique para apagar"';
         
@@ -1423,7 +1440,6 @@
       }
     }
 
-    // NOVO: modal adaptado para mensagens recebidas
     function openDeleteOptions(msgId, isOwn) {
       pendingDeleteMsgId = msgId;
       pendingDeleteIsOwn = isOwn;
@@ -1454,6 +1470,7 @@
     function openConfirmModal(title, desc, actionType) {
       document.getElementById('confirm-title').textContent = title;
       document.getElementById('confirm-desc').textContent = desc;
+      document.getElementById('confirm-yes-btn').textContent = 'Apagar';
       pendingDeleteAction = actionType;
       document.getElementById('confirm-modal').classList.remove('hidden');
       lucide.createIcons();
@@ -1464,37 +1481,77 @@
     }
     window.closeConfirmModal = closeConfirmModal;
 
+    // NOVO: apagar conversa inteira (só para mim)
+    function openDeleteConversation(convId, convName) {
+      pendingDeleteConvId = convId;
+      pendingDeleteConvName = convName;
+      document.getElementById('confirm-title').textContent = 'Apagar conversa?';
+      document.getElementById('confirm-desc').textContent = `A conversa com "${convName}" sumirá só para você. O outro participante continuará vendo.`;
+      document.getElementById('confirm-yes-btn').textContent = 'Apagar';
+      pendingDeleteAction = 'conv';
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    window.openDeleteConversation = openDeleteConversation;
+
+    async function doDeleteConversation() {
+      if (!pendingDeleteConvId) return;
+      try {
+        await updateDoc(doc(db, 'dmConversations', pendingDeleteConvId), {
+          hiddenFor: arrayUnion(currentUser.uid)
+        });
+        if (activeChatType === 'dm' && dmConvId(currentUser.uid, activeDMUserId) === pendingDeleteConvId) {
+          selectChannel('bate-papo');
+        }
+        dmConversationsCache = dmConversationsCache.filter(c => c.id !== pendingDeleteConvId);
+        renderDMConversations();
+        showToast('Conversa apagada só para você.', 'info');
+      } catch (e) {
+        console.error(e);
+        showToast('Erro: ' + e.message, 'error');
+      } finally {
+        pendingDeleteConvId = null;
+        pendingDeleteConvName = null;
+      }
+    }
+
     document.getElementById('confirm-yes-btn').addEventListener('click', async () => {
+      if (pendingDeleteAction === 'conv') {
+        closeConfirmModal();
+        await doDeleteConversation();
+        return;
+      }
+
       if (!pendingDeleteMsgId || !pendingDeleteAction) return;
       const id = pendingDeleteMsgId;
       const action = pendingDeleteAction;
-      
+
       closeConfirmModal();
       closeDeleteOptions();
-      
-      try{
+
+      try {
         let ref;
-        if(activeChatType==='dm' && activeDMUserId) {
-          const convId=dmConvId(currentUser.uid,activeDMUserId);
-          ref=doc(db,'dmConversations',convId,'messages',id);
+        if (activeChatType === 'dm' && activeDMUserId) {
+          const convId = dmConvId(currentUser.uid, activeDMUserId);
+          ref = doc(db, 'dmConversations', convId, 'messages', id);
         } else {
-          ref=doc(db,'channels',activeChannelId,'messages',id);
+          ref = doc(db, 'channels', activeChannelId, 'messages', id);
         }
 
         if (action === 'all') {
-          await updateDoc(ref,{deleted:true,text:'',deletedAt:serverTimestamp()});
+          await updateDoc(ref, { deleted: true, text: '', deletedAt: serverTimestamp() });
           allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
           renderMessages(false);
-          showToast('Mensagem apagada para todos.','info');
+          showToast('Mensagem apagada para todos.', 'info');
         } else if (action === 'me') {
-          await updateDoc(ref,{ hiddenFor: arrayUnion(currentUser.uid) });
+          await updateDoc(ref, { hiddenFor: arrayUnion(currentUser.uid) });
           allCurrentMessages = allCurrentMessages.filter(m => m.id !== id);
           renderMessages(false);
-          showToast('Mensagem oculta só para você.','info');
+          showToast('Mensagem oculta só para você.', 'info');
         }
-      }catch(e){ 
+      } catch (e) {
         console.error('Erro ao apagar:', e);
-        showToast('Erro: '+e.message,'error'); 
+        showToast('Erro: ' + e.message, 'error');
       }
     });
 
@@ -1508,7 +1565,6 @@
       openConfirmModal('Apagar só para mim?', 'A mensagem sumirá apenas na sua tela.', 'me');
     });
 
-    // NOVO: fecha o modal de opções ao clicar fora
     document.getElementById('delete-options-modal').addEventListener('click', (e) => {
       if (e.target.id === 'delete-options-modal') closeDeleteOptions();
     });
@@ -1623,7 +1679,8 @@
       const emptyHint=document.getElementById('dm-empty-hint');
       if(!list)return;
       list.innerHTML='';
-      const convs=dmConversationsCache;
+      // NOVO: filtra conversas ocultas para mim
+      const convs=dmConversationsCache.filter(c => !isConvHiddenForMe(c));
       if(convs.length===0){ if(emptyHint)emptyHint.classList.remove('hidden'); return; }
       if(emptyHint)emptyHint.classList.add('hidden');
 
@@ -1634,10 +1691,12 @@
         const unread=dmUnreadCounts[conv.id]||0;
         const isActive=activeChatType==='dm'&&activeDMUserId===otherId;
         const li=document.createElement('li');
+        li.className='dm-conv-item';
         const btn=document.createElement('button');
         btn.type='button';
         btn.className=`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-2xl transition-all text-left cursor-pointer border ${isActive?'bg-white border-slate-200 shadow-xs':'border-transparent hover:bg-white/60'}`;
         if(isActive){btn.style.background='var(--bg-card)';btn.style.borderColor='var(--border-color)';}
+        const safeName = escapeHTML(otherName).replace(/'/g, "\\'");
         btn.innerHTML=`
           <div class="relative shrink-0">
             <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white">${getInitials(otherName)}</div>
@@ -1647,7 +1706,10 @@
             <p class="text-xs font-semibold truncate" style="color:var(--text-primary)">${escapeHTML(otherName)}</p>
             <p class="text-[10px] truncate" style="color:var(--text-muted)">${conv.lastMessage?escapeHTML(conv.lastMessage).substring(0,30):'Conversa privada'}</p>
           </div>
-          ${unread>0?`<span class="dm-unread-badge">${unread>9?'9+':unread}</span>`:`<i data-lucide="lock" class="w-3 h-3 text-slate-400 shrink-0"></i>`}`;
+          ${unread>0?`<span class="dm-unread-badge">${unread>9?'9+':unread}</span>`:''}
+          <button type="button" class="dm-delete-btn p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0" title="Apagar conversa" onclick="event.stopPropagation(); openDeleteConversation('${conv.id}','${safeName}')">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>`;
         btn.onclick=()=>{openDM(otherId,otherName);toggleSidebar(false);};
         li.appendChild(btn);
         list.appendChild(li);
