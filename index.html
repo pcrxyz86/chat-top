@@ -1568,7 +1568,8 @@
       const emptyHint=document.getElementById('dm-empty-hint');
       if(!list)return;
       list.innerHTML='';
-      const convs=dmConversationsCache;
+      // Filtra conversas que não têm nenhuma mensagem (lastMessage vazio)
+      const convs=dmConversationsCache.filter(conv => conv.lastMessage && conv.lastMessage.trim() !== '');
       if(convs.length===0){ if(emptyHint)emptyHint.classList.remove('hidden'); return; }
       if(emptyHint)emptyHint.classList.add('hidden');
 
@@ -1654,14 +1655,8 @@
       const convId=dmConvId(currentUser.uid,otherUid);
       dmUnreadCounts[convId]=0;
       renderDMConversations();
-      try{
-        await setDoc(doc(db,'dmConversations',convId),{
-          participants:[currentUser.uid,otherUid],
-          participantNames:{[currentUser.uid]:currentUser.username,[otherUid]:otherUsername},
-          lastRead:{[currentUser.uid]:serverTimestamp()},
-          updatedAt:serverTimestamp()
-        },{merge:true});
-      }catch(e){}
+      // NÃO cria mais o documento da conversa aqui.
+      // A conversa só será criada quando a primeira mensagem for enviada.
       loadMessages(true);
       attachTypingListener(`dm_${convId}`);
       pushChatHistoryState();
